@@ -2,6 +2,8 @@
 
 Harmonise is an incremental upgrade of the existing Beyond Silence Next.js 16 / React 19 application. Its current v5 work focuses on a nonlinear personal companion and reciprocal community experience: people can move between topic-scoped conversations, communities, connections, a user-directed journey, and support choices without being forced through a wizard. The repository implementation is a **frontend fixture build**; it does not make Meta AI calls or connect to live people or services.
 
+The root route (`/`) is the Harmonize Motion Revival homepage, an illustrative, interactive design concept. The existing product preview remains available at `/demo/`; its conversations, community actions, and other UI states continue to use local fixtures.
+
 ## What is implemented in the current frontend
 
 The browser experience includes independent My Space, Communities, Connections, My Journey, and Find Support navigation; separate family and work conversation contexts within the current session; immediate, deterministic local example replies; a tentative understanding the user can confirm or correct; fictional group discussions and lived-experience stories; community join/read/reply flows with an explicit local preview; group-only connection request states; a reviewed, optional contribution flow; editable journey reflections and goal states; and illustrative reporting/moderation and professional-support screens.
@@ -17,7 +19,7 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000>. Use `/demo` for the entry chooser or `/demo?path=talk` to open My Space. The UI is usable with fictional sample data and does not require credentials.
+Open <http://localhost:3000> for the Motion Revival homepage. Use `/demo` for the product-preview entry chooser or `/demo?path=talk` to open My Space. The UI is usable with fictional sample data and does not require credentials.
 
 ## Verification
 
@@ -31,7 +33,7 @@ npm run build
 npm run test:e2e -- --workers=1
 ```
 
-Results: lint, typecheck and production build passed; **27 unit tests** passed; **26 desktop/mobile Playwright checks** passed. The build is a static export in `out/`. The committed screenshot inventory is under [`evidence/v5/`](evidence/v5/); these captures document fixture-mode UI only.
+The Motion Revival homepage port was checked with lint, typecheck, unit tests, the production build, and **46 desktop/mobile Playwright checks**. Results and homepage screenshots are recorded in [`docs/harmonize-homepage/`](docs/harmonize-homepage/). The build is a static export in `out/`. The screenshot inventory under [`evidence/v5/`](evidence/v5/) documents the separate fixture-mode product preview.
 
 ## Current v5 UI screenshot inventory
 
