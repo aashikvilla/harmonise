@@ -1,26 +1,19 @@
-# V18 verification
+# V18 independent media verification
 
-The v18 cut reuses v13's compact narrative and screen sequence. It adds the opening value clarification and records Arjun's actual `Keep this takeaway privately` selection after his correction, then repeats that selected state at the close. All footage comes from a fresh Playwright recording of the local React app.
+Scope: inspect the frozen `demo.mp4`, `captions.srt`, manifest, timeline, narration, and supplied verification frames. This report does not grade persuasion and does not independently rerun the application's lint, typecheck, unit, E2E, build, or capture-smoke checks; those remain manifest claims.
 
-The preview and community content are fictional and prepared. No model, Meta API, live community, moderator, provider directory, booking service, or message sending is connected. Narration is synthetic Flite speech; captions are burned into the MP4 and shipped as `captions.srt`.
+## Results
 
-## Media checks
+- **Runtime and streams: pass.** `ffprobe` reports H.264, 1920×1080 at 30 fps, and mono AAC at 48 kHz. Video is 176.066667 s and audio is 176.064 s; both start at zero and differ by 2.667 ms, below 50 ms. Runtime is within 176–179 s.
+- **Decode and levels: pass.** Full FFmpeg decode completed without errors. Measured audio peak is -3.3 dBFS.
+- **Captions: pass.** The SRT has 41 cues, zero overlaps, a 200 ms minimum inter-cue gap, and ends at 174.980 s. The last caption is followed by about 1.084 s of stream time. Burned-in captions were inspected on supplied frames at 1920×1080 and 960×540; the two-line captions remain legible and do not cover the key control/text areas in the sampled scenes.
+- **Opening and causal sequence: pass.** Opening frames identify the scenario/participant as fictional. The opening proposition is followed by the private reflection and optional peer exploration framing, then an explicit “Prepared preview. No model” caption and “no model connected” UI. The sequence shows Arjun selecting “Not quite,” editing the reflection to say it is about his parents and that he wants time, the editable confirmed reflection updating, and the resulting “I can ask for time before deciding” choice kept privately in the preview session.
+- **Community and Ravi preview: pass.** The thread presents Day 4, Day 9, and Day 16 with the host boundary and unanswered Dev question. Ravi's changed question is visible in the exact audience preview as “What helped you ask for time before answering?” The screen names the Family Expectations group, says private conversation/journey are excluded and no direct message is sent, and shows the review consent unchecked. The prepared Dev response screen keeps posting disabled.
+- **Support and return: pass.** The support screen says no provider is verified or bookable and no bookings/provider matches are available in this preview; the sequence returns to the peer experience afterward.
+- **Final outcome: pass.** The ending shows the takeaway “I can ask for time before deciding” kept privately in this preview, an optional unsent group draft with private context excluded, unchecked consent, disabled posting, and “Nothing is sent.”
+- **Sequence and visual/audio integrity: pass with a timing note.** The sampled frames and scene timeline agree with the narration/SRT chronology. No visible caption collision or black frame appears in the sampled verification frames. Silence detection at -35 dBFS finds the longest speech-free interval at about 3.55 s (141.66–145.21 s), between narration lines while the prepared screen is held; the measured ending tail is 1.707 s. No unexplained extended dead-air or abrupt black transition was evident in the reviewed sequence.
+- **Manifest hashes: pass.** SHA-256 of `demo.mp4` is `d7bdde25bd93136eb98da9674839ed2789dbb31c152c9ef12b34711fd8ac2e51`, matching `candidate_sha256`. SHA-256 of `captions.srt` is `88568b4f0d6760556d2fc7736a603622accc2a34d063ce94c425b2ea35b2de6b`, matching `captions_sha256`.
 
-- 1920×1080 H.264 video, 48 kHz AAC audio.
-- Video stream 176.066667 seconds; audio stream 176.064 seconds; delta 0.002667 seconds.
-- Full FFmpeg decode passed.
-- 41 subtitle cues; zero overlaps; final cue ends at 174.98 seconds. Last speech ends approximately 1.53 seconds before stream end; measured silent tail is 1.69 seconds, under two seconds.
-- Audio peak measured at -3.3 dBFS.
-- Opening, correction, selected private takeaway, Day 4/9/16 thread, edited Ravi preview, support caveat and return, and ending were extracted at full size and 960×540. The final half-size frame shows the selected takeaway, optional Dev draft, private-context exclusion, unchecked consent, disabled posting, and “Nothing is sent.”
-- The final frame maps to the actual captured composed agency-close UI state, not the subsequent scroll transition.
+## Verification evidence
 
-## Application checks
-
-- `npm run lint` passed.
-- `npm run typecheck` passed.
-- `npm test` passed (27/27).
-- Desktop/mobile Playwright E2E passed (34/34) on isolated port 3033.
-- `npm run build` passed.
-- Fresh capture smoke passed across all 21 scene markers, including the actual private-takeaway click and subsequent selected state.
-
-The candidate is a frontend-only product preview and makes no claim that a real person, community, service, model, or provider acted.
+Media metadata and full decode were checked with `ffprobe`/FFmpeg. Caption cue count, order, overlap, and end time were parsed from the SRT. Supplied 1920×1080 and 960×540 verification frames were visually inspected at the opening, correction/private-choice sequence, community thread, edited Ravi preview, support page, and ending. The independent review confirms the media artifact and its packaged caption file; it does not certify the separate application-check claims listed in the manifest.

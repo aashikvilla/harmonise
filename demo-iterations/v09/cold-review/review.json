@@ -1,0 +1,168 @@
+{
+  "candidate": "demo-iterations/v09/demo.mp4",
+  "review_protocol": "video-only protocol v2.1",
+  "review_evidence_mode": "video_with_burned_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "decision": "maybe",
+  "confidence": 0.68,
+  "confidence_notes": "Visual judgments are based only on the MP4 and supplied rubric. The audio track was inaccessible; burned-in captions were readable. Implementation evidence means film-visible prototype evidence only.",
+  "technical_evidence_type": "film_visible_prototype_evidence",
+  "scores": {
+    "impact": {
+      "points": 21,
+      "max": 30,
+      "subcriteria": {
+        "problem_specificity": {
+          "points": 8,
+          "max": 10,
+          "evidence": "0:00 headline targets adults under family or relationship pressure; caption grounds it in Arjun feeling ungrateful."
+        },
+        "human_need_and_outcomes": {
+          "points": 8,
+          "max": 10,
+          "evidence": "0:20–0:30 correction flow preserves uncertainty and agency; no real-world outcome is shown by the ending."
+        },
+        "adoption_and_network_benefit": {
+          "points": 5,
+          "max": 10,
+          "evidence": "0:40–1:10 fictional peer examples; about 1:15–1:45 no verified provider is available."
+        }
+      }
+    },
+    "meta_use": {
+      "points": 19,
+      "max": 25,
+      "subcriteria": {
+        "named_model_roles": {
+          "points": 4,
+          "max": 7,
+          "evidence": "0:00 Muse Spark planned; about 0:28 optional Muse voice transcription planned. No connected model."
+        },
+        "necessity": {
+          "points": 6,
+          "max": 8,
+          "evidence": "0:20–0:30 revisable reflection suits a sensitive, uncertain decision; shown replies use local prepared rules."
+        },
+        "visible_mechanism": {
+          "points": 5,
+          "max": 6,
+          "evidence": "About 0:20–0:30 cards distinguish what was said, what might matter, and what remains unconfirmed."
+        },
+        "evidence_and_limitation": {
+          "points": 4,
+          "max": 4,
+          "evidence": "0:00 and about 0:12 plainly state no model is connected and local rules supply replies."
+        }
+      }
+    },
+    "demo": {
+      "points": 18,
+      "max": 25,
+      "subcriteria": {
+        "hook_and_story": {
+          "points": 5,
+          "max": 6,
+          "evidence": "0:00 defines audience, family-pressure problem, and private-then-explore promise."
+        },
+        "clarity_and_legibility": {
+          "points": 5,
+          "max": 6,
+          "evidence": "0:00 and about 0:20–0:30 use clear headings and visible choices; later screens are denser."
+        },
+        "pacing_audio_subtitles": {
+          "points": 3,
+          "max": 5,
+          "evidence": "Burned-in captions are readable, but many screen states linger and the audio could not be heard."
+        },
+        "emotional_payoff": {
+          "points": 3,
+          "max": 5,
+          "evidence": "About 2:40–2:56 preserves choice, but no human interaction or resolved outcome appears."
+        },
+        "polished_ui": {
+          "points": 2,
+          "max": 3,
+          "evidence": "0:00–2:56 shows consistent, restrained interface styling; motion and visual variation are limited."
+        }
+      }
+    },
+    "technical_depth": {
+      "points": 16,
+      "max": 20,
+      "subcriteria": {
+        "workflow": {
+          "points": 5,
+          "max": 6,
+          "evidence": "0:10–2:56 shows private reflection, correction, community examples, exact share preview, and optional next step."
+        },
+        "controls_permissions_privacy": {
+          "points": 4,
+          "max": 5,
+          "evidence": "About 1:15–1:45 previews audience, alias, exact question; private context excluded, consent off, sending disabled."
+        },
+        "architecture_failure_handling": {
+          "points": 3,
+          "max": 5,
+          "evidence": "0:12 identifies local rules/no AI; about 1:35–1:45 reports no verified provider."
+        },
+        "implementation_evidence": {
+          "points": 4,
+          "max": 4,
+          "evidence": "Film-visible prototype evidence: user-editable understanding and draft, choices, and a recoverable return to peer perspectives; no backend/live service credit."
+        }
+      }
+    }
+  },
+  "total": 74,
+  "film_persuasion_score": 74,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "points": 23,
+      "max": 25,
+      "evidence": [
+        "0:00 headline defines the audience and private-then-explore promise.",
+        "0:00 burned-in caption grounds the need in Arjun's family pressure."
+      ]
+    },
+    "human_journey_and_payoff": {
+      "points": 19,
+      "max": 25,
+      "evidence": [
+        "About 0:20–0:30 Arjun can correct the interpretation.",
+        "About 2:40–2:56 he retains control, but no resolved life outcome is shown."
+      ]
+    },
+    "differentiation_and_role_value": {
+      "points": 15,
+      "max": 25,
+      "evidence": [
+        "0:00 Muse Spark is labeled planned.",
+        "About 0:40–1:10 peer examples and moderation are labeled fictional/historical; live use is not shown."
+      ]
+    },
+    "cinematic_and_narrative_craft": {
+      "points": 17,
+      "max": 25,
+      "evidence": [
+        "0:00 has a readable headline and caption.",
+        "About 1:15–2:56 consent details are legible but repeated screen states flatten the climax."
+      ]
+    }
+  },
+  "film_persuasion_arithmetic": "23 + 19 + 15 + 17 = 74",
+  "film_persuasion_confidence": 0.62,
+  "audio_access_limitation": "The MP4 has an audio stream, but it was inaccessible to this reviewer. Burned-in captions and visuals were used. Narration delivery, music, and sound mix were not judged.",
+  "authenticity": {
+    "scenario": "Fictional; identified on screen as an illustrative scenario with fictional participants and prepared examples.",
+    "social_activity": "No live people or moderation are connected; community material is labeled illustrative/historical.",
+    "integration_claims": "Muse Spark and optional Muse voice transcription are presented as planned, not connected.",
+    "transformation_shown": "The private understanding, optional next step, and exact group question are editable; no actual publication or reply is shown."
+  },
+  "release_recommendation": "Maybe",
+  "blockers": [
+    "No connected model execution is evidenced in the film.",
+    "Community posts are fictional/prepared; live peer interaction and moderation are not shown.",
+    "No verified or bookable provider is available in the support screen.",
+    "No recipient response or real-world outcome is shown."
+  ]
+}

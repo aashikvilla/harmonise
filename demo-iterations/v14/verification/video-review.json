@@ -1,0 +1,30 @@
+{
+  "review_type": "independent video-only media verification",
+  "candidate": "demo-iterations/v14/demo.mp4",
+  "candidate_sha256": "281753a0b2372b2ae3431b30cfdc9f3159ae53105765217b8ccfdecc16acf84a",
+  "scope": ["MP4", "burned-in captions", "SRT", "claims visible or audible in export"],
+  "code_only_claims_considered": false,
+  "checks": {
+    "runtime_176_to_179_seconds": {"status": "pass", "value": 177.933333},
+    "av_stream_delta_under_50ms": {"status": "pass", "value_seconds": 0.013333},
+    "full_decode": {"status": "pass", "method": "ffmpeg decode to null"},
+    "captions_match_manifest_hash": {"status": "pass", "sha256": "6c5427c5ba00f45bf4650a3479a5fdbb600217589eba3812ae77e9041cf186c6"},
+    "caption_cue_count": 42,
+    "caption_overlap_count": 0,
+    "caption_max_lines": 2,
+    "caption_last_end_seconds": 177.58,
+    "captions_readable_at_1920_and_960": "pass",
+    "longest_detected_audio_silence_seconds": 3.561896,
+    "last_detected_audio_silence_seconds": 0.953771,
+    "opening_proposition_and_disclosures": "pass",
+    "correction_causal_and_planned_model_labeled": "pass",
+    "fictional_community_host_and_unanswered_thread": "pass",
+    "no_report_claim": "pass",
+    "ravi_exact_preview_and_consent": "pass",
+    "support_provider_caveat": "pass",
+    "support_return_narration_alignment": "partial",
+    "final_choice_and_no_send": "pass",
+    "no_live_model_community_provider_or_message_claim": "pass"
+  },
+  "finding": "Requested media checks pass except the return-to-thread narration begins while the support page remains visible; the thread is shown by approximately 113 seconds. The manifest last_speech_seconds value matches the final cue end, while audio silence detection places the final audible speech near 176.97 seconds."
+}

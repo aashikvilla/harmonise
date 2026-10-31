@@ -1,32 +1,24 @@
-# v11 candidate verification
+# v11 independent release verification
 
-Scope: the v11 app state capture, edited React footage, MP4, burned captions, SRT sidecar, and supplied full/half-size frames. Builder did not assign a score.
+**Result:** The frozen MP4 and SRT pass the requested media and film-visible checks. The manifest has one packaging gap: it references a narration transcript that is absent. No candidate or manifest files were changed. No persuasion score was assigned; technical depth is judged from video-visible evidence only.
 
-## Application and capture
+## Media and captions
 
-- No application/source code changes were needed. The existing UI supports the required actual paths; v11 uses local fictional fixtures only.
-- `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `PORT=3033 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3033 npm run test:e2e -- --workers=1` passed. Vitest: 27/27. Playwright: 32/32 across desktop and mobile. An attempted isolated E2E server on port 3042 did not start because the repo's existing Next dev server holds the shared `.next` lock; the successful suite reused the already running 3033 server without stopping it.
-- Fast capture smoke and the fresh full Playwright recording both traversed all 18 actual React scene transitions. The 177.160-second raw capture is 1600×900 at 25fps. Start privately is selected and the first typed interaction occurs 9.404 seconds into the edited film.
-- The capture assertions verify that Ravi consent remains unchecked, the optional Dev consent remains unchecked after editing, and posting stays disabled. No message/report/post is submitted.
-
-## Media integrity
-
-- `ffprobe`: 178.013-second container and AAC audio; H.264 video is 1920×1080 at 30fps, 5,339 frames, 177.967 seconds. Audio/video duration difference: 0.046 seconds.
-- Full FFmpeg decode exits 0. The first frame is the fictional Arjun entry; the final shot is the composed private takeaway and unsent optional draft. No black frame was found in the sampled final-video frames.
-- The SRT has 39 sequential, non-overlapping cues and is burned into the MP4. The last cue ends at 177.388 seconds; last speech ends at 176.772 seconds, leaving 1.254 seconds to audio end. Audio mean: −19.4 dBFS; peak: −3.8 dBFS.
-- The edit uses 47 real source shots; none is held over five seconds. The output cut plan moves through the entry (0–15s), correction (15–43s), Day 4/9/16 thread (43–70.056s), Ravi preview, support return, takeaway, optional draft, and final choice.
+- MP4 duration is 178.013 seconds (video 177.967 seconds; audio 178.013 seconds), within 176–179 seconds. Audio/video delta is 0.046333 seconds.
+- Full FFmpeg decode exits 0. Candidate and caption SHA-256 values match the manifest.
+- The SRT contains 39 sequential, non-overlapping cues. The final cue ends at 177.388 seconds; final speech ends at 176.772 seconds, with 1.254 seconds of audio silence to the end and 0.625 seconds from the final cue to the end.
+- Opening and final active-caption frames were inspected at 1920×1080 and 960×540. Captions remain readable below the focused content and do not obscure the final consent/no-send disclosure.
 
 ## Film-visible checks
 
-- Opening: the first frame names Arjun's uncertainty and keeps the fictional label visible. The first pull-back reveals Harmonise, `Interactive product preview`, the private-first audience promise, all three mechanism cards, and `Start privately`. The planned Muse Spark/no-connection narration and caption ends at 11.090 seconds; the current prepared/no-model note remains visible beside the cards.
-- Correction: the connected edit shows the prepared local reply, explicit Not quite action, Arjun's typed words, and changed editable reflection. `Prepared local example · no model connected` stays adjacent; planned Muse Spark is described as organizing themes for review, not deciding truth.
-- Community: the same prepared historical thread moves through Day 4, Day 9 and Day 16. Fictional peer perspectives, the host's “I can listen; I can’t decide for you” boundary, the prepared no-report beat, and Dev's unanswered question are visible. No live reply or moderation action is claimed.
-- Ravi: the actual editor and exact changed group-only preview show alias, audience and text. Private context is excluded; consent is unchecked and continuation disabled.
-- Support: the actual screen says no provider is verified or bookable, then returns to peer perspectives.
-- Close: Arjun's selected private takeaway sits beside the selected optional local Dev draft. The final composed view states private context is excluded, consent unchecked, post disabled, and `Nothing is sent without consent`.
+- Within the opening 15 seconds, the video presents a human first-person uncertainty, the `FICTIONAL SCENARIO · ARJUN` label, the private-first audience promise, and three stages: “What Arjun said” → “A possibility to check” → “Arjun can correct it.” The planned Muse Spark disclosure runs from 4.600 to 11.090 seconds, alongside visible “prepared examples · no model connected” labeling.
+- The correction sequence shows a prepared local reply, “Not quite,” Arjun's edited words, and a changed editable reflection. Captions distinguish the planned Muse Spark concept from the local no-model example.
+- The edited historical thread moves through Day 4, Day 9, and Day 16. Fictional peer perspectives, the host's boundary, the prepared/no-report state, and Dev's unanswered question are visible.
+- Ravi's changed exact question, alias, and group audience appear together in the preview. Private context is excluded; the consent box is unchecked and continuation is disabled.
+- The support screen states that no provider is verified or bookable, then returns to peer perspectives.
+- The final view pairs the selected private takeaway with the selected optional local Dev draft. It shows private context excluded, consent unchecked, post disabled, and “Nothing is sent without consent.” Local app markup confirms the post control is disabled while consent is false; no send action is connected.
+- Fictional/prepared/not-live labels are visible throughout. The film presents edited local UI states and does not claim a live community, moderator, provider, model, or message send.
 
-## Visual evidence and limitations
+## Manifest gap
 
-`verification/frames/` contains sampled 1920×1080 and 960×540 key frames for the opening/pull-back, correction, Day 9/16, Ravi audience preview, and final choice. At both sampled sizes, the opening label/promise/mechanism, correction options/edited words, community dates/unanswered status, Ravi audience/checkbox, and close disclosure are readable. Captions sit below the focused content in the sampled frames.
-
-Narration is synthetic offline Flite. All people/posts/replies and moderation examples are fictional prepared content. No live model, Meta/API, community, moderator, provider, voice transcription, authentication, database, or message-sending integration is connected. The support route is a limitation and return path, not a verified service.
+`manifest.json` references `demo-iterations/v11/narration.txt`, but that file is absent from the v11 directory. The MP4, SRT, and their hashes are present and match the manifest. This report records the gap without changing the frozen candidate or manifest.

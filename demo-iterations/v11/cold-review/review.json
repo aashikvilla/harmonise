@@ -1,0 +1,86 @@
+{
+  "review_evidence_mode": "reduced_evidence_video_with_burned_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film-visible prototype evidence",
+  "scores": {
+    "impact": {
+      "problem_specificity_and_depth": 8,
+      "human_need_and_believable_outcomes": 8,
+      "practical_adoption_network_benefit": 7,
+      "subtotal": 23,
+      "max": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 5,
+      "necessity_over_generic_wrapper": 4,
+      "visible_mechanism_reasoning_or_structured_ui": 4,
+      "evidence_or_candid_limitation": 4,
+      "subtotal": 17,
+      "max": 25
+    },
+    "demo": {
+      "hook_and_story": 5,
+      "clarity_and_legibility": 5,
+      "pacing_accessible_audio_subtitles": 3,
+      "memorable_emotional_payoff": 4,
+      "polished_coherent_ui": 2,
+      "subtotal": 19,
+      "max": 25
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 6,
+      "controls_permissions_privacy": 5,
+      "architecture_failure_handling_as_evidenced": 4,
+      "implementation_evidence": 4,
+      "subtotal": 19,
+      "max": 20
+    }
+  },
+  "total": 78,
+  "confidence": "medium",
+  "uncertainty": "Audio could not be accessed, so narration, music, voice delivery, and sound mix were not judged. Burned captions and picture support the review. Prepared examples and explicit unavailable integrations limit claims about live outcomes.",
+  "film_persuasion_score": 76,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 19,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0-3s", "observation": "Opening caption states: I can't tell my family what I want without feeling ungrateful."},
+        {"timestamp": "6-15s", "observation": "Private exploration appears, but product promise and differentiation are not yet explicit."}
+      ],
+      "confidence": "medium-high"
+    },
+    "human_journey_and_payoff": {
+      "score": 21,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "21-45s", "observation": "Arjun rejects and edits the proposed framing; reflection remains editable."},
+        {"timestamp": "126-150s", "observation": "He can keep time to decide and retain a thought privately; no forced resolution is shown."}
+      ],
+      "confidence": "medium"
+    },
+    "differentiation_and_role_value": {
+      "score": 20,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "6-15s", "observation": "Muse Spark is described as planned support for organizing reflection and not connected here."},
+        {"timestamp": "84-126s", "observation": "Exact group-share review and absent provider verification are shown; proposed roles are distinct from live use."}
+      ],
+      "confidence": "medium"
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 16,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0-45s", "observation": "Burned captions carry the opening and correction arc."},
+        {"timestamp": "132-178s", "observation": "Repeated static interface views slow the close; small interface copy is dense."}
+      ],
+      "confidence": "low-medium"
+    }
+  },
+  "film_persuasion_arithmetic": "19 + 21 + 20 + 16 = 76/100",
+  "audio_limitation": "AAC audio track present in MP4 but inaccessible for listening; no claims made from audio. Review uses picture and burned captions.",
+  "model_execution_credit": 0,
+  "decision": "maybe",
+  "recommendation": "revise before shortlist"
+}

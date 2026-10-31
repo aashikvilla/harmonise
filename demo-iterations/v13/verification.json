@@ -1,0 +1,93 @@
+{
+  "iteration": "v13",
+  "review_type": "independent media and manifest verification",
+  "result": "pass_with_localized_caption_collision",
+  "scope": [
+    "candidate MP4 and audio/video streams",
+    "SRT and narration sidecars",
+    "manifest and declared hashes",
+    "supplied 1920x1080 and 960x540 frame samples",
+    "referenced Git commit object"
+  ],
+  "candidate": {
+    "path": "demo-iterations/v13/demo.mp4",
+    "sha256": "dd21e18a055cf80bca4ee60b0f62620d6e82025b10639985bfb64a722d691d47",
+    "hash_matches_manifest": true,
+    "full_decode": "passed",
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": "30/1",
+      "duration_seconds": 178.766667,
+      "frames": 5363
+    },
+    "audio": {
+      "codec": "aac",
+      "sample_rate": 48000,
+      "channels": 1,
+      "duration_seconds": 178.752,
+      "av_delta_seconds": 0.014667,
+      "last_speech_seconds": 176.969,
+      "tail_after_last_speech_seconds": 1.797667
+    }
+  },
+  "sidecars": {
+    "captions": {
+      "sha256": "02aada6ef28ab0b6dbfb8cf927b67cc8de49c2725f111ef29ff35bf7e608901d",
+      "hash_matches_manifest": true,
+      "cue_count": 41,
+      "overlap_count": 0,
+      "minimum_gap_seconds": 0.2,
+      "last_cue_end_seconds": 177.58,
+      "burned_in": true
+    },
+    "narration": {
+      "sha256": "f1ad863f3cdde736c0b9d4f737bd710f69f2d443390e646eafcfe617e9c6e426",
+      "hash_matches_manifest": true,
+      "voice_claim_in_manifest": "synthetic Flite",
+      "model_connected_claim_in_manifest": false
+    },
+    "capture": {
+      "sha256": "a19ea3b7671cd7b2cac26ea835ee856e40156fae2af58d0591caf708710102b3",
+      "hash_matches_manifest": true,
+      "timeline_sha256": "192c7910e159072e24b00fbaf8c46d0921345c88ec996f2f2189b7130d8be2a0",
+      "timeline_hash_matches_manifest": true,
+      "render_sha256": "b88bcfe7e2db665fb7438ea396110783175ecec85e97971f1700f37b4264ebb0",
+      "render_hash_matches_manifest": true
+    }
+  },
+  "video_visible_checks": {
+    "duration_176_to_179_seconds": "pass",
+    "audio_video_delta_under_50ms": "pass",
+    "opening_specific_promise_and_disclosure": "pass",
+    "correction_cause_and_changed_reflection": "pass",
+    "planned_role_separated_from_prepared_no_model_example": "pass",
+    "fictional_community_roles_and_unanswered_question": "pass",
+    "edited_ravi_scope_and_consent_gate": "pass",
+    "support_provider_caveat_and_return": "pass",
+    "final_private_choice_optional_unsent_draft_no_send": "pass",
+    "caption_legibility_1920_and_960": "pass_with_localized_collision",
+    "caption_collision": {
+      "time_seconds_approx": 52,
+      "description": "The Day 9 narration caption covers part of the community page's lower role-summary copy; the date cards and narrated host-boundary content remain visible."
+    },
+    "black_intervals": {
+      "threshold_seconds": 0.2,
+      "found": false
+    },
+    "audio_silence": {
+      "detector_threshold_dbfs": -50,
+      "longest_detected_silence_seconds": 3.605,
+      "end_tail_after_last_speech_seconds": 1.778,
+      "interpretation": "speech pauses and final tail; no long unexplained blank interval"
+    }
+  },
+  "manifest_source_test_claims": {
+    "candidate_commit_sha": "638242d1d6d410636a8fa17130c8e0827e47b108",
+    "commit_object_exists": true,
+    "manifest_acceptance_claims": "not independently rerun; not used as evidence of video-visible behavior",
+    "source_code_changes_false": "manifest claim only; not inferred from media"
+  },
+  "notes": "Review concerns the exported media and sidecars. It does not certify unshown source behavior, live integrations, or test results."
+}

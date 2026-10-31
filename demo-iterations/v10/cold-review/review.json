@@ -1,0 +1,65 @@
+{
+  "candidate": "v10",
+  "review_evidence_mode": "video_visuals_and_burned_in_captions_audio_inaccessible",
+  "technical_evidence_type": "film-visible prototype evidence",
+  "independent_of_previous_rounds": true,
+  "confidence": "medium",
+  "audio_limitation": "AAC audio stream is present in the MP4 but was not accessible for listening. Visuals and burned-in captions were reviewed; pacing/audio claims have reduced confidence.",
+  "decision": "maybe",
+  "scores": {
+    "impact": {
+      "problem_specificity_and_depth": {"score": 8, "max": 10, "evidence": "00:00 title and audience framing identify family pressure and uncertainty; one fictional case limits breadth."},
+      "human_need_and_believable_outcome": {"score": 8, "max": 10, "evidence": "00:20-00:30 Arjun corrects the interpretation; plausible modest outcome, presented as scenario."},
+      "practical_adoption_and_network_benefit": {"score": 6, "max": 10, "evidence": "00:40-00:55 timeline suggests peer perspective, but explicitly prepared and not live."},
+      "subtotal": 22,
+      "max": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": {"score": 4, "max": 7, "evidence": "00:20-00:30 names planned Muse Spark organization and optional voice transcription; neither connected."},
+      "compelling_necessity": {"score": 6, "max": 8, "evidence": "00:20-00:30 offers a user-correctable reflection and structured alternatives; functionality may be rule-driven."},
+      "visible_mechanism_or_structured_ui": {"score": 5, "max": 6, "evidence": "00:25 correction changes the editable reflection in the prepared screen."},
+      "evidence_or_candid_limitation": {"score": 4, "max": 4, "evidence": "00:00 and 00:20-00:30 state no model is connected and the AI role is planned."},
+      "subtotal": 19,
+      "max": 25
+    },
+    "demo": {
+      "hook_and_story": {"score": 5, "max": 6, "evidence": "00:00 problem hook and 00:00-02:10 progression from private reflection to optional sharing."},
+      "clarity_and_legibility": {"score": 5, "max": 6, "evidence": "Readable structured screens and explicit labels; dense content at 00:40-00:55."},
+      "pacing_and_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": "Burned-in captions are readable; static holds repeat; audio inaccessible."},
+      "emotional_payoff": {"score": 3, "max": 5, "evidence": "About 01:30, takeaway emphasizes a conversation without someone deciding for Arjun; modest fictional payoff."},
+      "polished_coherent_ui": {"score": 2, "max": 3, "evidence": "Consistent visual style; long static pages and repeated screens reduce polish."},
+      "subtotal": 18,
+      "max": 25
+    },
+    "technical_depth": {
+      "plausible_full_workflow": {"score": 5, "max": 6, "evidence": "00:20-02:30 covers private reflection, peer perspectives, optional sharing, and support exploration."},
+      "controls_permissions_privacy": {"score": 5, "max": 5, "evidence": "01:10 exact audience preview; 01:30-02:10 private context excluded, unchecked consent, disabled posting."},
+      "architecture_and_failure_handling": {"score": 4, "max": 5, "evidence": "Prepared/local/unconnected status is explicit; 00:55-01:00 leaves silence unresolved in sample thread."},
+      "implementation_evidence": {"score": 3, "max": 4, "evidence": "00:20-02:10 shows correction, branches, draft edit, and consent state as prepared local prototype states."},
+      "subtotal": 17,
+      "max": 20
+    }
+  },
+  "total": 76,
+  "film_persuasion": {
+    "dimensions": {
+      "first_15_second_clarity": {"score": 22, "max": 25, "evidence": ["00:00 names family pressure and fictional audience of adults facing it.", "00:00 promises private reflection before peer perspectives and states no model connected."]},
+      "human_journey_and_payoff": {"score": 20, "max": 25, "evidence": ["00:25 Arjun corrects the system's tentative interpretation.", "01:30-02:10 he may keep the takeaway private or prepare an optional edited contribution."]},
+      "differentiation_and_role_value": {"score": 21, "max": 25, "evidence": ["00:20-00:30 names Muse Spark as planned help organizing a correctable reflection.", "01:10-02:10 shows group-only audience preview and optional consent while labeling people and drafts fictional/prepared."]},
+      "cinematic_and_narrative_craft": {"score": 18, "max": 25, "evidence": ["00:00-02:56 uses persistent burned-in captions to guide a restrained screen walkthrough.", "00:40-00:55 and 01:30-02:10 hold dense, largely static UI; audio unavailable for assessment."]}
+    },
+    "film_persuasion_score": 81,
+    "arithmetic": "22 + 20 + 21 + 18 = 81",
+    "confidence": "medium-low",
+    "audio_limitation": "Audio was inaccessible; score relies on picture and burned-in captions."
+  },
+  "weighted_arithmetic": "22 + 19 + 18 + 17 = 76",
+  "authenticity": {
+    "fictional_and_prepared_labels_visible": true,
+    "live_model_execution_evidenced": false,
+    "live_community_activity_evidenced": false,
+    "live_professional_integration_evidenced": false,
+    "basis": "The film explicitly labels the scenario fictional, posts prepared/historical, Muse Spark planned and not connected, and support directory unconnected."
+  },
+  "report": "report.md"
+}

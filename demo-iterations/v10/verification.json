@@ -1,0 +1,103 @@
+{
+  "version": "v10",
+  "review_type": "independent release evidence verification",
+  "scope": [
+    "frozen MP4",
+    "burned captions and SRT sidecar",
+    "supplied full-size and 960x540 evidence frames",
+    "manifest, capture timeline, and source disclosure statements"
+  ],
+  "technical_depth_basis": "Video-visible interactions only. Code and test reports are not treated as evidence that a filmed interaction occurred.",
+  "media": {
+    "mp4_sha256": "1a2cffd3268c741d37779b00e4dc3afeae8e1a94f220d4a17f5f346187de73fe",
+    "mp4_sha256_matches_manifest": true,
+    "captions_sha256": "f6abcde0b1294756fca8759ffdf217a3105d1263c0c8e8bad367e8ff04cb6eac",
+    "captions_sha256_matches_manifest": true,
+    "container_duration_seconds": 176.448,
+    "video": {
+      "codec": "H.264",
+      "resolution": "1920x1080",
+      "frame_rate": 30,
+      "duration_seconds": 176.433333,
+      "frames": 5293
+    },
+    "audio": {
+      "codec": "AAC mono",
+      "sample_rate_hz": 48000,
+      "duration_seconds": 176.448
+    },
+    "audio_video_delta_seconds": 0.014667,
+    "full_decode": "passed",
+    "sampled_black_frame_scan": "no black segment detected",
+    "last_audible_narration_seconds": 175.012,
+    "ending_silence_seconds": 1.436,
+    "final_frame": "composed agency choice screen"
+  },
+  "captions": {
+    "cue_count": 39,
+    "first_cue_seconds": 0.0,
+    "last_cue_ends_seconds": 175.725,
+    "sequential": true,
+    "overlaps": false,
+    "backward_timestamps": false,
+    "burned_into_video": "confirmed from supplied frames",
+    "readability": {
+      "full_resolution": "readable",
+      "960x540": "readable"
+    }
+  },
+  "film_visible_assertions": {
+    "first_person_fictional_hook_and_three_step_mechanism_within_15s": {
+      "result": "pass",
+      "evidence": "Opening frame identifies the fictional Arjun scenario, presents the first-person family-pressure hook and the three-step correctable-reflection mechanism. Start privately appears at about 9.4 seconds."
+    },
+    "prepared_local_no_model_disclosure": {
+      "result": "pass",
+      "evidence": "Opening, correction, and close disclose fictional/prepared content and that no model is connected; Muse Spark is labeled planned/not connected."
+    },
+    "corrected_understanding_causal_state_change": {
+      "result": "pass",
+      "evidence": "The filmed Not quite selection and typed correction are followed by a changed editable reflection naming parents/family pressure; the reflection remains labeled a possibility and can be changed or set aside."
+    },
+    "community_day4_day9_day16_host_unanswered_no_report": {
+      "result": "pass",
+      "evidence": "Historical fictional thread shows Day 4, Day 9, Day 16, peer perspectives, host boundary, unanswered Dev post, prepared moderation example, and no report sent."
+    },
+    "ravi_edited_preview_and_consent": {
+      "result": "pass",
+      "evidence": "Edited group question visibly changes exact audience preview; alias and group audience are shown, private conversation excluded, consent unchecked, continuation disabled."
+    },
+    "support_recovery": {
+      "result": "pass",
+      "evidence": "Film says no professional provider is verified/bookable and shows return to peer perspectives without sending the conversation."
+    },
+    "private_takeaway_optional_selected_unsent_draft_and_end": {
+      "result": "pass",
+      "evidence": "Close shows selected private takeaway and optional edited Dev draft, private context excluded, consent unchecked, posting disabled, no send action, and final composed choice screen."
+    },
+    "truthfulness_of_live_service_claims": {
+      "result": "pass",
+      "evidence": "Fictional/prepared status is explicit. Live model, community, moderation/report handling, provider verification/booking, and message sending are disclosed as unavailable or unconnected."
+    }
+  },
+  "technical_depth": {
+    "visible_interactions": [
+      "correction changes editable reflection",
+      "question edit changes exact audience preview",
+      "unchecked consent leaves continuation/posting disabled",
+      "private takeaway and optional unsent draft appear in composed close"
+    ],
+    "assessment": "modest, concrete UI state flow demonstrated in the captured product interaction",
+    "not_demonstrated_in_video": [
+      "persistence or backend behavior",
+      "live model or speech transcription",
+      "real moderation or report routing",
+      "provider lookup or booking",
+      "authentication",
+      "successful posting or message sending"
+    ],
+    "code_test_evidence_counted_as_video_behavior": false
+  },
+  "release_result": "pass for inspected frozen-media assertions; no media integrity or caption-overlap issue found",
+  "persuasion_score": null
+}

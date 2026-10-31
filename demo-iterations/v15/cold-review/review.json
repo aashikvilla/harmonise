@@ -1,0 +1,68 @@
+{
+  "candidate": "v15",
+  "review_evidence_mode": "video_with_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film_visible_prototype_evidence",
+  "audio_accessible": false,
+  "confidence": "medium",
+  "decision": "maybe",
+  "scores": {
+    "impact": 22,
+    "meta_use": 19,
+    "demo": 17,
+    "technical_depth": 16
+  },
+  "total": 74,
+  "score_breakdown": {
+    "impact": {
+      "problem_specificity_and_depth": {"score": 8, "max": 10, "evidence": ["0:00–0:05: family pressure and fear of seeming ungrateful are stated directly."]},
+      "human_need_and_believable_outcomes": {"score": 8, "max": 10, "evidence": ["0:20–0:25: response is presented as a possibility, not a decision.", "2:15–2:25: Arjun keeps a bounded takeaway privately."]},
+      "practical_adoption_and_network_benefit": {"score": 6, "max": 10, "evidence": ["1:05–1:35: fictional peer thread offers perspective but is not live activity.", "2:10: support providers are not verified or bookable."]}
+    },
+    "meta_use": {
+      "correctly_named_model_roles": {"score": 4, "max": 7, "evidence": ["0:05 and 0:45: Muse Spark is described as a planned reflection aid.", "0:15: optional voice transcription is described as planned."]},
+      "necessity_beyond_generic_llm_wrapper": {"score": 5, "max": 8, "evidence": ["0:20–0:55: reflection is framed as tentative, editable, and user-correctable; execution is prepared local content."]},
+      "visible_mechanism_reasoning_or_structured_ui": {"score": 6, "max": 6, "evidence": ["0:25–0:55: tentative interpretation and correction states are visible."]},
+      "convincing_evidence_or_candid_limitation": {"score": 4, "max": 4, "evidence": ["0:15 and 0:45: film says no model is connected and prepared local rules are used."]}
+    },
+    "demo": {
+      "hook_and_story": {"score": 5, "max": 6, "evidence": ["0:00–0:10: strong opening dilemma and private-first promise."]},
+      "clarity_and_legibility": {"score": 4, "max": 6, "evidence": ["0:15–2:55: captions explain the sequence, while product copy remains small and dense."]},
+      "pacing_and_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": ["0:00–2:55: captions are visible throughout; audio could not be accessed, reducing confidence."]},
+      "memorable_emotional_payoff": {"score": 3, "max": 5, "evidence": ["1:25: non-directive host response; 2:15–2:55: private takeaway and optional draft, with original conflict unresolved."]},
+      "polished_coherent_ui": {"score": 2, "max": 3, "evidence": ["0:10–2:55: coherent, restrained interface, but dense small copy."]}
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": {"score": 5, "max": 6, "evidence": ["0:20–2:25: reflect, correct, optionally explore peer content, preview a question, and retain a private takeaway."]},
+      "controls_permissions_privacy": {"score": 5, "max": 5, "evidence": ["1:40–2:10: exact group/alias/question preview and private-context exclusion; consent unchecked and sending disabled.", "2:45–2:55: nothing is sent without consent."]},
+      "architecture_and_failure_handling_film_evidence": {"score": 3, "max": 5, "evidence": ["0:15, 0:45: prepared local behavior and no model connection disclosed.", "1:30: unanswered post; 2:10: provider not verified or bookable."]},
+      "implementation_evidence": {"score": 3, "max": 4, "evidence": ["0:25–0:55: visible correction flow; 1:45–2:10: audience preview and consent state shown."]}
+    }
+  },
+  "film_persuasion_score": 77,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 21,
+      "max": 25,
+      "evidence": ["0:00: specific family-pressure dilemma.", "0:05–0:15: target adults and private-first promise; product distinction remains implicit."]
+    },
+    "human_journey_and_payoff": {
+      "score": 20,
+      "max": 25,
+      "evidence": ["0:35–1:00: Arjun corrects the reflection and chooses whether to explore peer experience.", "2:15–2:55: keeps an optional private takeaway; the conflict remains open."]
+    },
+    "differentiation_and_role_value": {
+      "score": 19,
+      "max": 25,
+      "evidence": ["0:45, 1:05, 2:10: planned model, fictional peer content, and support directory have distinct stated roles.", "0:15: no model connected; no live role is demonstrated."]
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 17,
+      "max": 25,
+      "evidence": ["0:00–2:55: coherent screen-led journey with captions.", "Audio inaccessible; small dense UI copy limits readability."]
+    }
+  },
+  "film_persuasion_arithmetic": "21 + 20 + 19 + 17 = 77",
+  "audio_limitation": "Audio track was inaccessible. Captions were visible and used; narration, sound, and audio pacing were not judged.",
+  "release_recommendation": "Keep in consideration; do not shortlist on this film alone. The film does not substantiate model execution or live peer/provider evidence."
+}

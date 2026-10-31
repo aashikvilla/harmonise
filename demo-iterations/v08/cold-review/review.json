@@ -1,0 +1,74 @@
+{
+  "candidate": "demo-iterations/v08/demo.mp4",
+  "rubric": "demo-iterations/prompts/02_COLD_JUDGE_AND_SCORECARD.md",
+  "rubric_version": "video-only protocol v2.1",
+  "review_evidence_mode": "visual_and_burned_in_captions_audio_inaccessible",
+  "audio_access_limitation": "An audio stream is present in the MP4, but playback and transcription were unavailable. No uncaptained narration content was inferred.",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film-visible prototype evidence",
+  "decision": "maybe",
+  "confidence": "medium",
+  "uncertainty": "Audio could not be heard; pacing and audio-dependent claims have reduced confidence. All AI, community, moderation, and support behavior is scored only as shown and is repeatedly labeled prepared, fictional, planned, or not connected.",
+  "scores": {
+    "impact": {
+      "problem_specificity_and_depth": {"score": 8, "max": 10, "evidence": ["0:00 — adults under family or relationship pressure are named directly."]},
+      "human_need_and_believable_outcomes": {"score": 8, "max": 10, "evidence": ["0:16–0:48 — Arjun expresses uncertainty, corrects a misreading, and edits the reflection.", "2:32 — his chosen takeaway remains private unless he opts to share."]},
+      "practical_adoption_and_network_benefit": {"score": 6, "max": 10, "evidence": ["1:04–1:44 — prepared peer thread, group question, and support option illustrate a possible network, while explicitly showing no live community or verified provider connection."]},
+      "subtotal": 22,
+      "max": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": {"score": 4, "max": 7, "evidence": ["0:08 and 0:32 — Muse Spark is named as planned reflection support; optional Muse voice transcription is described as planned."]},
+      "compelling_necessity": {"score": 4, "max": 8, "evidence": ["0:32–0:56 — an editable, tentative reflection gives a relevant proposed role, but no comparison or live model evidence establishes necessity."]},
+      "visible_mechanism_reasoning_or_structured_ui": {"score": 4, "max": 6, "evidence": ["0:32–0:56 — the interface separates what was said, what might matter, and what the user wants; user can reject or edit it. The film labels it a prepared example."]},
+      "evidence_or_candid_limitation": {"score": 4, "max": 4, "evidence": ["0:08, 0:32, 0:48 — visible disclosures say no AI/model is connected and local prepared rules are in use."]},
+      "subtotal": 16,
+      "max": 25
+    },
+    "demo": {
+      "hook_and_story": {"score": 5, "max": 6, "evidence": ["0:00–0:24 — audience and uncertainty are introduced quickly, then the participant starts privately."]},
+      "clarity_and_legibility": {"score": 5, "max": 6, "evidence": ["0:32–0:56 and 1:20 — reflection correction and exact share preview are legible in close views."]},
+      "pacing_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": ["0:00–2:56 — burned-in captions are visible and generally readable; audio is inaccessible and the screen tour is lengthy."]},
+      "emotional_payoff": {"score": 4, "max": 5, "evidence": ["2:32–2:56 — the user preserves a takeaway privately and nothing is sent without consent; the ending lacks a broader resolution."]},
+      "polished_coherent_ui": {"score": 2, "max": 3, "evidence": ["0:08–2:56 — consistent, restrained interface with repeated explanatory notices, but several dense/cropped views."]},
+      "subtotal": 19,
+      "max": 25
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": {"score": 5, "max": 6, "evidence": ["0:08–2:56 — private reflection, optional community exploration, support information, and a bounded share draft are shown."]},
+      "controls_permissions_privacy": {"score": 5, "max": 5, "evidence": ["1:20 — exact audience, alias, text, and excluded private context shown; consent unchecked.", "2:56 — posting disabled and nothing sent."]},
+      "architecture_failure_handling_as_evidenced": {"score": 4, "max": 5, "evidence": ["0:32–0:56 — tentative interpretation supports correction; 1:36 — no verified provider claim; 1:44 — prepared moderation example says no report was sent."]},
+      "implementation_evidence": {"score": 3, "max": 4, "evidence": ["0:24–0:56 — visible correction/edit flow; 1:20–1:28 — exact share preview; 2:32–2:56 — local draft and consent gate. Prepared examples limit proof of live behavior."]},
+      "subtotal": 17,
+      "max": 20
+    }
+  },
+  "total": 74,
+  "total_max": 100,
+  "film_persuasion_score": 76,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 22,
+      "max": 25,
+      "evidence": ["0:00 — headline identifies adults under family/relationship pressure and promises private thought and exploration on the user's terms.", "0:08 — prepared-example and no-connected-AI/community disclosures establish limits; product differentiation is still emerging."]
+    },
+    "human_journey_and_payoff": {
+      "score": 19,
+      "max": 25,
+      "evidence": ["0:24–0:48 — Arjun corrects a mistaken reading and edits a reflection.", "2:32–2:56 — he chooses what to keep private; consent remains unchecked and nothing is sent."]
+    },
+    "differentiation_and_role_value": {
+      "score": 18,
+      "max": 25,
+      "evidence": ["0:32–0:56 — proposed Muse Spark role is framed around a correctable reflection, with no model connected.", "1:04–1:44 — prepared peer/host/moderation examples demonstrate planned roles, explicitly not live activity."]
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 17,
+      "max": 25,
+      "evidence": ["0:00–2:56 — a coherent progression from private thought to bounded sharing with readable captions.", "1:04–2:56 — static, dense, sometimes cropped interface views limit visual variety; audio cannot be assessed."]
+    },
+    "arithmetic": "22 + 19 + 18 + 17 = 76",
+    "confidence": "medium-low",
+    "audio_limitation": "Audio inaccessible; score based on visuals and burned-in captions."
+  }
+}

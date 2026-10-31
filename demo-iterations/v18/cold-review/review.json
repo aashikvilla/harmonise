@@ -1,0 +1,96 @@
+{
+  "candidate": "v18/demo.mp4",
+  "rubric": "video-only protocol v2.1",
+  "review_evidence_mode": "video_with_burned_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "confidence": "medium",
+  "audio_limitation": "The MP4 contains an audio stream, but audio was inaccessible for listening in this review interface. Burned captions were used for narration-dependent claims; speech quality, music, vocal pacing, and sync were not assessed.",
+  "technical_evidence_type": "film-visible prototype evidence only; no live model execution credited",
+  "scores": {
+    "impact": {
+      "score": 21,
+      "max": 30,
+      "subscores": {
+        "problem_specificity_and_depth": {"score": 9, "max": 10, "evidence": "00:00 first-person family-pressure problem; fictional scenario labeled."},
+        "human_need_and_believable_outcomes": {"score": 7, "max": 10, "evidence": "00:25–00:45 Arjun corrects the interpretation; about 00:40 chooses time before deciding."},
+        "adoption_and_network_benefit": {"score": 5, "max": 10, "evidence": "About 00:50–01:45 prepared peer examples and unavailable provider path; no live service shown."}
+      }
+    },
+    "meta_use": {
+      "score": 16,
+      "max": 25,
+      "subscores": {
+        "correctly_named_model_roles": {"score": 4, "max": 7, "evidence": "00:10–00:40 names planned Muse Spark reflection organization and optional voice transcription."},
+        "necessity_beyond_generic_wrapper": {"score": 4, "max": 8, "evidence": "Sensitive correction use case is plausible at 00:25–00:45, but no evidence establishes model necessity."},
+        "visible_mechanism_reasoning_or_structured_ui": {"score": 5, "max": 6, "evidence": "00:25–00:45 separates what was said, possible meaning, and unconfirmed intent, with correction controls."},
+        "evidence_or_candid_limitation": {"score": 3, "max": 4, "evidence": "Repeated prepared-example/no-model/no-live-person labels; no model execution claim."}
+      }
+    },
+    "demo": {
+      "score": 18,
+      "max": 25,
+      "subscores": {
+        "hook_and_story": {"score": 5, "max": 6, "evidence": "00:00 problem hook; 00:25–00:45 correction branch creates a clear journey."},
+        "clarity_and_legibility": {"score": 4, "max": 6, "evidence": "Burned captions are readable; interface cards and labels are dense, especially from 00:50 onward."},
+        "pacing_and_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": "Captions visible throughout; audio inaccessible; 176-second static screen tour runs long."},
+        "emotional_payoff": {"score": 3, "max": 5, "evidence": "Around 02:50, optional unsent draft preserves agency without resolving the family conflict."},
+        "polished_coherent_ui": {"score": 3, "max": 3, "evidence": "Consistent restrained interface throughout the film."}
+      }
+    },
+    "technical_depth": {
+      "score": 18,
+      "max": 20,
+      "subscores": {
+        "plausible_full_user_workflow": {"score": 5, "max": 6, "evidence": "00:10–02:50 private reflection, optional peers, draft sharing, and support discovery path."},
+        "controls_permissions_privacy": {"score": 5, "max": 5, "evidence": "About 01:20–02:56 exact audience/text previews, private context exclusion, consent checkbox, cancel/later, posting disabled."},
+        "architecture_and_failure_handling_as_evidenced": {"score": 4, "max": 5, "evidence": "Prepared local/no model disclosure and unavailable provider/credential limitations are explicit; failure recovery is limited."},
+        "implementation_evidence": {"score": 4, "max": 4, "evidence": "Film-visible prototype allows correction, edited drafts, cancel/keep, and a no-send state at 00:25–00:45 and 01:20–02:56."}
+      }
+    }
+  },
+  "total": 73,
+  "total_arithmetic": "21 + 16 + 18 + 18 = 73/100",
+  "uncertainty": "Medium confidence. Audio was inaccessible and all interactions are explicitly prepared examples. No live API or model execution is evidenced or credited.",
+  "film_persuasion_score": 75,
+  "film_persuasion": {
+    "dimensions": {
+      "first_15_second_clarity": {
+        "score": 20,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "00:00", "observation": "First-person title makes family pressure immediately legible."},
+          {"timestamp": "00:05–00:10", "observation": "Private reflection and optional peer exploration are promised; distinction from chat/journaling could be sharper."}
+        ]
+      },
+      "human_journey_and_payoff": {
+        "score": 20,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "00:25–00:45", "observation": "Arjun rejects and edits the interpretation, then chooses time before deciding."},
+          {"timestamp": "02:50–02:56", "observation": "The unsent draft and unchecked consent preserve choice; payoff is small and fictional."}
+        ]
+      },
+      "differentiation_and_role_value": {
+        "score": 19,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "00:10–00:40", "observation": "Muse Spark reflection organization and optional voice transcription are explicitly planned, not connected."},
+          {"timestamp": "00:50–01:15", "observation": "Prepared peers and bounded host role offer context without decision-making; no live activity."}
+        ]
+      },
+      "cinematic_and_narrative_craft": {
+        "score": 16,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "00:25–00:45", "observation": "Corrected reflection creates a clear narrative beat, reinforced by captions."},
+          {"timestamp": "02:40–02:56", "observation": "The final consent state and 'Nothing is sent' resolve the product story; long text-heavy screen capture limits visual variety."}
+        ]
+      }
+    },
+    "arithmetic": "20 + 20 + 19 + 16 = 75/100",
+    "confidence": "medium-low",
+    "audio_limitation": "Audio was inaccessible; evaluation of craft relies on picture and burned captions only."
+  },
+  "decision": "maybe",
+  "release_recommendation": "Release as a concept/prototype submission only; do not imply live AI, peer activity, moderation, provider verification, or messaging."
+}

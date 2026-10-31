@@ -1,0 +1,79 @@
+{
+  "master": "demo-iterations/v13/demo.mp4",
+  "masterSha256": "dd21e18a055cf80bca4ee60b0f62620d6e82025b10639985bfb64a722d691d47",
+  "candidate": "demo-iterations/v34a/demo.mp4",
+  "candidateSha256": "d362f09d6fd7119a1ce3d65db0876172a2e48548327a5ec15f5ed734932cc913",
+  "fullDecode": "passed for master and candidate",
+  "videoOnlyHashMethod": "ffmpeg framemd5 with -map 0:v:0; raw decoded yuv420p frame hashes",
+  "videoFrameCountMaster": 5363,
+  "videoFrameCountCandidate": 5363,
+  "decodedVideoWindows": {
+    "preWindow": {
+      "frameRangeInclusiveExclusive": [
+        0,
+        114
+      ],
+      "framesCompared": 114,
+      "mismatchCount": 0,
+      "firstMismatchFrames": [],
+      "identical": true
+    },
+    "editedWindow": {
+      "frameRangeInclusiveExclusive": [
+        114,
+        321
+      ],
+      "framesCompared": 207,
+      "mismatchCount": 207,
+      "firstMismatchFrames": [
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133
+      ],
+      "identical": false
+    },
+    "postWindow": {
+      "frameRangeInclusiveExclusive": [
+        321,
+        5363
+      ],
+      "framesCompared": 5042,
+      "mismatchCount": 0,
+      "firstMismatchFrames": [],
+      "identical": true
+    }
+  },
+  "captionBand": {
+    "crop": "1920x180 at x=0,y=900",
+    "masterFrames": 5363,
+    "candidateFrames": 5363,
+    "identicalAllFrames": true
+  },
+  "audioPacketPayloadSha256Master": "SHA256=c993fb93069dc23db6a883e72c766ac59f3e5139a08b84928b1f6c23fcaf6b1d",
+  "audioPacketPayloadSha256Candidate": "SHA256=c993fb93069dc23db6a883e72c766ac59f3e5139a08b84928b1f6c23fcaf6b1d",
+  "audioBitstreamIdentical": true,
+  "captionsSidecarIdentical": true,
+  "priorFailure": {
+    "reportedPost15Identical": false,
+    "reportedPostWindowFrames": 13421,
+    "cause": "The prior framemd5 helper omitted -map 0:v:0, so its returned checksum list combined video frames and AAC packets and was not a valid frame-to-frame comparison.",
+    "correctedPostWindowIdentical": true
+  }
+}

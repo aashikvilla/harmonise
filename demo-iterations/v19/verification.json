@@ -1,0 +1,40 @@
+{
+  "iteration": "v19",
+  "scope": "independent visible-media and media-integrity verification; no persuasion scoring",
+  "candidate": "demo.mp4",
+  "sha256_matches_manifest": true,
+  "media": {
+    "decode": "passed",
+    "video": "H.264 1920x1080, 176.233333 s",
+    "audio": "AAC, 176.234000 s",
+    "stream_delta_seconds": 0.000667
+  },
+  "captions": {
+    "count": 40,
+    "overlaps": 0,
+    "last_end_seconds": 175.325,
+    "sha256_matches_manifest": true,
+    "readability": "high contrast; sampled interface text small but legible at 960x540 and readable at native 1920x1080",
+    "material_collision_observed": false
+  },
+  "visible_claims": {
+    "12_second_intro_explicitly_fictional_prepared_no_model": true,
+    "promise_visible_by_5_seconds": true,
+    "application_view_visible_by_12_seconds": true,
+    "correction_changes_reflection_then_private_takeaway": true,
+    "manifest_ui_share_percent": 93.19,
+    "ui_share_arithmetic_consistent": true,
+    "react_framework_or_playwright_proven_by_video": false,
+    "prepared_day4_day9_day16_thread_with_host_boundary_and_unanswered_question": true,
+    "ravi_exact_group_only_preview_has_unchecked_consent_and_no_send": true,
+    "ravi_form_appearance_count": 2,
+    "ravi_single_appearance_literal_requirement_met": false,
+    "support_caveat_and_return_visible": true,
+    "closing_private_takeaway_and_unsent_optional_draft": true
+  },
+  "static_holds": "No unchanged interval longer than two seconds found at one-second samples.",
+  "limitations": [
+    "Capture provenance and technical stack are declarations, not visually provable from the MP4.",
+    "Lint, test, build, and integration claims were not verified by this media review."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "version": "v11",
+  "scope": "Independent technical release verification of the frozen MP4, SRT, manifest, supplied screenshots, and limited local app evidence. No persuasion score assigned; technical depth is judged only from video-visible evidence.",
+  "verdict": "candidate_media_pass_manifest_gap",
+  "checks": {
+    "duration_176_to_179_seconds": {"status": "pass", "container_seconds": 178.013, "video_seconds": 177.966667, "audio_seconds": 178.013},
+    "audio_video_delta": {"status": "pass", "seconds": 0.046333},
+    "full_decode": {"status": "pass", "evidence": "FFmpeg full decode exits 0"},
+    "candidate_and_caption_hashes": {"status": "pass", "candidate_sha256": "d33b54da90c48b2c1ec7c54ef19b5924e651abbeb05e7846943903477edb3836", "captions_sha256": "b6f31ce24bcd61d52939356bb938e5b90ce86c330cf12d3be90aa9372cde466d"},
+    "caption_intervals": {"status": "pass", "cues": 39, "sequential": true, "overlapping": false, "last_cue_end_seconds": 177.388},
+    "caption_readability": {"status": "pass", "evidence": "Opening and final active-caption frames inspected at 1920x1080 and 960x540. Captions are legible, sit below focused content, and do not obscure the final consent/no-send disclosure."},
+    "opening_disclosures_within_15_seconds": {"status": "pass", "evidence": "From the opening: human first-person uncertainty; FICTIONAL SCENARIO · ARJUN; private-first audience promise; three visible stages (What Arjun said → A possibility to check → Arjun can correct it). Planned Muse Spark disclosure appears in caption 2 from 4.600s to 11.090s and is paired with visible no-model-connected labeling."},
+    "correction_and_local_no_model": {"status": "pass", "evidence": "Video shows the prepared local reply, Not quite correction, edited words, and changed editable reflection. Captions disclose prepared/no-model status; planned Muse Spark is framed as organizing themes for review."},
+    "community_days_and_roles": {"status": "pass", "evidence": "The edited historical thread moves through Day 4, Day 9, and Day 16; fictional peer perspective, host boundary, prepared/no-report state, and Dev's unanswered question are visible and captioned."},
+    "ravi_exact_preview_and_unchecked_consent": {"status": "pass", "evidence": "Changed exact question, alias, and Family Expectations group audience appear together in the preview; private context is explicitly excluded; consent checkbox is visibly unchecked and continuation remains disabled."},
+    "support_return": {"status": "pass", "evidence": "Support screen says no provider is verified or bookable, followed by the return to peer perspectives."},
+    "final_takeaway_optional_draft_and_no_send": {"status": "pass", "evidence": "Final selected private takeaway is shown beside the selected optional local Dev draft. Private context exclusion, unchecked consent, disabled post, and no-send language are visible. App markup confirms posting is disabled while consent is false; no send action is connected."},
+    "false_live_interaction_claims": {"status": "pass", "evidence": "The film labels the scenario fictional and examples prepared/not live; no live community, moderator, provider, model, or message send is claimed. Film is an edited capture of local UI states."},
+    "manifest_narration_reference": {"status": "fail", "evidence": "manifest.json names demo-iterations/v11/narration.txt, but that file is absent from the v11 directory."}
+  },
+  "media": {
+    "container": "MP4",
+    "video_codec": "H.264",
+    "resolution": "1920x1080",
+    "frame_rate": "30 fps",
+    "video_frames": 5339,
+    "audio_codec": "AAC mono 48 kHz",
+    "last_speech_end_seconds": 176.772,
+    "audio_end_silence_seconds": 1.254,
+    "tail_after_last_caption_seconds": 0.625
+  },
+  "limitations": [
+    "All participants, posts, replies, host and moderation examples are fictional prepared content; no live community or human moderator is connected.",
+    "No live model, Meta/API, transcription, provider verification, authentication, database, or message sending is connected.",
+    "The support screen is a caveat and return path, not a verified service.",
+    "The optional Dev contribution is a local draft; consent is unchecked and posting is disabled."
+  ]
+}

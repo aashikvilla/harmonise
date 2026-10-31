@@ -1,0 +1,51 @@
+{
+  "iteration": "v34a",
+  "master": "demo-iterations/v13/demo.mp4",
+  "masterSha256": "dd21e18a055cf80bca4ee60b0f62620d6e82025b10639985bfb64a722d691d47",
+  "candidate": "demo-iterations/v34a/demo.mp4",
+  "candidateSha256": "d362f09d6fd7119a1ce3d65db0876172a2e48548327a5ec15f5ed734932cc913",
+  "runtimeSeconds": 178.766667,
+  "videoFrames": 5363,
+  "frameRate": "30/1",
+  "soleChange": {
+    "type": "centered crop/scale of existing captured picture pixels",
+    "outputStartSeconds": 3.8,
+    "outputEndSeconds": 10.7,
+    "startFrameInclusive": 114,
+    "endFrameExclusive": 321,
+    "cropPixels": [
+      88,
+      0,
+      1744,
+      980
+    ],
+    "scalePixels": [
+      1920,
+      1080
+    ],
+    "panelSafeWidthEstimateBefore": 0.714,
+    "panelSafeWidthEstimateAfter": 0.786,
+    "originalHeaderAndDisclosureBand": "restored from the same v13 frame at original scale",
+    "originalCaptionBand": "restored from same v13 frame at original scale"
+  },
+  "unchangedWindows": [
+    {
+      "startSeconds": 0,
+      "endSeconds": 3.8,
+      "frames": [
+        0,
+        114
+      ]
+    },
+    {
+      "startSeconds": 10.7,
+      "endSeconds": 178.766667,
+      "frames": [
+        321,
+        5363
+      ]
+    }
+  ],
+  "truthBoundary": "All text, UI, captions, narration, shot order and disclosures are inherited from v13.",
+  "verification": "demo-iterations/v34a/verification/media-checks.json"
+}

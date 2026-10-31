@@ -1,0 +1,107 @@
+{
+  "rubric_version": "video-only v2.1",
+  "review_evidence_mode": "reduced_evidence_video_with_burned_captions",
+  "audio_access": {
+    "aac_stream_present": true,
+    "audibly_accessible": false,
+    "limitation": "Could not listen to the AAC stream in this review context; burned-in captions were used for dialogue-dependent evidence."
+  },
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film-visible prototype evidence only",
+  "decision": "maybe",
+  "confidence": "moderate",
+  "uncertainty": "Audio and narration delivery could not be assessed. Prepared prototype states do not establish real user activity, live model calls, or deployed integrations.",
+  "scores": {
+    "impact": {
+      "problem_specificity": 8,
+      "human_need_and_believable_outcomes": 7,
+      "practical_adoption_network_benefit": 6,
+      "subtotal": 21,
+      "weight": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 4,
+      "compelling_necessity": 5,
+      "visible_mechanism_reasoning_or_structured_ui": 5,
+      "convincing_evidence_or_candid_limitation": 4,
+      "subtotal": 18,
+      "weight": 25
+    },
+    "demo": {
+      "hook_and_story": 4,
+      "clarity_and_legibility": 4,
+      "pacing_and_accessible_audio_subtitles": 3,
+      "memorable_emotional_payoff": 3,
+      "polished_coherent_ui": 2,
+      "subtotal": 16,
+      "weight": 25
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 5,
+      "controls_permissions_privacy": 5,
+      "architecture_and_failure_handling_as_evidenced_in_film": 4,
+      "implementation_evidence": 4,
+      "subtotal": 18,
+      "weight": 20,
+      "evidence_type": "film-visible interactive prototype flow; no backend or live API inference"
+    }
+  },
+  "total": 73,
+  "total_arithmetic": "21 + 18 + 16 + 18 = 73",
+  "film_persuasion_score": 74,
+  "film_persuasion": {
+    "dimensions": {
+      "first_15_second_clarity": {
+        "score": 20,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "0:00", "observation": "Opening text: ‘I can’t tell my family what I want.’"},
+          {"timestamp": "0:10–0:15", "observation": "Promise: think privately, correct the reflection, choose whether to explore peer experiences; adult family-pressure audience appears by about 0:15."}
+        ]
+      },
+      "human_journey_and_payoff": {
+        "score": 21,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "0:30–0:50", "observation": "Arjun can reject or edit a possible reading and replace it with his own words."},
+          {"timestamp": "about 2:20", "observation": "The next step remains optional and the family decision is explicitly unresolved."}
+        ]
+      },
+      "differentiation_and_role_value": {
+        "score": 18,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "0:15 and about 0:45", "observation": "Muse Spark is identified as planned for organizing a correctable reflection; no model is connected."},
+          {"timestamp": "about 1:00–1:20", "observation": "Prepared peer, host, and moderator roles are described; no live people or moderation are connected."}
+        ]
+      },
+      "cinematic_and_narrative_craft": {
+        "score": 15,
+        "max": 25,
+        "evidence": [
+          {"timestamp": "0:00–0:10", "observation": "Quiet opening gives the dilemma a brief emotional beat."},
+          {"timestamp": "about 1:00–2:50", "observation": "Long screen captures and scrolling carry most of the film; burned captions are readable in sampled frames but overlap lower page content at times."}
+        ]
+      }
+    },
+    "arithmetic": "20 + 21 + 18 + 15 = 74",
+    "confidence": "moderate",
+    "audio_limitation": "AAC present but not audibly accessible; captions used, so narration, audio quality, and audio-led pacing are unassessed."
+  },
+  "model_attribution": [
+    {
+      "model": "Muse Spark",
+      "film_moment": "about 0:15 and 0:45",
+      "proposed_role": "Could help organize a reflection that Arjun can correct; optional voice transcription is also described as planned.",
+      "substantiated": "The film-visible UI shows an editable possible interpretation and user correction controls.",
+      "not_substantiated": "No model is connected; the preview states it uses prepared local rules. No model execution credit awarded."
+    }
+  ],
+  "fix_tickets": [
+    {"timestamp": "0:00–0:15", "issue": "Audience and product promise arrive after the opening line.", "replacement": "Put ‘For adults facing family pressure’ and the private/correctable/optional-peer promise in the opening beat.", "expected_result": "Faster first-15-second comprehension.", "verification": "Ask a cold viewer to summarize audience, problem, and promise after 15 seconds."},
+    {"timestamp": "0:30–0:50", "issue": "The correction transition is easy to miss at playback speed.", "replacement": "Hold and visibly show ‘Not quite’ leading to the edited wording.", "expected_result": "The user’s agency reads as an action.", "verification": "Viewer can explain what changed and who chose it."},
+    {"timestamp": "1:00–1:20", "issue": "Prepared community status competes with dense content.", "replacement": "Focus on ‘prepared historical posts,’ ‘no live activity,’ and the unresolved thread before audience preview.", "expected_result": "Peer value and limits are both clear.", "verification": "Viewer does not mistake prepared content for live testimonials."},
+    {"timestamp": "1:15–1:35", "issue": "Sharing safeguards are small in the full form view.", "replacement": "Zoom through exact audience, alias, question, excluded private context, and unchecked consent.", "expected_result": "Consent scope is legible without pausing.", "verification": "Viewer can state what is shared and excluded."},
+    {"timestamp": "2:15–2:55", "issue": "Ending repeats the walkthrough instead of landing the human payoff.", "replacement": "Close on the private ‘ask for time’ takeaway beside the optional unsent draft and unresolved decision.", "expected_result": "Memorable agency without implying resolution or live support.", "verification": "Viewer recalls the takeaway and its limits."}
+  ]
+}

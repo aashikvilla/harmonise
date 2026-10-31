@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "path": "demo.mp4",
+    "sha256": "05c3f1047418255b9129e9c548437abbaf0b79ae27e7ea545fdbf5ebf5397545"
+  },
+  "scope": "independent release/content/media verification; no story score",
+  "media": {
+    "video_codec": "h264",
+    "video_size": "1920x1080",
+    "video_fps": 30,
+    "video_duration_seconds": 176.0,
+    "audio_codec": "aac",
+    "audio_duration_seconds": 176.0,
+    "full_decode": "passed",
+    "caption_cues": 19,
+    "caption_timing_parse": "passed",
+    "caption_overlaps": 0,
+    "last_caption_end_seconds": 154.072
+  },
+  "video_visible": {
+    "opening_premise_and_interactive_product_preview_label": "present and readable at 1920x1080 and 960x540",
+    "fiction_prepared_no_connected_ai_or_community_disclosure": "present",
+    "day_4_day_9_day_16_thread": "present as a single historical thread progression",
+    "host_boundary": "present and labeled fictional human community role",
+    "moderator_triage": "present as prepared example; no report sent or real moderator contacted",
+    "unanswered_side_thread": "present as no replies yet",
+    "planned_ai_disclosure": "present; Muse Spark and optional voice transcription are disconnected",
+    "ravi_exact_audience_alias_question_and_unchecked_consent": "present; group only, private conversation/journey excluded, no direct message sent",
+    "professional_support_caveat": "present; no provider verified or bookable",
+    "maybe_later_route": "shown and selected before optional offer preview",
+    "dev_preview": "exact group, alias, and bounded message shown; private context excluded; consent unchecked; post disabled; nothing sent",
+    "final_state": "open Dev preview with both choices visible; no final selection/decline shown",
+    "silent_tail_seconds": 21.928
+  },
+  "source_only_evidence": {
+    "capture_script": "capture/capture-film.mjs drives the real React UI interactions represented in the cut",
+    "ui_and_fixture_source": ["src/components/demo-experience.tsx", "src/lib/historical-thread.ts"],
+    "existing_e2e_assertions": "tests/demo-flow.spec.ts covers entry, local correction, historical triage, Ravi scope, Dev consent, support caveat, and external requests; not run for this review",
+    "responsive_test_result": "none available for v07; earlier QA_REPORT.md is not treated as v07 evidence"
+  },
+  "readability": {
+    "reviewed_sizes": ["1920x1080", "960x540"],
+    "finding": "key premise, choices, dates, role labels, consent boundary, and exact preview remain legible in sampled frames; mobile behavior not established"
+  },
+  "resolved_evidence_discrepancy": "verification/frame-0.png is stale blank evidence; direct frame-0 extraction from the frozen MP4 and verification/final-0.png show the actual first-use UI",
+  "release_gaps": [
+    "Final picture remains an open optional contribution preview instead of a resolved selected-or-declined ending.",
+    "The film holds silently on the final screen for about 21.9 seconds after narration/captions end."
+  ],
+  "truthfulness_risks": [
+    "Do not claim connected Muse Spark inference, generated output, or working voice transcription from this film.",
+    "Do not claim live peer support, moderation, report handling, provider verification, or booking from this film."
+  ]
+}

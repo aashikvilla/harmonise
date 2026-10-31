@@ -1,0 +1,55 @@
+{
+  "candidate": "demo-iterations/v09/demo.mp4",
+  "independent_scope": "Frozen media, SRT, manifest, narration transcript, and supplied verification stills; no candidate modification.",
+  "media": {
+    "container_duration_seconds": 176.428,
+    "video_duration_seconds": 176.4,
+    "audio_duration_seconds": 176.428,
+    "audio_video_delta_seconds": 0.028,
+    "resolution": "1920x1080",
+    "frame_rate": "30/1",
+    "video_frames": 5292,
+    "full_decode": "passed, FFmpeg exit status 0",
+    "manifest_sha256_matches": true,
+    "captions_sha256_matches": true,
+    "caption_cues": 19,
+    "caption_overlaps": 0,
+    "caption_first_seconds": 0.0,
+    "caption_last_end_seconds": 175.641,
+    "last_audible_speech_approx_seconds": 174.95,
+    "trailing_silence_approx_seconds": 1.49,
+    "black_interval_detected": false,
+    "long_internal_silence": "approximately 21.4 s from 132.2 to 153.6 s while the composed choice screen holds"
+  },
+  "film_visible": {
+    "opening_three_step_explanation_before_interaction": true,
+    "fictional_prepared_and_no_model_disclosure": true,
+    "planned_muse_spark_role_disclosed": true,
+    "first_typed_interaction_capture_timeline_seconds": 10.944,
+    "editable_correction_state": true,
+    "prepared_day4_day9_day16_thread": true,
+    "peer_and_host_roles_visible": true,
+    "unanswered_dev_side_question_visible": true,
+    "prepared_moderation_example_and_no_report_claimed": true,
+    "edited_ravi_question_matches_group_preview": true,
+    "ravi_audience_and_alias_visible": true,
+    "private_context_excluded": true,
+    "consent_unchecked_and_next_action_disabled": true,
+    "support_provider_not_verified_or_bookable_disclosed": true,
+    "support_return_to_peer_perspectives_shown": true,
+    "selected_private_takeaway_visible": true,
+    "optional_dev_draft_visible": true,
+    "final_composed_state_consent_unchecked_post_disabled_nothing_sent": true,
+    "live_ai_community_moderation_provider_or_action_claim_supported": false
+  },
+  "readability": {
+    "1920x1080": "main UI, labels, controls and captions readily readable in supplied stills",
+    "960x540": "headings, main text, primary controls and captions readable at native size; dense helper text and secondary labels small",
+    "caption_overlap_with_primary_content_observed": false
+  },
+  "code_only_checks": {
+    "manifest_reports_tests_lint_typecheck_build": true,
+    "independently_rerun": false,
+    "interpretation": "These claims concern implementation checks and are not established by video inspection."
+  }
+}

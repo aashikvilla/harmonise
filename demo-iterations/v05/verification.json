@@ -1,0 +1,83 @@
+{
+  "candidate": "demo-iterations/v05/demo.mp4",
+  "result": "conditional_pass",
+  "score": null,
+  "release_blockers": [
+    {
+      "id": "caption_overlap",
+      "severity": "release_blocker",
+      "finding": "SRT cue 11 (02:01-02:18) overlaps cue 12 (02:14-02:24) from 02:14 to 02:18. Simultaneous burned captions stack and obscure lower app content.",
+      "required_action": "Retiming or splitting the captions so they do not overlap while preserving narration coverage."
+    }
+  ],
+  "truthfulness": {
+    "status": "pass",
+    "details": [
+      "Fictional participants and illustrative scenario are disclosed in the app header and film.",
+      "Prepared/local replies and the absence of connected models are disclosed.",
+      "Muse Spark and Muse Voice Transcribe are labeled planned and disconnected.",
+      "Ravi is labeled fictional; his response is a prepared sample, not live or human-sent.",
+      "Professional support is disclosed as unavailable; no provider is represented as verified or bookable.",
+      "Planned architecture card is explicitly editorial, not an app interaction."
+    ]
+  },
+  "film_app_parity": {
+    "status": "pass_for_scenes_shown",
+    "source_supported_behaviors": [
+      "Deterministic local chat response and message state transitions.",
+      "Editable provisional understanding and user confirmation.",
+      "Group-only Ravi question flow with explicit consent gating and exact audience/question preview.",
+      "Prepared sample response display.",
+      "Editable local contribution preview and user-controlled local scenario publication."
+    ],
+    "film_visible_only_claims": [
+      "The film demonstrates only local front-end fixture behavior and does not establish backend or live services.",
+      "The editorial architecture card communicates intended roles only; it is not interactive app functionality."
+    ],
+    "not_demonstrated_as_live": [
+      "Meta model calls or speech-to-text service",
+      "Real human response or community publication",
+      "Real report routing, moderator staffing, or role enforcement",
+      "Persistent backend or verified/bookable professional service"
+    ]
+  },
+  "privacy_consent_roles": {
+    "status": "pass_for_reviewed_material",
+    "details": [
+      "Exact question audience and alias are previewed, and consent remains unchecked until chosen.",
+      "Private chat is described as separate from group material.",
+      "Ravi is group-only with no private-message route.",
+      "Moderator workflow and professional roles are distinguished and described as illustrative/unavailable where applicable.",
+      "No diagnosis, clinical decision, live monitoring, or completed credential-check claim found."
+    ]
+  },
+  "professional_support_gap": "No qualified professional is available or bookable in this preview; the film and app disclose this. Live provider services are outside prototype scope.",
+  "accessibility_legibility": {
+    "status": "pass_with_caption_issue",
+    "details": [
+      "Reviewed frames are legible at 1920x1080.",
+      "Captions have high-contrast backing.",
+      "Source includes visible keyboard focus, labeled controls, status/live-region semantics, and reduced-motion CSS.",
+      "Caption overlap obscures lower app content during the overlapping interval."
+    ]
+  },
+  "media": {
+    "duration_seconds": 178.0,
+    "resolution": "1920x1080",
+    "frame_rate": "30/1",
+    "video_codec": "h264",
+    "audio_codec": "aac",
+    "audio_sample_rate_hz": 48000,
+    "audio_channels": 1,
+    "full_decode": "passed; ffmpeg decode exit 0",
+    "audio_rms_dbfs": -20.75,
+    "audio_peak_dbfs": -2.86,
+    "audio_clipping_indicated": false,
+    "manifest_sha256_match": true,
+    "mp4_sha256": "db51fecddd7ff244ca542ee055d16b59f93fbe28310585ea8cb5e65730a2729d",
+    "caption_count": 14,
+    "caption_final_end_seconds": 177.8,
+    "caption_overlap_seconds": 4
+  },
+  "scope": "Truthfulness, film-to-app parity for scenes shown, prototype/Meta boundaries, consent/privacy, role boundaries, accessibility/legibility, runtime/audio/captions/decode. No score assigned."
+}

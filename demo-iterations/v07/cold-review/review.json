@@ -1,0 +1,82 @@
+{
+  "review_evidence_mode": "video_with_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film_visible_prototype_evidence",
+  "decision": "maybe",
+  "scores": {
+    "impact": {
+      "problem_specificity": 7,
+      "human_need_and_outcomes": 6,
+      "practical_adoption_and_network_benefit": 4,
+      "subtotal": 17,
+      "maximum": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 4,
+      "necessity": 4,
+      "visible_mechanism_reasoning_or_structured_ui": 5,
+      "evidence_or_candid_limitation": 4,
+      "subtotal": 17,
+      "maximum": 25
+    },
+    "demo": {
+      "hook_and_story": 4,
+      "clarity_and_legibility": 4,
+      "pacing_accessible_audio_and_subtitles": 3,
+      "memorable_emotional_payoff": 2,
+      "polished_coherent_ui": 2,
+      "subtotal": 15,
+      "maximum": 25
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 5,
+      "controls_permissions_and_privacy": 5,
+      "architecture_and_failure_handling_as_evidenced": 4,
+      "implementation_evidence": 3,
+      "subtotal": 17,
+      "maximum": 20
+    }
+  },
+  "total": 66,
+  "total_arithmetic": "17 + 17 + 15 + 17 = 66/100",
+  "confidence": "medium",
+  "uncertainty": "Audio could not be heard. Prepared examples limit judgments of responsiveness and operational behavior. No model-execution credit is awarded.",
+  "film_persuasion_score": 68,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 21,
+      "maximum": 25,
+      "evidence": [
+        {"timestamp": "0:00", "observation": "Opening names adults under family or relationship pressure and promises private reflection on their terms."},
+        {"timestamp": "0:08", "observation": "Private conversation is visible after the opening offers Start privately or Browse example stories."}
+      ]
+    },
+    "human_journey_and_payoff": {
+      "score": 16,
+      "maximum": 25,
+      "evidence": [
+        {"timestamp": "0:12–0:28", "observation": "Correction and edit choices retain agency over the reflection."},
+        {"timestamp": "1:36–2:24", "observation": "Share scope is previewed and Maybe later remains available, but no completed reciprocal outcome is shown."}
+      ]
+    },
+    "differentiation_and_role_value": {
+      "score": 17,
+      "maximum": 25,
+      "evidence": [
+        {"timestamp": "0:20", "observation": "Caption distinguishes the prepared local-rule response from a connected model."},
+        {"timestamp": "0:28–0:48", "observation": "Muse Spark and optional Muse voice transcription are described as possible roles and identified as disconnected."}
+      ]
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 14,
+      "maximum": 25,
+      "evidence": [
+        {"timestamp": "0:00–2:56", "observation": "Burned-in captions are readable and carry key limitations."},
+        {"timestamp": "0:48–2:56", "observation": "Long static interface holds slow the story; the film ends on black."}
+      ]
+    }
+  },
+  "film_persuasion_arithmetic": "21 + 16 + 17 + 14 = 68/100",
+  "film_persuasion_confidence": "medium-low",
+  "audio_limitation": "MP4 includes AAC audio, but audio was inaccessible to the reviewer. Captions were readable and used as evidence; audio-dependent assessment was reduced."
+}

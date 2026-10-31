@@ -1,0 +1,60 @@
+{
+  "scope": "independent frozen-video/artifact verification; persuasion not scored",
+  "candidate": {
+    "path": "demo.mp4",
+    "sha256": "8904c00ad231407e2c6045a559c0d6f64b79c61e84275e55036cc8d544d9b7e4",
+    "manifest_match": true,
+    "duration_seconds": 177.966667,
+    "video": "H.264 1920x1080 30 fps",
+    "audio": "AAC mono 48000 Hz",
+    "av_delta_seconds": 0.004667,
+    "full_decode": "passed"
+  },
+  "captions": {
+    "path": "captions.srt",
+    "sha256": "75d3351067351f11f87a61d9a3b80b0258736276b9c3113987ab0025066b2e28",
+    "manifest_match": true,
+    "cue_count": 36,
+    "overlaps": 0,
+    "last_cue_end_seconds": 177.02,
+    "burned_in": "visually observed"
+  },
+  "visual_sampling": {
+    "sizes": [
+      "1920x1080",
+      "960x540"
+    ],
+    "areas": [
+      "opening proposition and planned/no-model qualification",
+      "Day 4/9/16 fictional thread, host boundary and unanswered question",
+      "Ravi exact audience/alias/question, excluded private context, unchecked consent/no-send",
+      "unverified support and return to peer thread",
+      "selected takeaway and optional local Dev draft ending"
+    ],
+    "readability": "key sampled copy legible at both sizes",
+    "caption_collision": "none observed over key copy in sampled frames"
+  },
+  "visible_claims": {
+    "fictional_prepared_status": "shown",
+    "no_model_connected_planned_role": "shown within first 15 seconds",
+    "causal_correction": "shown and distinguished from prepared local rules",
+    "day4_day9_day16_host_unanswered": "shown",
+    "ravi_audience_alias_question_private_excluded_consent_off": "shown",
+    "support_unverified_and_return": "shown",
+    "selected_private_takeaway_optional_unsent_dev_draft": "shown",
+    "live_or_sent_claim_misleading": "none observed"
+  },
+  "source_results_reported_by_manifest_not_rerun": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "unit": "27/27 passed",
+    "e2e": "32/32 desktop and mobile passed",
+    "build": "passed",
+    "capture_smoke": "19/19 states passed",
+    "full_decode": "passed",
+    "caption_overlap": "0",
+    "visual_review": "passed"
+  },
+  "candidate_modified": false,
+  "limits": "No persuasion scoring; source tests and hidden product behavior are not film evidence."
+}

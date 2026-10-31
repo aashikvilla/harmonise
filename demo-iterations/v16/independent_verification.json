@@ -1,0 +1,50 @@
+{
+  "iteration": "v16",
+  "scope": "independent technical and film-evidence verification; no persuasion scoring",
+  "artifact": "demo.mp4",
+  "sha256": "3181b539a6b2a6a3a23372e19ca77e025e0a7c4f75f312fecba7ba88f9923dcf",
+  "bytes": 10060241,
+  "media": {
+    "video": {"codec": "h264", "width": 1920, "height": 1080, "fps": "30/1", "duration_seconds": 177.966667},
+    "audio": {"codec": "aac", "channels": 1, "sample_rate": 48000, "duration_seconds": 177.962},
+    "av_delta_ms": 4.667,
+    "decode": "passed full FFmpeg decode to null",
+    "black_scan": "no black intervals detected at 100 ms threshold",
+    "audio_note": "Short speech pauses; last detected audio activity leaves a 0.857 s tail; no prolonged silent section"
+  },
+  "captions": {
+    "count": 36,
+    "ordered": true,
+    "overlaps": 0,
+    "all_cues_match_narration_paragraphs": true,
+    "last_end_seconds": 177.715,
+    "ends_within_video": true,
+    "sampled_readability": "key captions and content readable at 1920x1080 and 960x540; no sampled caption/content collision"
+  },
+  "film_evidence": {
+    "opening_15s_promise": "present",
+    "prepared_theme_mockup_explicitly_not_generated": true,
+    "muse_spark_planned_no_model_connected": true,
+    "causal_user_correction_and_explicit_confirmation": true,
+    "fictional_prepared_community_and_roles": true,
+    "day4_day9_day16_and_no_replies_yet": true,
+    "no_report_sent": true,
+    "ravi": {
+      "audience": "Family Expectations group; Ravi may reply in group",
+      "alias": "QuietRiver",
+      "question": "What helped you ask for time?",
+      "private_context_excluded": true,
+      "consent_unchecked": true,
+      "no_send_shown": true
+    },
+    "provider_unavailable_caveat_and_return_route": true,
+    "private_takeaway_and_optional_unsent_local_draft": true,
+    "disabled_post_and_no_send": true,
+    "false_live_claims_in_sampled_film": false
+  },
+  "separate_source_test_notes": {
+    "existing_verification_reports": ["lint", "typecheck", "tests", "build passed"],
+    "independently_rerun": false,
+    "capture_timeline_discrepancy": "Marker 18 is timestamped 186.337 s, after the 177.967 s export; the exported MP4 visibly contains the ending card."
+  }
+}

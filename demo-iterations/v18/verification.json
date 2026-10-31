@@ -1,0 +1,27 @@
+{
+  "iteration": "v18",
+  "scope": "independent media verification only; no persuasion grading; application test claims not rerun",
+  "checks": {
+    "duration_seconds": {"value": 176.066667, "range_seconds": [176, 179], "result": "pass"},
+    "audio_video_delta_ms": {"value": 2.667, "limit_ms": 50, "result": "pass"},
+    "full_decode": "pass",
+    "video": {"codec": "H.264", "width": 1920, "height": 1080, "fps": 30},
+    "audio": {"codec": "AAC", "sample_rate_hz": 48000, "channels": 1, "peak_dbfs": -3.3},
+    "captions": {"cue_count": 41, "overlaps": 0, "minimum_gap_ms": 200, "last_end_seconds": 174.98, "readable_at_1920_and_960": "pass"},
+    "narration_screen_chronology": "pass",
+    "opening_fiction_and_no_model_disclosure": "pass",
+    "corrected_reflection_and_private_choice": "pass",
+    "community_thread_and_host_boundary": "pass",
+    "ravi_exact_group_preview_privacy_and_unchecked_consent": "pass",
+    "support_caveat_and_return": "pass",
+    "final_private_outcome_optional_unsent_draft_disabled_post_and_no_send": "pass",
+    "visual_integrity": "no visible collision or black frame in sampled verification frames",
+    "longest_speech_free_interval_seconds": {"value": 3.55, "at_seconds": [141.66, 145.21], "context": "between narration lines while prepared screen is held"},
+    "silent_tail_seconds": 1.707,
+    "manifest_hashes": {
+      "video_sha256": {"value": "d7bdde25bd93136eb98da9674839ed2789dbb31c152c9ef12b34711fd8ac2e51", "matches": true},
+      "captions_sha256": {"value": "88568b4f0d6760556d2fc7736a603622accc2a34d063ce94c425b2ea35b2de6b", "matches": true}
+    }
+  },
+  "application_checks": "Manifest claims only; not independently rerun"
+}

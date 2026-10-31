@@ -1,0 +1,87 @@
+{
+  "review_evidence_mode": "video_with_burned_captions_no_audio_access",
+  "independent_of_previous_rounds": true,
+  "confidence": "medium overall; medium for visible interaction, low-to-medium for audio-dependent film craft",
+  "technical_evidence_type": "film-visible prototype evidence",
+  "audio_access_limitation": "The MP4 contains an AAC audio stream, but audio was inaccessible to this judge. Burned-in captions were used for script evidence; speech delivery, mix, and caption synchronization were not assessed.",
+  "scores": {
+    "impact": {
+      "problem_specificity": 8,
+      "human_need_and_outcomes": 8,
+      "practical_adoption_and_network_benefit": 6,
+      "total": 22,
+      "maximum": 30
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 2,
+      "necessity_not_generic_wrapper": 5,
+      "visible_mechanism_or_structured_ui": 5,
+      "evidence_or_candid_limitation": 4,
+      "total": 16,
+      "maximum": 25
+    },
+    "demo": {
+      "hook_and_story": 5,
+      "clarity_and_legibility": 4,
+      "pacing_accessible_audio_subtitles": 3,
+      "emotional_payoff": 4,
+      "polished_coherent_ui": 2,
+      "total": 18,
+      "maximum": 25
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 5,
+      "controls_permissions_privacy": 5,
+      "architecture_failure_handling_as_evidenced": 3,
+      "implementation_evidence": 3,
+      "total": 16,
+      "maximum": 20
+    }
+  },
+  "total": 72,
+  "total_maximum": 100,
+  "weighted_arithmetic": "22 + 16 + 18 + 16 = 72",
+  "film_persuasion_score": 76,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 21,
+      "maximum": 25,
+      "evidence": [
+        "0:00: Family-pressure problem appears in the opening statement.",
+        "0:12: audience and promise of private, correctable reflection are visible."
+      ]
+    },
+    "human_journey_and_payoff": {
+      "score": 22,
+      "maximum": 25,
+      "evidence": [
+        "0:24-0:36: Arjun corrects the proposed framing.",
+        "2:36-2:58: takeaway remains private and sharing optional."
+      ]
+    },
+    "differentiation_and_role_value": {
+      "score": 17,
+      "maximum": 25,
+      "evidence": [
+        "0:00-0:12: proposed Muse Spark reflection role is named; no model is connected.",
+        "1:00-1:36: host boundary and precise group-sharing preview are shown."
+      ]
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 16,
+      "maximum": 25,
+      "evidence": [
+        "0:00: emotional opening statement.",
+        "0:12-2:58: dense screen capture sequence with repeated captions; restrained close."
+      ]
+    }
+  },
+  "film_persuasion_arithmetic": "21 + 22 + 17 + 16 = 76",
+  "decision": "Maybe; do not shortlist on this film alone.",
+  "key_limitations": [
+    "No model execution shown; film says model is not connected.",
+    "Scenario, peer content, participants, and interaction examples are labeled fictional or prepared.",
+    "No verified provider or booking route is shown.",
+    "Audio inaccessible; claims are grounded in burned captions and visible UI."
+  ]
+}

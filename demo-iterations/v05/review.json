@@ -1,0 +1,51 @@
+{
+  "candidate": "v05",
+  "review_evidence_mode": "reduced_video_without_audio",
+  "independent_of_previous_rounds": true,
+  "evidence_sources": [
+    "/workspace/hormonise/demo-iterations/v05/demo.mp4",
+    "/workspace/hormonise/demo-iterations/prompts/02_COLD_JUDGE_AND_SCORECARD.md"
+  ],
+  "decision": "maybe",
+  "overall_score": 66,
+  "confidence": "medium-low",
+  "technical_evidence_type": "film-visible prototype evidence",
+  "live_model_execution_credit": 0,
+  "subscores": {
+    "impact": {
+      "problem_specificity_and_depth": {"score": 7, "max": 10, "evidence": "0:00-0:12 opening states the personal-pressure scenario and private start; differentiation remains broad."},
+      "human_need_and_believable_outcomes": {"score": 7, "max": 10, "evidence": "0:30-0:54 user rejects and corrects an interpretation; around 1:36 a prepared story avoids a quick-fix claim."},
+      "adoption_and_network_benefit": {"score": 4, "max": 10, "evidence": "0:54-1:18 community library and 1:42-2:18 draft reply suggest peer support, but examples are fictional and no live activity is shown."},
+      "total": 18,
+      "max": 30
+    },
+    "meta_use": {
+      "correct_model_role_attribution": {"score": 5, "max": 7, "evidence": "2:36-2:49 names planned Muse Spark for dialogue/context and Muse Voice Transcribe for optional reviewed speech-to-text."},
+      "necessity_beyond_generic_wrapper": {"score": 5, "max": 8, "evidence": "0:30-0:54 correction and 2:36-2:49 structured context suggest a fitting role; execution is not shown."},
+      "visible_mechanism_or_structured_ui": {"score": 4, "max": 6, "evidence": "0:30-0:54 visible correction flow and 1:42-2:18 audience/text review provide structure."},
+      "evidence_and_candid_limitation": {"score": 4, "max": 4, "evidence": "0:24-0:30 says prepared local example/no model; 2:36-2:49 says planned roles, neither connected."},
+      "total": 18,
+      "max": 25
+    },
+    "demo": {
+      "hook_and_story": {"score": 3, "max": 6, "evidence": "0:00-0:15 is calm and legible but does not name a distinctive product promise."},
+      "clarity_and_legibility": {"score": 5, "max": 6, "evidence": "0:00-2:49 follows a coherent sequence; dense community and consent screens are small at full-video framing."},
+      "pacing_and_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": "Embedded captions are visible; audio playback was unavailable, so voice and mix cannot be judged."},
+      "emotional_payoff": {"score": 2, "max": 5, "evidence": "0:30-0:54 correction provides a modest human moment; 2:36-2:49 ends on a static planned-integration card."},
+      "polished_coherent_ui": {"score": 2, "max": 3, "evidence": "0:00-2:49 shows a consistent, spacious visual system with small text in dense scenes."},
+      "total": 15,
+      "max": 25
+    },
+    "technical_depth": {
+      "plausible_user_workflow": {"score": 5, "max": 6, "evidence": "0:00-2:18 shows private start, correction, browsing, drafting, preview, and choice whether to post."},
+      "controls_permissions_privacy": {"score": 4, "max": 5, "evidence": "1:18-1:42 and 1:42-2:18 show alias, exact audience/text review, private-conversation exclusion, and discard draft."},
+      "architecture_and_failure_handling": {"score": 3, "max": 5, "evidence": "2:18-2:49 states no verified provider and planned human/model roles, but no recovery behavior is demonstrated."},
+      "film_visible_prototype_evidence": {"score": 3, "max": 4, "evidence": "0:30-0:54 correction and 1:42-2:18 draft/review states are shown; a full decline or send outcome is not."},
+      "total": 15,
+      "max": 20
+    }
+  },
+  "arithmetic": "Impact 18/30 + Meta use 18/25 + Demo 15/25 + Technical depth 15/20 = 66/100",
+  "uncertainty": "Audio playback was unavailable. Embedded captions were readable and used as film evidence; voice, sound mix, and audio-caption fidelity remain unjudged. No source, code, or Git evidence was used.",
+  "commit_metadata": ""
+}

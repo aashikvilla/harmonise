@@ -1,0 +1,50 @@
+{
+  "candidate": "v13",
+  "review_evidence_mode": "video_with_burned_captions_reduced_audio_evidence",
+  "audio_limitation": "AAC mono stream is present, but audio content was inaccessible to the reviewer; judgments rely on picture and burned-in captions.",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_basis": "film-visible prototype states and flows only",
+  "decision": "maybe",
+  "scores": {
+    "impact": {
+      "specificity_and_depth_of_problem": {"score": 8, "max": 10, "evidence": "0:00 first-person family-pressure dilemma; audience card says adults facing family pressure."},
+      "human_need_and_believable_outcomes": {"score": 8, "max": 10, "evidence": "0:10-0:20 Arjun corrects a proposed interpretation; 2:45-2:58 preserves his choice. Outcome remains illustrative."},
+      "practical_adoption_and_network_benefit": {"score": 5, "max": 10, "evidence": "0:25-1:15 presents prepared peer examples; no live network or adoption evidence."}
+    },
+    "meta_use": {
+      "correctly_named_model_roles": {"score": 5, "max": 7, "evidence": "0:20-0:25 planned Muse Spark organizes themes for review, not truth; no model connected."},
+      "necessity_rather_than_generic_wrapper": {"score": 6, "max": 8, "evidence": "0:10-0:20 correction interface fits sensitive reflection, but model utility is proposed."},
+      "visible_mechanism_reasoning_or_structured_ui": {"score": 5, "max": 6, "evidence": "0:10-0:20 shows a candidate interpretation and editable confirmed wording."},
+      "evidence_or_candid_limitation": {"score": 3, "max": 4, "evidence": "Repeated labels say planned, prepared, not connected, and not live (0:20 onward)."}
+    },
+    "demo": {
+      "hook_and_story": {"score": 5, "max": 6, "evidence": "0:00 first-person dilemma; journey ends with private choice at 2:45-2:58."},
+      "clarity_and_legibility": {"score": 4, "max": 6, "evidence": "Captions readable; dense UI and small screen text at 0:55-2:58."},
+      "pacing_and_accessible_audio_subtitles": {"score": 3, "max": 5, "evidence": "Captions are burned in throughout; repeated screen tour is slow. Audio inaccessible."},
+      "emotional_payoff": {"score": 4, "max": 5, "evidence": "2:45-2:58 leaves the takeaway private and sharing optional."},
+      "polished_coherent_ui": {"score": 2, "max": 3, "evidence": "Consistent interface and labels throughout; small dense content reduces finish."}
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": {"score": 5, "max": 6, "evidence": "0:00-0:25 reflection/correction; 0:55-1:45 sharing preview; 2:15-2:58 outcome/exit."},
+      "controls_permissions_privacy": {"score": 5, "max": 5, "evidence": "1:30-1:45 consent unchecked and continuation disabled; 2:15-2:58 exact audience and private context exclusion visible."},
+      "architecture_and_failure_handling_as_evidenced": {"score": 4, "max": 5, "evidence": "0:20-0:25 planned narrow model role; 1:45-2:00 explicitly no verified provider; private return path shown around 2:00."},
+      "implementation_evidence": {"score": 3, "max": 4, "evidence": "Film-visible correction, scope preview, disabled consent state, and private outcome; prototype is prepared and unconnected."}
+    }
+  },
+  "total": {"score": 75, "max": 100, "arithmetic": "Impact 21 + Meta use 19 + Demo 18 + Technical depth 17 = 75"},
+  "confidence": "medium",
+  "uncertainty": "Audio narration and sound-led pacing could not be assessed. The film shows a prepared prototype and candidly labels proposed or illustrative content; it cannot substantiate live model execution, live social activity, provider integrations, or real outcomes.",
+  "film_persuasion_score": {
+    "score": 80,
+    "max": 100,
+    "arithmetic": "20 + 22 + 21 + 17 = 80",
+    "dimensions": {
+      "first_15_second_clarity": {"score": 20, "max": 25, "evidence": ["0:00 names the family-pressure dilemma and opening audience card identifies adults facing family pressure.", "0:05-0:10 frames reflection as a correctable possibility rather than an answer."]},
+      "human_journey_and_payoff": {"score": 22, "max": 25, "evidence": ["0:10-0:20 shows Arjun correcting the interpretation.", "2:45-2:58 leaves the takeaway private and posting disabled unless he chooses otherwise."]},
+      "differentiation_and_role_value": {"score": 21, "max": 25, "evidence": ["0:20-0:25 defines planned AI theme organization and optional peer stories.", "1:45-2:00 states no provider is verified or bookable; proposed roles are clear but not live."]},
+      "cinematic_and_narrative_craft": {"score": 17, "max": 25, "evidence": ["0:00 first-person hook and burned-in captions carry the story.", "0:55-2:58 relies on dense UI views and repeated screen states."]}
+    },
+    "confidence": "medium",
+    "audio_limitation": "Audio stream present but inaccessible; captions and picture only were used."
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "review_version": "video-only-v2.1",
+  "candidate": "demo.mp4",
+  "review_evidence_mode": "video_with_burned_captions_no_audio",
+  "audio_accessibility": {
+    "audio_stream_present": true,
+    "audio_heard": false,
+    "limitation": "AAC audio track was not audible through the review interface. Burned captions were readable and used for narration claims; speech, music, tone, and audio pacing were not assessed.",
+    "confidence_impact": "Reduced confidence on pacing and audio-dependent judgments."
+  },
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film-visible prototype states and flow only",
+  "scores": {
+    "impact": {
+      "problem_specificity": 8,
+      "human_need_and_outcomes": 7,
+      "adoption_and_network_benefit": 4,
+      "subtotal": 19,
+      "evidence": [
+        {"timestamp": "00:10", "observation": "Headline: ‘I can’t tell my family what I want without feeling ungrateful’; intended audience says adults facing family pressure."},
+        {"timestamp": "00:25–00:35", "observation": "Arjun changes/corrects a reflection and confirms what feels closer, showing agency in a plausible sensitive moment."},
+        {"timestamp": "00:45–01:45", "observation": "Peer/community and professional support are presented as fictional or unavailable; no live network benefit is demonstrated."}
+      ]
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 5,
+      "necessity": 5,
+      "visible_mechanism_reasoning_or_structured_ui": 5,
+      "evidence_or_candid_limitation": 4,
+      "subtotal": 19,
+      "evidence": [
+        {"timestamp": "00:10–00:15", "observation": "Muse Spark is proposed to organize possibilities, not decide truth; copy says no model connected."},
+        {"timestamp": "00:20–00:35", "observation": "Prepared themes and reply lead into user correction and confirmation; useful role is legible, but no model output is substantiated."},
+        {"timestamp": "00:45–01:05", "observation": "Human peer and host roles are represented by fictional prepared examples, not live participation."}
+      ]
+    },
+    "demo": {
+      "hook_and_story": 5,
+      "clarity_and_legibility": 5,
+      "pacing_and_accessible_audio_subtitles": 3,
+      "memorable_emotional_payoff": 3,
+      "polished_coherent_ui": 2,
+      "subtotal": 18,
+      "evidence": [
+        {"timestamp": "00:00–00:15", "observation": "Direct problem statement, audience, and correctable reflection establish the premise quickly."},
+        {"timestamp": "01:15–01:45", "observation": "Audience preview, privacy exclusions, and consent state are readable and coherent."},
+        {"timestamp": "02:00–02:57", "observation": "The local draft is a restrained payoff, but repeated states and no reciprocal outcome limit emotional resolution."},
+        {"timestamp": "Whole film", "observation": "Burned captions are readable; audio was inaccessible, reducing confidence in pacing and audio quality."}
+      ]
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 5,
+      "controls_permissions_and_privacy": 5,
+      "architecture_and_failure_handling_as_evidenced": 4,
+      "film_visible_prototype_implementation_evidence": 4,
+      "subtotal": 18,
+      "evidence": [
+        {"timestamp": "00:25–00:35", "observation": "Visible correction and confirmation demonstrate a user-controlled branch."},
+        {"timestamp": "01:15–01:45", "observation": "Exact audience/alias preview, excluded private context, and unchecked consent with sending disabled."},
+        {"timestamp": "01:45", "observation": "Film states no provider is verified or bookable here."},
+        {"timestamp": "02:10–02:57", "observation": "The user reviews a local draft; consent remains off and posting/sending remains disabled."}
+      ]
+    }
+  },
+  "total": 74,
+  "total_arithmetic": "19 + 19 + 18 + 18 = 74 / 100",
+  "confidence": "medium",
+  "uncertainty": "Audio could not be heard. All claims about model execution, live peers, moderation, or provider availability are limited to what the film visibly states; no execution credit is awarded.",
+  "film_persuasion_score": 74,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 22,
+      "evidence": [
+        {"timestamp": "00:10", "observation": "Family-pressure headline states the problem in personal terms."},
+        {"timestamp": "00:10–00:15", "observation": "Adult audience, correctable private reflection, optional peer perspectives, and proposed Muse Spark role appear together."}
+      ]
+    },
+    "human_journey_and_payoff": {
+      "score": 20,
+      "evidence": [
+        {"timestamp": "00:25–00:35", "observation": "Arjun changes and confirms his own framing."},
+        {"timestamp": "02:00–02:25", "observation": "He forms a bounded thought and reviews a local draft while retaining control; no reciprocal outcome is shown."}
+      ]
+    },
+    "differentiation_and_role_value": {
+      "score": 16,
+      "evidence": [
+        {"timestamp": "00:10–00:20", "observation": "Proposed Muse Spark role is limited to organizing possibilities; the film says no model is connected."},
+        {"timestamp": "00:45–01:05", "observation": "Fictional peer and host roles provide human perspective and boundary setting; no live activity is shown."}
+      ]
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 16,
+      "evidence": [
+        {"timestamp": "00:00–00:15", "observation": "Clear opening with readable burned captions."},
+        {"timestamp": "01:15–02:57", "observation": "Stable, legible interface views support process comprehension, though the sequence is screen-heavy and repeats the consent message; audio could not be assessed."}
+      ]
+    },
+    "arithmetic": "22 + 20 + 16 + 16 = 74 / 100",
+    "confidence": "medium-low",
+    "audio_limitation": "Audio track was present but not audible in the review interface. Burned captions were accessible and used; audio-dependent qualities remain unjudged."
+  },
+  "release_recommendation": "Hold for one focused film revision, then reconsider. Visible blockers: proposed AI and community value rests on prepared examples; no live model, peer interaction, or verified provider is shown; ending demonstrates a private local draft rather than a human outcome."
+}

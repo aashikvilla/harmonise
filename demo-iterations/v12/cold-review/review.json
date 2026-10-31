@@ -1,0 +1,105 @@
+{
+  "review_evidence_mode": "video_with_burned_captions_audio_inaccessible",
+  "independent_of_previous_rounds": true,
+  "technical_evidence_type": "film-visible prototype evidence",
+  "decision": "maybe",
+  "confidence": "moderate overall; low-to-moderate where audio or live operation would matter",
+  "audio_limitation": "The MP4 contains an AAC audio stream, but listening was inaccessible in this review environment. Burned-in captions were readable and used for narration claims. Audio-dependent pacing and delivery judgments have reduced evidence.",
+  "scores": {
+    "impact": {
+      "specificity_and_depth_of_problem": 7,
+      "human_need_and_believable_outcomes": 8,
+      "practical_adoption_and_network_benefit": 5,
+      "total": 20,
+      "max": 30,
+      "evidence": [
+        {"timestamp": "0:00", "observation": "Opening states: ‘I can’t tell my family what I want without feeling ungrateful.’"},
+        {"timestamp": "0:00", "observation": "Opening card identifies adults facing family pressure and private reflection before peer experiences."},
+        {"timestamp": "0:45–1:00", "observation": "Community benefit is represented only by prepared fictional posts and roles; no live network evidence."}
+      ]
+    },
+    "meta_use": {
+      "correctly_named_model_roles": 3,
+      "necessity_rather_than_generic_wrapper": 4,
+      "visible_mechanism_reasoning_or_structured_ui": 6,
+      "convincing_evidence_or_candid_limitation": 4,
+      "total": 17,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:00", "observation": "Muse Spark is named as planned, with explicit ‘no model connected’ disclosure."},
+        {"timestamp": "0:30", "observation": "Correction card shows the user’s words, a tentative possible reading, and editable confirmation; planned Muse Spark and optional voice transcription remain unconnected."},
+        {"timestamp": "0:30", "observation": "No model output or model execution is truthfully shown; visible interaction uses prepared local examples."}
+      ]
+    },
+    "demo": {
+      "hook_and_story": 5,
+      "clarity_and_legibility": 4,
+      "pacing_and_accessible_audio_subtitles": 3,
+      "memorable_emotional_payoff": 3,
+      "polished_coherent_ui": 2,
+      "total": 17,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:00–0:15", "observation": "Clear personal hook and audience; product differentiation is only partly explained."},
+        {"timestamp": "0:30", "observation": "Key correction UI is shown clearly; smaller explanatory copy elsewhere requires more attention."},
+        {"timestamp": "0:00–2:57", "observation": "Burned captions are consistently visible. Screen-centered holds and scrolling flatten pacing. Spoken delivery could not be assessed."}
+      ]
+    },
+    "technical_depth": {
+      "plausible_full_user_workflow": 5,
+      "controls_permissions_and_privacy": 5,
+      "architecture_and_failure_handling_as_evidenced": 3,
+      "implementation_evidence": 4,
+      "total": 17,
+      "max": 20,
+      "evidence": [
+        {"timestamp": "0:30", "observation": "Visible correction path lets Arjun edit or reject an interpretation."},
+        {"timestamp": "1:00–1:35", "observation": "Exact audience, alias, question preview, review checkbox, and unsent/cancel states are shown."},
+        {"timestamp": "1:45", "observation": "Provider area says none is verified or bookable."},
+        {"timestamp": "2:35–2:50", "observation": "Optional contribution is shown as a local draft; no send action is connected."}
+      ]
+    }
+  },
+  "total": 71,
+  "total_max": 100,
+  "film_persuasion_score": 72,
+  "film_persuasion_dimensions": {
+    "first_15_second_clarity": {
+      "score": 21,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:00", "observation": "First-person family-pressure problem appears immediately."},
+        {"timestamp": "0:00–0:15", "observation": "Audience and correctable private-reflection promise appear; differentiation is not fully explained."}
+      ],
+      "confidence": "high"
+    },
+    "human_journey_and_payoff": {
+      "score": 19,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:30", "observation": "Arjun changes the system’s framing to preserve time to decide for himself."},
+        {"timestamp": "2:35–2:50", "observation": "He can keep the takeaway private, offer one helpful thing, or wait; examples remain fictional."}
+      ],
+      "confidence": "moderate"
+    },
+    "differentiation_and_role_value": {
+      "score": 17,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:00–0:30", "observation": "Muse Spark is proposed for correctable reflection; no live call is evidenced."},
+        {"timestamp": "0:45–1:00", "observation": "Peer, host, and moderator roles are illustrated as prepared examples, with no live people or moderation connected."}
+      ],
+      "confidence": "moderate"
+    },
+    "cinematic_and_narrative_craft": {
+      "score": 15,
+      "max": 25,
+      "evidence": [
+        {"timestamp": "0:00–2:57", "observation": "Burned captions remain readable and support comprehension; held interface views and dense text slow the film."},
+        {"timestamp": "0:30; 1:15", "observation": "Enlarged correction and audience-preview states clarify key controls. Audio delivery was inaccessible."}
+      ],
+      "confidence": "low-to-moderate"
+    }
+  },
+  "film_persuasion_arithmetic": "21 + 19 + 17 + 15 = 72/100; separate from fixed weighted total 71/100"
+}

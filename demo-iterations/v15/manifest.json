@@ -55,7 +55,7 @@
     "render_sha256": "2e8f8ee3deb3839f3b8cadd92e1416d05f41b739bc2536b10ec8f57201487730"
   },
   "verification": "demo-iterations/v15/verification.md",
-  "verification_sha256": "8d296dc8cfdeed5b3273c835ba453623c2444afbce8815544f82dcc8aa9a01cb",
+  "verification_sha256": "0d0d5ae639e54977e1f9d87ad288f5e8d5b9915de33b75d0d415f2bbc7215dc6",
   "visual_evidence": [
     {
       "path": "demo-iterations/v15/verification/contact.jpg",
@@ -78,5 +78,7 @@
     "visual_review": "passed"
   },
   "source_code_changes": false,
-  "scope": "Fictional frontend-only preview; no live Meta, AI model, community, moderator, provider, human, or message integration."
+  "scope": "Fictional frontend-only preview; no live Meta, AI model, community, moderator, provider, human, or message integration.",
+  "verification_json": "demo-iterations/v15/verification.json",
+  "verification_json_sha256": "cbabb8c953fa5588e2e88fdaed1cb4b7fe7d94573fce9c4663cc3d2cf902d8c5"
 }

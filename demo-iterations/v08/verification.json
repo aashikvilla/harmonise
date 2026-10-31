@@ -1,0 +1,55 @@
+{
+  "candidate": "demo-iterations/v08/demo.mp4",
+  "captions": {
+    "cue_count": 19,
+    "sequential_non_overlapping": true,
+    "max_lines": 3,
+    "observed_reading_rate_chars_per_second": [
+      12.3,
+      15.8
+    ],
+    "legible_at": [
+      "1920x1080",
+      "960x540"
+    ],
+    "controls_obscured_in_inspected_frames": false,
+    "burned_in_and_srt_present": true,
+    "sha256_matches_manifest": true
+  },
+  "scope": "Frozen release media and visible release assertions; no persuasion grade. Technical-depth judgments are video-visible only.",
+  "result": "media_and_metadata_pass",
+  "media": {
+    "container_duration_seconds": 176.788,
+    "video_duration_seconds": 176.766667,
+    "audio_duration_seconds": 176.788,
+    "audio_video_delta_seconds": 0.021333,
+    "resolution": "1920x1080",
+    "frame_rate": 30,
+    "video_frames": 5303,
+    "video_codec": "H.264",
+    "audio_codec": "AAC mono 48000 Hz",
+    "full_decode": "passed",
+    "long_silent_tail": false,
+    "final_caption_end_seconds": 176.224,
+    "final_audio_silence_seconds_approx": 1.28
+  },
+  "visible_assertions": {
+    "prepared_example_and_no_model_disclosure": "pass",
+    "concise_planned_meta_role": "pass: organize a reflection Arjun can correct; explicitly planned, not connected",
+    "day_4_day_9_day_16_and_community_moderator_boundaries": "pass",
+    "ravi_edited_group_question_audience_and_consent": "pass: exact preview and alias visible; private context excluded; consent unchecked; no send",
+    "support_caveat_and_return_to_peer_perspectives": "pass",
+    "selected_private_takeaway_and_selected_dev_local_draft": "pass: private context excluded; consent unchecked; post disabled; unsent"
+  },
+  "provenance": {
+    "react_capture_derivative_sha256_matches_manifest": true,
+    "candidate_sha256": "eee121a07844d0b4128d54663940ce053efd6f74ab3e7091b47fd49f7b02e1dd",
+    "manifest_candidate_sha256": "eee121a07844d0b4128d54663940ce053efd6f74ab3e7091b47fd49f7b02e1dd",
+    "candidate_hash_matches_manifest": true,
+    "candidate_matches_mp4_at_manifest_candidate_commit": true,
+    "stale_file": null,
+    "digest_recheck_commit": "322292b693700aeaec1c8ef4966b5dbd0e25f673"
+  },
+  "release_note": "Candidate media and manifest digests match after the manifest correction in commit 322292b693700aeaec1c8ef4966b5dbd0e25f673.",
+  "addendum_2026_10_29": "Rechecked candidate and caption hashes after the manifest correction. Both match. The prior one-character manifest mismatch has been resolved; MP4 unchanged."
+}
