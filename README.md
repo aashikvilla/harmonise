@@ -34,7 +34,7 @@ Do not add unit tests. Use high-level browser E2E tests for meaningful product j
 
 ## Deployment
 
-GitHub Pages deploys from `main`: <https://aashikvilla.github.io/hormonise/>. The deployment workflow runs on every push to `main`.
+GitHub Pages deploys from `main`: <https://aashikvilla.github.io/harmonise/>. The deployment workflow runs on every push to `main`.
 
 ## Historical material
 

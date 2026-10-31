@@ -39,7 +39,7 @@ jobs:
       - name: Build static site
         run: npm run build
         env:
-          NEXT_BASE_PATH: /hormonise
+          NEXT_BASE_PATH: /harmonise
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
