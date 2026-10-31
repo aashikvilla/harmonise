@@ -1,11 +1,11 @@
 {
   "version": "harmonise-3.0-hackathon",
-  "kind": "fictional-demo-fixtures",
+  "kind": "fictional-product-content",
   "executionProvenance": {
     "source": "local-fixture",
     "model": null
   },
-  "notice": "All people, communities, events and human responses are fictional demo examples. No actual AI inference, messaging, community moderation, or clinical services occur in mock mode.",
+  "notice": "All people, communities, events and human responses are fictional. AI inference, messaging, community moderation, and professional services are not connected.",
   "leadPersona": {
     "id": "person.arjun",
     "alias": "QuietRiver",
@@ -127,7 +127,7 @@
       "contributorId": "contributor.ravi",
       "communityId": "community.family-expectations",
       "isFictional": true,
-      "attributionLabel": "Illustrative experience · Ravi",
+      "attributionLabel": "fictional experience · Ravi",
       "approvedForDiscovery": true,
       "themeIds": [
         "family-expectations",
@@ -267,7 +267,7 @@
         "peer contributor",
         "facilitator (fictional role)"
       ],
-      "activityLabel": "Example community — no real activity or live coverage",
+      "activityLabel": "fictional community — no real activity or live coverage",
       "joiningIsOptional": true
     },
     {
@@ -294,7 +294,7 @@
       "roleLabels": [
         "peer contributor"
       ],
-      "activityLabel": "Example community — no real activity or live coverage",
+      "activityLabel": "fictional community — no real activity or live coverage",
       "joiningIsOptional": true
     },
     {
@@ -316,7 +316,7 @@
       "roleLabels": [
         "community host (fictional)"
       ],
-      "activityLabel": "Example community — no real activity or live coverage",
+      "activityLabel": "fictional community — no real activity or live coverage",
       "joiningIsOptional": true
     },
     {
@@ -339,7 +339,7 @@
       "roleLabels": [
         "community host (fictional)"
       ],
-      "activityLabel": "Example community — no real sessions or bookings",
+      "activityLabel": "fictional community — no real sessions or bookings",
       "joiningIsOptional": true
     },
     {
@@ -358,7 +358,7 @@
       "roleLabels": [
         "community moderator (fictional)"
       ],
-      "activityLabel": "Example community — no real activity or live coverage",
+      "activityLabel": "fictional community — no real activity or live coverage",
       "joiningIsOptional": true
     }
   ],
@@ -366,7 +366,7 @@
     {
       "id": "discussion.nisha-family-call",
       "isFictional": true,
-      "authorAlias": "Nisha · illustrative",
+      "authorAlias": "Nisha · fictional",
       "prompt": "When every family call turns into a decision I haven't made",
       "preview": "I love my parents, but every call became a question about what I was going to do. I started avoiding them, which made me feel worse. Eventually I told my sister I could talk about how I was doing, but I wasn't ready for everyone to vote on my decision. It didn't solve everything. It made our conversations less exhausting.",
       "reply": "The part about people voting on your decision really resonates. My cousin kept asking for updates when I hadn't figured anything out myself.",
@@ -375,7 +375,7 @@
     {
       "id": "discussion.ravi-opinions",
       "isFictional": true,
-      "authorAlias": "Ravi · illustrative",
+      "authorAlias": "Ravi · fictional",
       "prompt": "What actually helped when everyone had an opinion?",
       "preview": "At first I asked everyone what I should do about my relationship. I got completely different answers. Some were kind, some felt like instructions. I stopped asking for a verdict and asked one trusted friend to listen while I worked out what mattered to me. I was still uncertain afterward, but I could hear my own thinking again.",
       "reply": "I wish I'd asked for listening rather than a decision sooner. It was hard to say that out loud.",
@@ -384,7 +384,7 @@
     {
       "id": "discussion.separation-logistics",
       "isFictional": true,
-      "authorAlias": "Community resource · illustrative",
+      "authorAlias": "Community resource · fictional",
       "prompt": "Separation paperwork and settlement basics",
       "preview": "A topic guide about legal process. It contains marriage and family keywords, but does not address Arjun's stated wish for firsthand perspectives without pressure.",
       "reply": null,
@@ -400,51 +400,51 @@
     {
       "id": "discussion.dev-parents",
       "isFictional": true,
-      "authorAlias": "Dev · illustrative member",
+      "authorAlias": "Dev · fictional member",
       "prompt": "How do I tell my parents what I want without feeling ungrateful?",
       "preview": "They have supported me for years. I want to make a choice of my own without pretending their support meant nothing.",
       "reply": "I wrote down what I wanted to say first. It helped me be clearer, but my family still disagreed.",
       "sourceId": "T3",
       "timeLabel": "Several weeks ago",
-      "replyAuthor": "Nisha · illustrative"
+      "replyAuthor": "Nisha · fictional"
     },
     {
       "id": "discussion.ravi-listening",
       "isFictional": true,
-      "authorAlias": "Ravi · illustrative member",
+      "authorAlias": "Ravi · fictional member",
       "prompt": "When I asked for advice, I got five different answers",
       "preview": "I eventually asked one friend to listen before offering opinions. I still felt unsure, but the conversation helped me hear my own thinking.",
       "reply": "That distinction between listening and deciding feels important.",
       "sourceId": "T4",
       "timeLabel": "Three weeks ago",
-      "replyAuthor": "Dev · illustrative"
+      "replyAuthor": "Dev · fictional"
     },
     {
       "id": "discussion.ananya-boundary",
       "isFictional": true,
-      "authorAlias": "Ananya · illustrative host",
+      "authorAlias": "Ananya · fictional host",
       "prompt": "A reminder about sharing advice",
       "preview": "Please describe what you tried in your own situation. Avoid telling another member what relationship decision to make.",
       "reply": null,
       "sourceId": "G1",
       "timeLabel": "Two weeks ago",
-      "replyAuthor": "Ananya · illustrative host"
+      "replyAuthor": "Ananya · fictional host"
     },
     {
       "id": "discussion.nisha-points",
       "isFictional": true,
-      "authorAlias": "Nisha · illustrative member",
+      "authorAlias": "Nisha · fictional member",
       "prompt": "Writing a few points before a family call",
       "preview": "It helped me stay with my own words. It didn't control how the other person responded.",
       "reply": "One call went better and another did not.",
       "sourceId": "T5",
       "timeLabel": "12 days ago",
-      "replyAuthor": "Mira · illustrative"
+      "replyAuthor": "Mira · fictional"
     },
     {
       "id": "discussion.mira-distance",
       "isFictional": true,
-      "authorAlias": "Mira · illustrative member",
+      "authorAlias": "Mira · fictional member",
       "prompt": "When a boundary did not change the conversation",
       "preview": "I needed more distance than I first expected. My experience isn't a template for someone else's family.",
       "reply": null,
@@ -455,18 +455,18 @@
     {
       "id": "discussion.dev-pause",
       "isFictional": true,
-      "authorAlias": "Dev · illustrative member",
+      "authorAlias": "Dev · fictional member",
       "prompt": "Is it okay to pause a difficult conversation?",
       "preview": "I stopped halfway through because I was losing track of what I wanted to say. I may try again later, or I may not.",
       "reply": "Taking a pause didn't make the choice for me.",
       "sourceId": "T7",
       "timeLabel": "A week ago",
-      "replyAuthor": "Ravi · illustrative"
+      "replyAuthor": "Ravi · fictional"
     },
     {
       "id": "discussion.family-updates",
       "isFictional": true,
-      "authorAlias": "QuietReader · illustrative member",
+      "authorAlias": "QuietReader · fictional member",
       "prompt": "How do you ask relatives not to request constant updates?",
       "preview": "I asked for some time before answering. That helped me, though some relatives still checked in more often than I wanted.",
       "reply": null,
@@ -477,9 +477,9 @@
     {
       "id": "discussion.ananya-resources",
       "isFictional": true,
-      "authorAlias": "Ananya · illustrative host",
+      "authorAlias": "Ananya · fictional host",
       "prompt": "You can read without replying",
-      "preview": "This group is for personal experiences, not professional or legal advice. Reporting tools in this example do not reach a live team.",
+      "preview": "This group is for personal experiences, not professional or legal advice. Reporting tools do not reach a live team yet.",
       "reply": null,
       "sourceId": "G2",
       "timeLabel": "Two days ago",
@@ -496,7 +496,7 @@
       "C0"
     ]
   },
-  "peerQuestionDemo": {
+  "peerQuestionDraft": {
     "id": "question.arjun-to-ravi",
     "recipientId": "contributor.ravi",
     "alias": "QuietRiver",
@@ -511,7 +511,7 @@
     "response": {
       "id": "reply.ravi-1",
       "isFictional": true,
-      "label": "Prepared illustrative reply",
+      "label": "Prepared fictional reply",
       "text": "I didn't know at first. I kept asking people what they'd do, and their answers made me more unsure. What helped was writing down the one question I wanted to answer for myself, then asking a friend to listen without giving me a verdict. I still had a hard conversation with my family afterward. It wasn't a quick fix."
     }
   },
@@ -537,10 +537,10 @@
       "label": "I'd rather skip"
     }
   ],
-  "sampleApprovedInsight": "I want to figure out what matters to me before asking others for answers.",
-  "reportingExample": {
+  "approvedInsightDraft": "I want to figure out what matters to me before asking others for answers.",
+  "reportingWorkflow": {
     "isFictional": true,
-    "label": "Illustrative moderation queue; no live safety coverage",
+    "label": "fictional moderation queue; no live safety coverage",
     "flaggedText": "Just leave immediately; everyone should do what I did.",
     "possibleConcern": "Prescriptive relationship advice and unwarranted certainty",
     "humanReviewOptions": [

@@ -1,8 +1,8 @@
-/** Fictional, prepared community history for the local interactive preview. */
+/** Fictional community history used while live services are being built. */
 export type HistoricalDay = "Day 4" | "Day 9" | "Day 16";
 
 export const historicalThread = {
-  label: "Historical example · fictional participants · prepared content",
+  label: "Fictional story · fictional participants · written content",
   days: [
     {
       day: "Day 4" as const,

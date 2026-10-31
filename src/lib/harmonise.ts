@@ -1,4 +1,4 @@
-import fixtureData from "./harmonise-demo-data.json";
+import fixtureData from "./harmonise-content.json";
 
 export type Screen =
   | "entry"
@@ -33,7 +33,7 @@ export type CommunityTab = "experiences" | "discussions" | "people" | "guideline
 export type QuestionChannel = "none" | "private" | "group";
 export type Helpfulness = "perspective" | "understood" | "action" | "not-helpful" | "skip" | null;
 
-export type DemoFixtures = {
+export type ProductContent = {
   executionProvenance: { source: "local-fixture"; model: string | null };
   notice: string;
   leadPersona: {
@@ -94,18 +94,18 @@ export type DemoFixtures = {
   }[];
   discussions: { id: string; authorAlias: string; prompt: string; preview: string; reply: string | null; sourceId: string; timeLabel?: string; replyAuthor?: string }[];
   topicOnlyBaseline: { id: string; name: string; explanation: string; sourceIds: string[] };
-  peerQuestionDemo: {
+  peerQuestionDraft: {
     recipientId: string;
     alias: string;
     questionText: string;
     consentDefault: boolean;
     response: { id: string; label: string; text: string };
   };
-  sampleApprovedInsight: string;
-  reportingExample: { label: string; flaggedText: string; possibleConcern: string };
+  approvedInsightDraft: string;
+  reportingWorkflow: { label: string; flaggedText: string; possibleConcern: string };
 };
 
-export const fixtures = fixtureData as DemoFixtures;
+export const fixtures = fixtureData as ProductContent;
 export const themeLabels: Record<ThemeId, string> = {
   "family-expectations": "Family expectations",
   "relationship-uncertainty": "Relationship uncertainty",
@@ -147,7 +147,7 @@ export interface HarmoniseState {
   history: Screen[];
   entryPath: EntryPath;
   chapter: Chapter;
-  isArjunDemo: boolean;
+  isFeaturedJourney: boolean;
   quietReader: boolean;
   opening: string;
   turns: ConversationTurn[];
@@ -194,7 +194,7 @@ export const initialHarmoniseState: HarmoniseState = {
   history: [],
   entryPath: null,
   chapter: "relationships",
-  isArjunDemo: false,
+  isFeaturedJourney: false,
   quietReader: false,
   opening: "",
   turns: [],
@@ -213,14 +213,14 @@ export const initialHarmoniseState: HarmoniseState = {
   rejectedBaseline: false,
   noMatch: false,
   alias: "QuietRiver",
-  questionText: fixtures.peerQuestionDemo.questionText,
+  questionText: fixtures.peerQuestionDraft.questionText,
   questionConsent: false,
   questionChannel: "none",
   questionPayload: null,
   reportShown: false,
   usefulness: null,
   nextStep: "",
-  insightDraft: fixtures.sampleApprovedInsight,
+  insightDraft: fixtures.approvedInsightDraft,
   insightApproved: false,
   futureChapterStarted: false,
   priorChapter: null,
@@ -249,8 +249,8 @@ export type HarmoniseAction =
   | { type: "EDIT_OPENING"; value: string }
   | { type: "SYNC_CHAT_CONTEXT"; turns: ConversationTurn[]; themes: ThemeId[]; need: string }
   | { type: "REJECT_BASELINE" }
-  | { type: "ANSWER_FIRST"; value: string; source: "sample" | "typed" }
-  | { type: "ANSWER_SECOND"; value: string; source: "sample" | "typed" }
+  | { type: "ANSWER_FIRST"; value: string; source: "prepared" | "typed" }
+  | { type: "ANSWER_SECOND"; value: string; source: "prepared" | "typed" }
   | { type: "SKIP_QUESTION" }
   | { type: "STOP_ASKING" }
   | { type: "OPEN_UNDERSTANDING" }
@@ -340,7 +340,7 @@ export function getPublicExperiences(state: Pick<HarmoniseState, "contributorPub
   });
 }
 
-function answerThemes(value: string, source: "sample" | "typed"): ThemeId[] {
+function answerThemes(value: string, source: "prepared" | "typed"): ThemeId[] {
   if (source === "typed") return [];
   const lower = value.toLowerCase();
   if (lower.includes("work")) return ["work-pressure"];
@@ -355,10 +355,10 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
   switch (action.type) {
     case "START_PATH": {
       const screen: Screen = action.path === "talk" || action.path === "unsure" ? "conversation" : action.path === "quiet" ? "discovery" : "contribute";
-      return go({ ...initialHarmoniseState, entryPath: action.path, quietReader: action.path === "quiet", proposedThemes: [], confirmedThemes: [], rejectedThemes: [], isArjunDemo: false }, screen);
+      return go({ ...initialHarmoniseState, entryPath: action.path, quietReader: action.path === "quiet", proposedThemes: [], confirmedThemes: [], rejectedThemes: [], isFeaturedJourney: false }, screen);
     }
     case "START_ARJUN":
-      return go({ ...initialHarmoniseState, entryPath: "talk", isArjunDemo: true, quietReader: false, opening: fixtures.leadPersona.private.opening, turns: [{ id: "u1", speaker: "arjun", text: fixtures.leadPersona.private.opening }], questionStep: 0, proposedThemes: ["relationship-uncertainty"], confirmedThemes: [], rejectedThemes: [] }, "conversation");
+      return go({ ...initialHarmoniseState, entryPath: "talk", isFeaturedJourney: true, quietReader: false, opening: fixtures.leadPersona.private.opening, turns: [{ id: "u1", speaker: "arjun", text: fixtures.leadPersona.private.opening }], questionStep: 0, proposedThemes: ["relationship-uncertainty"], confirmedThemes: [], rejectedThemes: [] }, "conversation");
     case "EDIT_OPENING":
       return {
         ...state,
@@ -392,7 +392,7 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
     case "ANSWER_FIRST": {
       const preserveUninterpreted = state.mockTextNotice || action.source === "typed";
       const themes = preserveUninterpreted ? [] : answerThemes(action.value, action.source);
-      const isArjunCorrection = !preserveUninterpreted && state.isArjunDemo && action.source === "sample" && action.value.toLowerCase().includes("not quite");
+      const isArjunCorrection = !preserveUninterpreted && state.isFeaturedJourney && action.source === "prepared" && action.value.toLowerCase().includes("not quite");
       const turns: ConversationTurn[] = isArjunCorrection
         ? [
             { id: "u1", speaker: "arjun", text: state.opening || fixtures.leadPersona.private.opening },
@@ -420,7 +420,7 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
     case "ANSWER_SECOND": {
       const preserveUninterpreted = state.mockTextNotice || action.source === "typed";
       const themes = preserveUninterpreted ? [] : answerThemes(action.value, action.source);
-      const isConfirmedArjunExample = state.isArjunDemo && !state.mockTextNotice && action.source === "sample" && state.turns.some((turn) => turn.speaker === "arjun" && turn.text.toLowerCase().includes("not quite"));
+      const isConfirmedArjunExample = state.isFeaturedJourney && !state.mockTextNotice && action.source === "prepared" && state.turns.some((turn) => turn.speaker === "arjun" && turn.text.toLowerCase().includes("not quite"));
       return {
         ...state,
         turns: [...state.turns, { id: "u3", speaker: "arjun", text: isConfirmedArjunExample ? fixtures.leadPersona.private.utterances[2].text : action.value }],
@@ -509,7 +509,7 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
         priorChapter,
         carryPreviousContext: canCarryApprovedTakeaway,
         carriedTakeaway: canCarryApprovedTakeaway ? state.insightDraft : "",
-        isArjunDemo: true,
+        isFeaturedJourney: true,
         quietReader: true,
         opening: fixtures.chapters.find((chapter) => chapter.id === "chapter.arjun-belonging")?.futureNote ?? "I moved cities recently. I feel lonely after work.",
         turns: [],
@@ -524,7 +524,7 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
         selectedExperienceId: null,
         openedExperienceIds: [],
         noMatch: false,
-        questionText: fixtures.peerQuestionDemo.questionText,
+        questionText: fixtures.peerQuestionDraft.questionText,
         questionConsent: false,
         questionPayload: null,
         usefulness: null,

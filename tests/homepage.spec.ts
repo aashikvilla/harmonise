@@ -12,6 +12,7 @@ test("homepage preserves the source illustration and reversible scroll journey",
   const frame = page.frameLocator("iframe");
   await expect(frame.locator("#hero-art svg.scene-svg")).toBeVisible();
   await expect(frame.locator("#hero-art svg path.hero-thread")).toHaveCount(1);
+  await expect(frame.getByRole("link", { name: /Start privately/i })).toHaveAttribute("href", "./app/");
 
   const beyond = frame.locator("#beyond");
   await beyond.evaluate((element) => {
@@ -26,6 +27,14 @@ test("homepage preserves the source illustration and reversible scroll journey",
   });
   await expect.poll(() => frame.locator("#path-traveler").getAttribute("transform")).not.toBe(forward);
   await expect(body).toBeVisible();
+});
+
+test("homepage primary action opens the product space", async ({ page }) => {
+  const frame = page.frameLocator('iframe[title="Harmonize — a space for unfinished thoughts"]');
+  await page.goto("/");
+  await frame.getByRole("link", { name: /Start privately/i }).click();
+  await expect(page).toHaveURL(/\/app\/$/);
+  await expect(page.getByRole("heading", { name: "I can’t tell my family what I want without feeling ungrateful." })).toBeVisible();
 });
 
 test("chat days replay, pause and restart with the authored fictional examples", async ({ page }) => {
@@ -63,14 +72,14 @@ test("community filter, topic scenes, and keyboard tabs remain interactive", asy
 test("sharing is editable and local, with escape closure and focus return", async ({ page }) => {
   const frame = page.frameLocator("iframe");
   await experience(page);
-  const trigger = frame.getByRole("button", { name: /Try a sharing preview/i });
+  const trigger = frame.getByRole("button", { name: /Review a sharing choice/i });
   await trigger.click();
   const dialog = frame.getByRole("dialog", { name: "Only what you choose." });
   await expect(dialog).toBeVisible();
   await expect(frame.locator("#share-text")).toBeFocused();
-  await frame.locator("#share-text").fill("Only this edited example should appear.");
-  await frame.getByRole("button", { name: "Approve this example share" }).click();
-  await expect(frame.getByRole("status")).toHaveText("Example approved locally. Nothing was posted or sent to anyone.");
+  await frame.locator("#share-text").fill("Only this edited text should appear.");
+  await frame.getByRole("button", { name: "Approve this sharing choice" }).click();
+  await expect(frame.getByRole("status")).toHaveText("Choice saved in this browser. Nothing was posted or sent to anyone.");
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();

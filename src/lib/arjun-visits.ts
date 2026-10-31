@@ -8,7 +8,7 @@ export type ArjunVisit = {
   turns: VisitTurn[];
 };
 
-/** Fictional, prepared conversation history. These are sample transcripts, not model outputs. */
+/** Fictional conversation history. These are fictional transcripts, not model outputs. */
 export const arjunVisits: ArjunVisit[] = [
   {
     id: "day-1",
@@ -27,7 +27,7 @@ export const arjunVisits: ArjunVisit[] = [
       { id: "d1-u5", role: "you", text: "I'll leave it for now." },
       { id: "d1-a5", role: "harmonise", text: "That's fine. Nothing needs to be decided tonight." },
       { id: "d1-u6", role: "you", text: "Actually, can I keep this somewhere and return later?" },
-      { id: "d1-a6", role: "harmonise", text: "This preview keeps the example in this browser session. In a real service, storage and deletion choices would need to be clear before you rely on them." },
+      { id: "d1-a6", role: "harmonise", text: "This conversation stays in this browser session. In a real service, storage and deletion choices would need to be clear before you rely on them." },
     ],
   },
   {
@@ -45,7 +45,7 @@ export const arjunVisits: ArjunVisit[] = [
       { id: "d4-u4", role: "you", text: "That is closer. I still don't want a big group knowing all this." },
       { id: "d4-a4", role: "harmonise", text: "You can read quietly. A private conversation doesn't become a group post unless you review and approve the exact text and audience." },
       { id: "d4-u5", role: "you", text: "Could I say one sentence out loud? Typing feels strange." },
-      { id: "d4-a5", role: "harmonise", text: "The voice control here is only a transcript review preview. Nothing is recorded or sent; you can edit every word before using it." },
+      { id: "d4-a5", role: "harmonise", text: "Voice transcription is not connected yet. You can review and edit the words before using them." },
       { id: "d4-u6", role: "you", text: "I tried saying: I want to ask Dad for a little time before I answer." },
       { id: "d4-a6", role: "harmonise", text: "You can change that sentence, keep it, or discard it. It doesn't need to be sent anywhere." },
       { id: "d4-u7", role: "you", text: "Keep the first part. Maybe not 'a little time'—I need a week." },
@@ -87,11 +87,11 @@ export const arjunVisits: ArjunVisit[] = [
       { id: "d16-u1", role: "you", text: "I read Ravi's story. It sounds familiar, but his family is different from mine." },
       { id: "d16-a1", role: "harmonise", text: "That's a useful difference to keep in view. His story is one person's experience, not a template." },
       { id: "d16-u2", role: "you", text: "Can I ask if he ever found a way to pause a conversation?" },
-      { id: "d16-a2", role: "harmonise", text: "Ravi's example allows a question in the group only. You can review the exact alias, audience and wording first." },
+      { id: "d16-a2", role: "harmonise", text: "Ravi's story allows a question in the group only. You can review the exact alias, audience and wording first." },
       { id: "d16-u3", role: "you", text: "Use QuietRiver. Just ask about pausing, no details from my chat." },
-      { id: "d16-a3", role: "harmonise", text: "Your private conversation is excluded. Only the question you approve will appear in the group example." },
+      { id: "d16-a3", role: "harmonise", text: "Your private conversation is excluded. Only the question you approve will appear in the group story." },
       { id: "d16-u4", role: "you", text: "Okay. Show me the exact share before I decide." },
-      { id: "d16-a4", role: "harmonise", text: "This is a prepared sample response, not a live reply. You can close it or keep reading." },
+      { id: "d16-a4", role: "harmonise", text: "This fictional response is not live. You can close it or keep reading." },
       { id: "d16-u5", role: "you", text: "His answer sounds imperfect. I don't think it solves anything for me." },
       { id: "d16-a5", role: "harmonise", text: "It doesn't have to solve it. You can take one small idea, disagree, or leave it." },
       { id: "d16-u6", role: "you", text: "I'll leave it open. Maybe I'll return after some time." },

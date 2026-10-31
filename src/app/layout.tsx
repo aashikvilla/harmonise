@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Harmonise — Find understanding, on your terms",
-  description: "Talk privately, explore human experiences and communities, and choose what to share. A fictional concept demo.",
+  description: "Talk privately, explore human experiences and communities, and choose what to share, on your terms.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -19,13 +19,13 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
     expect(stateForEntry("quiet").quietReader).toBe(true);
     expect(stateForEntry("support").screen).toBe("contribute");
     expect(stateForEntry("arjun").screen).toBe("conversation");
-    expect(stateForEntry("arjun").isArjunDemo).toBe(true);
+    expect(stateForEntry("arjun").isFeaturedJourney).toBe(true);
   });
 
-  it("lets a sample conversation change family context to work pressure", () => {
+  it("lets a prepared conversation change family context to work pressure", () => {
     let state = stateForEntry("arjun");
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: "Work has felt difficult, and I am not sure how to talk about it." });
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: "I want to talk through work without advice." });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: "Work has felt difficult, and I am not sure how to talk about it." });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: "I want to talk through work without advice." });
     state = harmoniseReducer(state, { type: "CONFIRM_UNDERSTANDING" });
     expect(state.confirmedThemes).toEqual(["work-pressure"]);
     expect(getRecommendedCommunities(state).map((community) => community.id)).toEqual(["community.work-pressure"]);
@@ -34,8 +34,8 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
 
   it("uses a correction in the understanding map to rerank recommendations", () => {
     let state = stateForEntry("arjun");
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: "It's my marriage and I am worried about family expectations." });
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: "I want to hear experiences, without advice." });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: "It's my marriage and I am worried about family expectations." });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: "I want to hear experiences, without advice." });
     state = harmoniseReducer(state, { type: "OPEN_UNDERSTANDING" });
     state = harmoniseReducer(state, { type: "TOGGLE_THEME", theme: "family-expectations" });
     state = harmoniseReducer(state, { type: "TOGGLE_THEME", theme: "relationship-uncertainty" });
@@ -57,33 +57,33 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
     expect(state.turns).toEqual([{ id: "u1", speaker: "arjun", text: fixtures.leadPersona.private.utterances[0].text }]);
     expect(state.turns[0].text).toBe("I think something is wrong with my marriage. Things look normal, but I feel trapped whenever everyone asks me what comes next.");
 
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: fixtures.leadPersona.private.utterances[1].text });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: fixtures.leadPersona.private.utterances[1].text });
     expect(state.turns.find((turn) => turn.id === "u2")?.text).toBe("Not quite. My partner and I are still talking. It's my parents and relatives. Everyone expects me to give them an answer, and I don't even know what I want yet.");
     expect(state.proposedThemes).toEqual(["relationship-uncertainty", "family-expectations"]);
     expect(state.confirmedThemes).toEqual(["family-expectations"]);
     expect(state.rejectedThemes).toEqual(["relationship-uncertainty"]);
 
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: fixtures.leadPersona.private.utterances[2].text });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: fixtures.leadPersona.private.utterances[2].text });
     expect(state.turns.find((turn) => turn.id === "u3")?.text).toBe("Yes. Please don't tell me whether I should stay or leave. I want to know how others handled that pressure without making things worse.");
     expect(state.confirmedThemes).toEqual(["family-expectations", "personal-autonomy"]);
     expect(state.rejectedThemes).toEqual(["relationship-uncertainty"]);
     expect(state.confirmedNeed).toBe("Perspectives on family expectations, without pressure to choose a relationship outcome.");
   });
 
-  it("keeps an edited opening uninterpreted through later sample answers", () => {
+  it("keeps an edited opening uninterpreted through later prepared answers", () => {
     let state = harmoniseReducer(initialHarmoniseState, { type: "START_ARJUN" });
     state = harmoniseReducer(state, { type: "EDIT_OPENING", value: "I feel unsure about a different part of my life." });
     expect(state.mockTextNotice).toBe(true);
     expect(state.proposedThemes).toEqual([]);
     expect(state.confirmedThemes).toEqual([]);
 
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: fixtures.leadPersona.private.utterances[1].text });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: fixtures.leadPersona.private.utterances[1].text });
     expect(state.mockTextNotice).toBe(true);
     expect(state.proposedThemes).toEqual([]);
     expect(state.confirmedThemes).toEqual([]);
     expect(state.turns.find((turn) => turn.id === "g1")?.text).toBe("I might be missing something. What feels hardest right now?");
 
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: fixtures.leadPersona.private.utterances[2].text });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: fixtures.leadPersona.private.utterances[2].text });
     expect(state.mockTextNotice).toBe(true);
     expect(state.proposedThemes).toEqual([]);
     expect(state.confirmedThemes).toEqual([]);
@@ -92,8 +92,8 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
 
   it("starts a fresh entry path without old conversation, question, reflection, or journey state", () => {
     let state = harmoniseReducer(initialHarmoniseState, { type: "START_ARJUN" });
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: fixtures.leadPersona.private.utterances[1].text });
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: fixtures.leadPersona.private.utterances[2].text });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: fixtures.leadPersona.private.utterances[1].text });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: fixtures.leadPersona.private.utterances[2].text });
     state = harmoniseReducer(state, { type: "OPEN_EXPERIENCE", experienceId: "experience.ravi" });
     state = harmoniseReducer(state, { type: "OPEN_QUESTION" });
     state = harmoniseReducer(state, { type: "SET_QUESTION_CONSENT", value: true });
@@ -108,7 +108,7 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
     expect(fresh.screen).toBe("conversation");
     expect(fresh.history).toEqual(["entry"]);
     expect(fresh.entryPath).toBe("talk");
-    expect(fresh.isArjunDemo).toBe(false);
+    expect(fresh.isFeaturedJourney).toBe(false);
     expect(fresh.opening).toBe("");
     expect(fresh.turns).toEqual([]);
     expect(fresh.questionStep).toBe(0);
@@ -121,7 +121,7 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
     expect(fresh.usefulness).toBeNull();
     expect(fresh.nextStep).toBe("");
     expect(fresh.insightApproved).toBe(false);
-    expect(fresh.insightDraft).toBe(fixtures.sampleApprovedInsight);
+    expect(fresh.insightDraft).toBe(fixtures.approvedInsightDraft);
     expect(fresh.openedExperienceIds).toEqual([]);
     expect(fresh.contributorSummary).toBe(initialHarmoniseState.contributorSummary);
     expect(fresh.contributorPublished).toBe(initialHarmoniseState.contributorPublished);
@@ -129,8 +129,8 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
   });
 
   it("keeps C0 and C1 grounded in source IDs and ranks the confirmed family context first", () => {
-    const state = harmoniseReducer(harmoniseReducer(initialHarmoniseState, { type: "START_ARJUN" }), { type: "ANSWER_FIRST", source: "sample", value: fixtures.leadPersona.private.utterances[1].text });
-    const confirmed = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: fixtures.leadPersona.private.utterances[2].text });
+    const state = harmoniseReducer(harmoniseReducer(initialHarmoniseState, { type: "START_ARJUN" }), { type: "ANSWER_FIRST", source: "prepared", value: fixtures.leadPersona.private.utterances[1].text });
+    const confirmed = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: fixtures.leadPersona.private.utterances[2].text });
     expect(fixtures.topicOnlyBaseline.name).toBe("Separation paperwork and settlement basics");
     expect(fixtures.topicOnlyBaseline.sourceIds).toEqual(["C0"]);
     const family = fixtures.communities.find((community) => community.id === "community.family-expectations");
@@ -158,11 +158,11 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
     expect(ravi?.milestones[0]?.whatDidNotHelp).toContain("anonymous opinions");
     expect(ravi?.milestones[1]?.whatHelped).toBe("My friend listened without deciding for me.");
     expect(ravi?.milestones[2]?.whatDidNotHelp).toContain("did not suddenly know");
-    expect(fixtures.peerQuestionDemo.alias).toBe("QuietRiver");
+    expect(fixtures.peerQuestionDraft.alias).toBe("QuietRiver");
     expect(fixtures.leadPersona.alias).toBe("QuietRiver");
-    expect(fixtures.peerQuestionDemo.questionText).toBe("When you didn't want to disappoint your family, how did you figure out what you wanted before listening to everyone else's opinions?");
-    expect(fixtures.peerQuestionDemo.response.label).toBe("Prepared illustrative reply");
-    expect(fixtures.peerQuestionDemo.response.text).toBe("I didn't know at first. I kept asking people what they'd do, and their answers made me more unsure. What helped was writing down the one question I wanted to answer for myself, then asking a friend to listen without giving me a verdict. I still had a hard conversation with my family afterward. It wasn't a quick fix.");
+    expect(fixtures.peerQuestionDraft.questionText).toBe("When you didn't want to disappoint your family, how did you figure out what you wanted before listening to everyone else's opinions?");
+    expect(fixtures.peerQuestionDraft.response.label).toBe("Prepared fictional reply");
+    expect(fixtures.peerQuestionDraft.response.text).toBe("I didn't know at first. I kept asking people what they'd do, and their answers made me more unsure. What helped was writing down the one question I wanted to answer for myself, then asking a friend to listen without giving me a verdict. I still had a hard conversation with my family afterward. It wasn't a quick fix.");
   });
 
   it("does not allow questions to the read-only Nisha fixture", () => {
@@ -176,7 +176,7 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
   it("keeps Ravi group-only and blocks direct question payloads", () => {
     let state = stateForEntry("arjun");
     expect(initialHarmoniseState.alias).toBe("QuietRiver");
-    expect(state.questionText).toBe(fixtures.peerQuestionDemo.questionText);
+    expect(state.questionText).toBe(fixtures.peerQuestionDraft.questionText);
     state = harmoniseReducer(state, { type: "OPEN_EXPERIENCE", experienceId: "experience.ravi" });
     state = harmoniseReducer(state, { type: "OPEN_QUESTION" });
     expect(state.screen).toBe("experience");
@@ -206,8 +206,8 @@ describe("Harmonise guided demo state and fictional fixtures", () => {
 
   it("starts a separate later chapter with a different community", () => {
     let state = harmoniseReducer(initialHarmoniseState, { type: "START_ARJUN" });
-    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "sample", value: fixtures.leadPersona.private.utterances[1].text });
-    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "sample", value: fixtures.leadPersona.private.utterances[2].text });
+    state = harmoniseReducer(state, { type: "ANSWER_FIRST", source: "prepared", value: fixtures.leadPersona.private.utterances[1].text });
+    state = harmoniseReducer(state, { type: "ANSWER_SECOND", source: "prepared", value: fixtures.leadPersona.private.utterances[2].text });
     state = harmoniseReducer(state, { type: "OPEN_EXPERIENCE", experienceId: "experience.ravi" });
     state = harmoniseReducer(state, { type: "OPEN_QUESTION" });
     state = harmoniseReducer(state, { type: "SET_QUESTION_CONSENT", value: true });
