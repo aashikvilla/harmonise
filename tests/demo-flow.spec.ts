@@ -20,7 +20,7 @@ async function reachCommunity(page: Page) {
 }
 
 test("first use names the audience and private-to-peer promise before Start privately", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/demo");
   await expect(page.getByText("Interactive product preview", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "I can’t tell my family what I want without feeling ungrateful." })).toBeVisible();
   await expect(page.getByText("FICTIONAL SCENARIO · ARJUN", { exact: true })).toBeVisible();
@@ -39,7 +39,7 @@ test("first use names the audience and private-to-peer promise before Start priv
 });
 
 test("a correction changes an editable local reflection instead of claiming a model reply", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/demo");
   await page.getByRole("button", { name: "Start privately" }).click();
   await sendChat(page, "Things at home feel uncertain. My family keeps asking what I want.");
   await page.getByRole("button", { name: "Not quite" }).click();
@@ -56,7 +56,7 @@ test("a correction changes an editable local reflection instead of claiming a mo
 });
 
 test("Arjun can choose a concrete private takeaway immediately after confirming the correction", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/demo");
   await page.getByRole("button", { name: "Start privately" }).click();
   await sendChat(page, "Things at home feel uncertain. My family keeps asking what I want.");
   await page.getByRole("button", { name: "Not quite" }).click();
@@ -168,8 +168,8 @@ test("independent spaces support group-only contact, reviewed contribution and h
   const devPreview = page.locator(".dev-bounded-preview");
   await expect(devPreview.getByText("Alias: QuietRiver")).toBeVisible();
   await expect(devPreview.getByRole("checkbox")).not.toBeChecked();
-  await expect(devPreview.getByRole("button", { name: "Post in this example group" })).toBeDisabled();
-  await expect(devPreview.getByText("Nothing is sent to a real group.")).toBeVisible();
+  await expect(devPreview.getByRole("button", { name: "Add to preview group" })).toBeDisabled();
+  await expect(devPreview.getByText(/Nothing is sent to a real group or person\./)).toBeVisible();
   await page.getByRole("button", { name: /Day 4 Naming the pressure/ }).click();
   await expect(page.locator(".discussion-card")).toHaveCount(11);
   await page.getByRole("tab", { name: "People" }).click();
@@ -386,7 +386,7 @@ test("navigation reaches safety information and supports keyboard use without ho
 });
 
 test("hero and core flows fit 1920x1080 and mobile viewports without horizontal overflow", async ({ page }, testInfo) => {
-  await page.goto("/");
+  await page.goto("/demo");
   await page.screenshot({ path: `/tmp/harmonise-${testInfo.project.name}-landing.png`, fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.goto("/demo?example=arjun");
