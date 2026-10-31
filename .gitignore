@@ -36,3 +36,7 @@ yarn-error.log*
 next-env.d.ts
 
 # Demo videos are intentionally versioned together in /demo-videos/
+
+# Python runtime cache files are generated locally and are not project artifacts.
+__pycache__/
+*.py[cod]
