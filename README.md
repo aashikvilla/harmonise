@@ -34,7 +34,13 @@ Do not add unit tests. Use high-level browser E2E tests for meaningful product j
 
 ## Deployment
 
-GitHub Pages deploys from `main`: <https://sudikhya.github.io/harmonise/>. The deployment workflow runs on every push to `main`.
+The live adviser needs a Node server (`/api/advice`), so the app deploys as a server app on Sites from `main`
+— not as a static export. Configure `OPENAI_API_KEY` as a protected Sites runtime secret and
+`OPENAI_MODEL=gpt-4o-mini`. The `Verify Harmonise build` workflow runs lint, typecheck, unit tests, and a
+production build on every push to `main`.
+
+Run the server locally with `OPENAI_API_KEY=... npm run dev` (or `npm run build` + `npm start`) and open
+`/connect` for the live-adviser journey. Without a key, the adviser shows an honest retry state.
 
 ## Historical material
 
