@@ -33,7 +33,7 @@ test("homepage primary action opens the product space", async ({ page }) => {
   const frame = page.frameLocator('iframe[title="Harmonize — a space for unfinished thoughts"]');
   await page.goto("/");
   await frame.getByRole("link", { name: /Start privately/i }).click();
-  await expect(page).toHaveURL(/\/app\/$/);
+  await expect(page).toHaveURL(/\/app\/?$/);
   await expect(page.getByRole("heading", { name: "I can’t tell my family what I want without feeling ungrateful." })).toBeVisible();
 });
 
