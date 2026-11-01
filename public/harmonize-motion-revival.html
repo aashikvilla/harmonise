@@ -89,6 +89,13 @@
 
 .chapter-art{transform:translateY(var(--chapter-lift,0px));transition:transform .12s linear}
 @media(prefers-reduced-motion:reduce){.chapter-art{transform:none!important;transition:none!important}}
+
+/* Keep mobile annotations clear of the hand-drawn people and window art. */
+@media(max-width:580px){
+  .traveler-note{display:none}
+  .community-illustration .art-small-note{position:relative;left:auto;bottom:auto;display:block;margin:8px 12px 0;text-align:center;line-height:1.15;transform:none}
+  .care-story-art .care-art-caption{margin:10px 10px 0;max-width:calc(100% - 20px)}
+}
 /* Keep decorative arrow glyphs available when the display font is not installed. */
       .button span[aria-hidden="true"],.nav-cta span[aria-hidden="true"],.quiet-link span[aria-hidden="true"]{font-family:"DejaVu Sans",sans-serif}
     </style>

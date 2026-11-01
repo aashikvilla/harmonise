@@ -98,6 +98,28 @@ test("mobile menu works and reduced motion keeps all scenes readable without ove
   await expect(frame.getByRole("heading", { name: /A different view can change everything/i })).toBeVisible();
   await expect.poll(() => frame.locator("html").evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   await expect(frame.locator("#gather-scene-mobile")).toBeAttached();
+
+  const captionsClearOfArt = await frame.locator(".community-illustration").evaluate((illustration) => {
+    const art = illustration.querySelector("svg")!.getBoundingClientRect();
+    const caption = illustration.querySelector(".art-small-note")!.getBoundingClientRect();
+    return caption.top >= art.bottom;
+  });
+  expect(captionsClearOfArt).toBe(true);
+  const careCaptionClearOfArt = await frame.locator(".care-story-art").evaluate((illustration) => {
+    const art = illustration.querySelector("svg")!.getBoundingClientRect();
+    const caption = illustration.querySelector(".care-art-caption")!.getBoundingClientRect();
+    return caption.top >= art.bottom;
+  });
+  expect(careCaptionClearOfArt).toBe(true);
+  await expect(frame.locator(".traveler-note")).toBeHidden();
+
+  await page.setViewportSize({ width: 320, height: 800 });
+  const headerClearance = await frame.locator(".site-header").evaluate((header) => {
+    const logo = header.querySelector(".brand")!.getBoundingClientRect();
+    const menuButton = header.querySelector(".mobile-menu-toggle")!.getBoundingClientRect();
+    return { noOverlap: logo.right < menuButton.left, noPageOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth };
+  });
+  expect(headerClearance).toEqual({ noOverlap: true, noPageOverflow: true });
 });
 
 test("pointer depth and closing gathering animate and reverse when scrolling back", async ({ page }) => {
