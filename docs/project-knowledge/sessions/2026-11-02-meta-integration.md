@@ -14,7 +14,7 @@
 
 ## Verification and outcome
 
-- Commit `7a1087d` was pushed to `origin/main`. Follow-up corrections to Muse Spark request settings, stale E2E expectations, and this journal are being committed after local verification.
+- Commit `7a1087d` and follow-up commit `66001b0` were pushed to `origin/main`. The follow-up corrected Muse Spark request settings, stale E2E expectations, and the integration plan after local verification.
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
 - `npm run build`: passed; Next.js reports all four API routes as dynamic routes.
