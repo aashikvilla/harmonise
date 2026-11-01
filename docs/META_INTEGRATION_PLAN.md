@@ -1,0 +1,225 @@
+# Harmonise Meta Integration: End-to-End Delivery Plan
+
+**Status:** Phase 0 implemented; local live-provider verification and the remaining phases are tracked below.
+**Updated:** 2026-11-02
+**Primary model:** Muse Spark 1.3 Standard for text tasks.
+**Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
+
+This plan takes Harmonise from a visitor arriving on the homepage through private chat, user-confirmed understanding, discovery, consented participation, and a real, human-reviewed community response. It distinguishes working Meta integrations from the fictional community and local-only state that still surround them.
+
+## Current implementation
+
+- [x] Server-only `MODEL_API_KEY`; `.env.local` is ignored by Git and `.env.example` documents the variable.
+- [x] Muse Spark powers `/api/chat`, `/api/advice`, and user-triggered `/api/moderation/triage`.
+- [x] Structured responses are validated before they reach the UI; chat themes remain tentative until the user confirms them.
+- [x] Voice capture converts a reviewed recording to 24 kHz mono PCM WAV and offers an editable transcript before chat submission.
+- [x] The chat, voice, adviser, and triage interfaces explain when text or audio is sent to Meta.
+- [x] The moderator screen requires a human decision; no AI result directly hides or publishes a post.
+- [x] A reproducible browser-flow test stub is prepared so routine UI tests do not spend Meta credits.
+- [ ] Verify the configured API key against Meta with synthetic inputs; record status and usage without logging the key or private user content.
+- [ ] Verify the final production build, lint, typecheck, and browser journeys after the last changes.
+
+**Current boundaries:** session state is not a durable account; communities and peers are fixtures; the triage screen submits one fictional reported post; there is no event stream or background monitor; voice is input-only; no real post, peer message, or human review is delivered.
+
+## Model assignment
+
+| Use case | Model | Why | Guardrail |
+|---|---|---|---|
+| Context-aware private conversation and tentative theme extraction | `muse-spark-1.3` Standard | Structured, multi-turn text reasoning at lower cost than Muse Wonder | User correction remains authoritative; no diagnosis; no automatic share |
+| Adviser response in `/connect` | `muse-spark-1.3` Standard | Same text model and server adapter | Match suggestions stay hidden until consent; validate allowed IDs |
+| Reported-post triage; future moderator-agent classification and draft summaries | `muse-spark-1.3` Standard | Classification and concise structured rationale | Human review remains mandatory; no automatic enforcement |
+| Voice input | `muse-voice-transcribe-1.0` | Dedicated speech-to-text model; the current interface already supports recorded input | Transcript is editable and is not submitted as chat until the user sends it |
+
+Muse Voice Transcribe returns text; it does not synthesize speech. Muse Image and SAM do not serve a current product flow. Muse Wonder is not needed for these short, bounded requests. Revisit this mapping only after an evaluated need appears. See [Meta model availability](https://dev.meta.ai/docs/models), [voice transcription](https://dev.meta.ai/docs/speech-to-text), and [pricing and rate limits](https://dev.meta.ai/docs/pricing-rate-limits).
+
+Use **Standard mode** for sensitive user narratives. Do not use Contributor mode for real user content. The app must not promise zero retention or confidentiality until Meta's applicable data handling terms and the app's own logging/storage behavior have been reviewed.
+
+## Dependency map and parallel work
+
+```mermaid
+flowchart TD
+  P0[Phase 0: Meta API wiring and local smoke] --> P1[Phase 1: Model evaluation and safety]
+  P0 --> P2[Phase 2: Data, identity, and privacy design]
+  P0 --> P3[Phase 3: Voice quality and accessibility]
+  P1 --> P4[Phase 4: Durable private sessions]
+  P2 --> P4
+  P2 --> P5[Phase 5: Real community lifecycle]
+  P1 --> P6[Phase 6: Moderation event pipeline and agent]
+  P5 --> P6
+  P4 --> P7[Phase 7: Joined end-to-end user journey]
+  P5 --> P7
+  P6 --> P7
+  P3 --> P7
+  P7 --> P8[Phase 8: Operational readiness and controlled pilot]
+```
+
+After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent stays in its assigned files and agrees on API contracts first. Phases 4 and 5 can then be split into isolated worktrees after the data/privacy decisions in Phase 2. Phase 6 depends on the real community event shape from Phase 5. Phase 7 is the integration gate; Phase 8 follows it.
+
+## Phase 1 — Model evaluation, reliability, and safety
+
+**Can run in parallel with Phases 2 and 3. Owner:** model-quality agent. **Exit:** the model behavior and failure paths have evidence, not only a successful HTTP response.
+
+- [ ] Define a small, synthetic, versioned evaluation set.
+  - [ ] Cover family pressure, work stress, relocation, uncertainty, quiet reading, user correction, and “not enough context.”
+  - [ ] Add adversarial prompts asking for diagnosis, legal verdicts, coercive relationship advice, or disclosure of private context.
+  - [ ] Check theme suggestions against the allowed theme enum and require an empty set when uncertain.
+  - [ ] Record expected properties and human-rated outcomes; do not encode one preferred life decision as the “correct” answer.
+- [ ] Measure request quality and cost.
+  - [ ] Capture Meta usage-token counts and latency in test output without recording prompts or completions.
+  - [ ] Establish p50/p95 latency, failure-rate, and per-flow token budgets from observed runs.
+  - [ ] Set a run cap and stop before the remaining hackathon credit falls below the agreed reserve.
+- [ ] Harden failures and abuse boundaries.
+  - [ ] Test timeouts, provider 429/5xx, malformed JSON, invalid model IDs, oversized bodies, and missing key behavior.
+  - [ ] Replace process-memory rate limiting with deployment-appropriate shared limits before a public pilot.
+  - [ ] Ensure logs contain route, status, latency, and request ID only; never log API keys, audio, or private narrative text.
+  - [ ] Keep crisis handling honest: deterministic screening and visible resources do not mean the service is monitored.
+- [ ] Add model-backed checks as a separately invoked, explicitly budgeted command; keep ordinary E2E runs stubbed.
+
+## Phase 2 — Data, identity, consent, and privacy design
+
+**Can run in parallel with Phases 1 and 3. Owner:** privacy/backend design agent. **Exit:** a reviewed data-flow and threat model is approved before durable storage is implemented.
+
+- [ ] Map every field and boundary.
+  - [ ] Identify private chat, audio, transcript, tentative themes, user-confirmed themes, alias, post, report, and moderation decision.
+  - [ ] Mark which fields go to Meta, which are stored by Harmonise, which are visible to peers, and which are never shared.
+  - [ ] Document provider retention, deletion, training mode, and data residency from current official terms.
+- [ ] Decide the smallest identity model for a pilot.
+  - [ ] Compare anonymous session, pseudonymous account, and verified account requirements.
+  - [ ] Define user access, export, deletion, session expiry, and shared-device behavior.
+  - [ ] Specify authentication, authorization, server-side role checks, and database row-access policies.
+- [ ] Produce a data schema and migration plan.
+  - [ ] Separate private conversation records from community-facing content.
+  - [ ] Store exact consent version, audience, text approved, timestamp, and revocation state for each share action.
+  - [ ] Define encryption, retention windows, backups, deletion propagation, and audit retention.
+- [ ] Review the user-facing notices before sending real stories or audio to any provider.
+
+## Phase 3 — Voice quality and accessibility
+
+**Can run in parallel with Phases 1 and 2. Owner:** voice UX agent. **Exit:** supported browsers can record, transcribe, correct, and submit text without accidental audio submission.
+
+- [ ] Verify audio capture and the existing WAV conversion on supported desktop and mobile browsers.
+  - [ ] Test permission denied, unsupported codec, empty audio, oversized recording, timeout, provider failure, and retry.
+  - [ ] Test multilingual/code-switching samples with consenting synthetic or non-sensitive audio.
+  - [ ] Verify transcript editing, focus order, keyboard use, reduced motion, and screen-reader status announcements.
+- [ ] Clarify transcript provenance and deletion behavior in the UI.
+  - [ ] Show the current transfer step before the audio leaves the device.
+  - [ ] Keep “transcribe” separate from “send this text to chat.”
+  - [ ] Clear temporary audio and transcript state on cancel, restart, and navigation.
+- [ ] Evaluate real-time WebSocket transcription only if partial captions materially improve the experience.
+  - [ ] Keep credentials server-side; do not put the Meta key in a browser WebSocket handshake.
+  - [ ] Define reconnect, end-of-stream, partial replacement, and disconnect behavior before implementing streaming.
+- [ ] Treat speech synthesis as a separate product decision; the selected Meta transcription model is speech-to-text only.
+
+## Phase 4 — Durable private sessions
+
+**Depends on Phase 2. Owner:** persistence/auth agent. **Exit:** a user can intentionally resume and erase a private session without leaking it to community surfaces.
+
+- [ ] Implement the approved identity/session model and server-side access checks.
+- [ ] Persist only data the user has been told about and that is necessary for the selected experience.
+- [ ] Add conversation resume, new-topic separation, session expiry, delete/export, and failure states.
+- [ ] Verify a user's private conversation cannot be read by another account, community role, or client-supplied ID.
+- [ ] Keep theme suggestions tentative; store the user's corrections and confirmation separately.
+- [ ] Add browser E2E coverage for create → resume → correct → delete, including a second-user isolation check.
+
+## Phase 5 — Real community lifecycle
+
+**Depends on Phase 2; can progress in parallel with Phase 4 after API contracts are agreed. Owner:** community/backend agent. **Exit:** membership, reading, posting, and consent are real server operations with access checks.
+
+- [ ] Define communities, memberships, roles, approved experiences, posts, replies, reports, and availability.
+- [ ] Implement server-authorized read and write paths; verify database access policies with positive and negative cases.
+- [ ] Separate visitor-readable content from member-only content and private conversations.
+- [ ] Implement explicit join/leave, pseudonymous profile, quiet-reader path, and exact-text/audience review before posting.
+- [ ] Add real-time updates only after authorization, moderation, abuse limits, and reconnect semantics are defined.
+- [ ] Replace fictional participant counts and messages with truthful empty, loading, and error states until real data exists.
+
+## Phase 6 — Human moderation pipeline and AI triage agent
+
+**Depends on Phases 1, 2, and 5. Owner:** trust/safety agent plus a human moderation owner. **Exit:** reported/live posts reach authorized humans with auditable context; AI only assists.
+
+- [ ] Write and approve a moderation policy, reviewer escalation matrix, and response-time expectation.
+- [ ] Create a post/report event contract with stable IDs, community scope, consent, and minimal text payload.
+- [ ] Queue moderation events with idempotency, bounded retries, dead-letter handling, and per-community rate controls.
+- [ ] Call Muse Spark to classify against the versioned policy and return a constrained category, urgency, rationale, and uncertainty.
+- [ ] Add a permissioned reviewer queue showing source post, report reason, model suggestion, policy version, and action history.
+- [ ] Require a human reviewer to decide; add appeal/second-review path and preserve the human decision separately from model output.
+- [ ] Measure false positives/negatives and subgroup performance on a synthetic, then consented and reviewed dataset before relying on triage.
+- [ ] Define immediate-risk handling with qualified humans and local resources; do not claim automated crisis monitoring or emergency response.
+- [ ] Only after this phase is operational should “monitor community posts” be described as a live service capability.
+
+## Phase 7 — Complete visitor-to-human-support journey
+
+**Depends on Phases 3–6. Owner:** integration lead. **Exit:** one real, consented end-to-end scenario passes from first visit to an actual human-reviewed outcome.
+
+- [ ] Landing page explains the service, Meta data transfer points, limitations, and available alternatives.
+- [ ] Visitor enters chat, receives a Muse Spark response, and sees a clearly tentative understanding.
+- [ ] User corrects or rejects themes; only confirmed themes influence discovery.
+- [ ] Discovery uses real, approved community data and explains relevance without invented scores or participants.
+- [ ] Quiet reading remains available without membership or posting.
+- [ ] Join and posting show the exact alias, audience, and text; no private narrative is silently copied.
+- [ ] User submits one approved post or question; moderation triage routes it to an authorized human.
+- [ ] Human reply appears only after a real person writes it; the product never fabricates peer activity.
+- [ ] User can report, block, leave, delete their private content, and understand what cannot be erased from third-party systems.
+- [ ] Test the full journey on desktop and mobile with keyboard and assistive-technology checks.
+
+## Phase 8 — Operational readiness and controlled pilot
+
+**Depends on Phase 7. Owner:** release lead. **Exit:** a bounded pilot can be supported, paused, and rolled back.
+
+- [ ] Establish support ownership, moderation staffing, incident response, abuse handling, and user contact paths.
+- [ ] Configure production secrets as protected server runtime variables; keep `.env.local` out of Git and CI artifacts.
+- [ ] Add provider availability, latency, rate-limit, cost, moderation queue, and error dashboards without private-text logging.
+- [ ] Define credit and spend alerts, per-user quotas, global kill switch, and provider fallback/unavailable UX.
+- [ ] Run a privacy/security review, authorization review, threat model, and data-deletion drill.
+- [ ] Run deterministic E2E on every change and a separately budgeted synthetic live-provider smoke on release candidates.
+- [ ] Use staged rollout with a small consenting cohort, documented stop criteria, and rollback rehearsal.
+- [ ] Keep production launch blocked until there is staffed human review and a verified support/safety process.
+
+## Muse Code and coding-agent operating procedure
+
+Muse Code can use this plan and the repository `AGENTS.md` as durable project instructions. Use Muse Spark Standard mode for coding sessions that include sensitive implementation context. Muse Code's installed workflow/subagent capabilities vary by build, so check availability first; use Git worktrees manually if workflow orchestration is unavailable. Meta describes isolated worktrees for parallel children and sandboxed, approval-gated execution in its [Muse Code guide](https://dev.meta.ai/docs/muse-code), [extending guide](https://dev.meta.ai/docs/muse-code/extending), and [permissions guide](https://dev.meta.ai/docs/muse-code/permissions).
+
+### Work assignment template
+
+- [ ] Lead assigns one bounded phase/task and names owned files, API contract, acceptance checks, and cost cap.
+- [ ] Each coding agent reads `AGENTS.md`, this plan, and the relevant knowledge notes before editing.
+- [ ] Agent does not open `.env`, `.env.local`, or provider-secret files; it must not print keys or include secrets in prompts, logs, screenshots, fixtures, or commits.
+- [ ] Agent uses an isolated worktree/branch for any parallel write task; no two agents edit the same files at once without an explicit handoff.
+- [ ] Agent adds no new provider or user-facing data transfer without documenting it and updating the consent copy.
+- [ ] Agent implements only its assignment, records evidence, updates the phase checklist, and commits on its own branch.
+- [ ] Agent pushes its task branch and hands the commit SHA plus checks to the integration lead; it does not push to `main`.
+
+### Commit, push, and branch rotation
+
+Direct concurrent pushes to `main` are excluded because agents can race, overwrite assumptions, or publish unreviewed cross-phase work. Preserve the requested “commit, push, then start the next branch” cadence through one release owner:
+
+1. [ ] Agent commits and pushes `codex/<phase>-<task>`.
+2. [ ] Integrator reviews the diff, checks secret exclusion, runs acceptance checks, and resolves conflicts in the isolated branch.
+3. [ ] Integrator merges/fast-forwards the accepted phase to `main` and pushes `main` once CI is green.
+4. [ ] Integrator fetches the new `main`; the next phase branch/worktree starts from that exact commit.
+5. [ ] If main CI or a smoke check fails, stop phase rotation, fix or revert, then resume only after main is green.
+
+### Merge gate for every phase
+
+- [ ] Scope matches the phase; no unrelated changes or hidden secrets.
+- [ ] `npm run lint`, `npm run typecheck`, and `npm run build` pass.
+- [ ] Relevant mocked browser E2E passes without spending provider credits.
+- [ ] Live model checks use synthetic text/audio only, record usage metadata only, and remain under the phase budget.
+- [ ] Human-review, consent, privacy, crisis, empty, loading, error, and retry states are checked where relevant.
+- [ ] Plan and session/decision notes are updated with evidence and any discovered risk.
+
+## Budget and evidence rules
+
+- [ ] Keep routine browser tests fully stubbed; never send real user narratives in CI.
+- [ ] Give each live evaluation run a token/call cap and estimate cost from returned usage, not just call count.
+- [ ] Reserve at least 20% of the available `$150` for final demo retries and unexpected provider behavior.
+- [ ] Exercise failure paths with mocks; spend credits only for model behavior that cannot be established deterministically.
+- [ ] Report actual call counts, tokens, approximate spend, and remaining credits after each live evaluation batch.
+
+## Decisions required before a real community pilot
+
+- [ ] What account/identity model is acceptable for the first real cohort?
+- [ ] Which database and authorization model will own community membership, content, and report records?
+- [ ] Who is the human moderator on duty, and what does the service do outside staffed hours?
+- [ ] What retention and deletion promises can the product honestly make for Meta and Harmonise data?
+- [ ] Is speech input enough, or is spoken assistant output a validated user need?
+- [ ] What measurable pilot criteria justify proceeding, pausing, or removing a feature?

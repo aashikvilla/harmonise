@@ -9,13 +9,27 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000/> for the Motion Revival homepage or <http://localhost:3000/app/> for the product experience. The app is frontend-only while service integrations are being prepared.
+Open <http://localhost:3000/> for the Motion Revival homepage or <http://localhost:3000/app/> for the product experience. The app uses Meta Model API from server-side routes; community members, stories, messages, and moderation decisions remain fictional.
 
 ## Product experience
 
 The current screens support private conversations, a user-correctable understanding, community and story discovery, optional group participation, connection choices, personal reflections, and safety and support information. The interface adapts to desktop and mobile and respects reduced-motion preferences.
 
-Fictional people and prepared content are identified in the interface. AI inference, transcription, accounts, persistence, messaging, community moderation, and professional services are not connected yet. User choices are local to the browser session and are not sent to other people.
+Fictional people and prepared community content are identified in the interface. Private chat uses Muse Spark when a server key is configured. Voice transcription uses Muse Voice Transcribe only after the user records, reviews, and asks Meta to transcribe. The reported-post demo can request Muse Spark triage; a person remains responsible for every moderation decision. Accounts, durable persistence, real community messaging, continuous monitoring, and professional services are not connected. Chat text is sent to Meta when a message is submitted; session choices otherwise stay in the browser.
+
+## Meta Model API
+
+The app uses Muse Spark 1.3 Standard mode for context-aware chat, theme suggestions, the separate `/connect` adviser, and user-triggered reported-post triage. Muse Voice Transcribe handles reviewed voice recordings. All model calls happen in server routes; the API key is never sent to the browser.
+
+Create a local environment file from the template and add your key:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+Set `MODEL_API_KEY` in `.env.local`. `META_TEXT_MODEL` defaults to `muse-spark-1.3`. Do not add a `NEXT_PUBLIC_` prefix or commit `.env.local`. For hosted deployments, add the same variables as protected server runtime secrets.
+
+The routes are `/api/chat` (private conversation and structured theme suggestions), `/api/advice` (the `/connect` adviser), `/api/voice/transcribe` (WAV transcription), and `/api/moderation/triage` (reported-post triage). The moderation UI currently submits a fictional sample report; this does not monitor a live community or enforce staff permissions. Human decisions are still required.
 
 ## Visual direction
 
@@ -34,13 +48,9 @@ Do not add unit tests. Use high-level browser E2E tests for meaningful product j
 
 ## Deployment
 
-The live adviser needs a Node server (`/api/advice`), so the app deploys as a server app on Sites from `main`
-— not as a static export. Configure `OPENAI_API_KEY` as a protected Sites runtime secret and
-`OPENAI_MODEL=gpt-4o-mini`. The `Verify Harmonise build` workflow runs lint, typecheck, unit tests, and a
-production build on every push to `main`.
+The model routes require a Node server, so deploy as a server app rather than a static export. Add `MODEL_API_KEY` and `META_TEXT_MODEL` as protected runtime secrets. The `Verify Harmonise build` workflow runs lint, typecheck, unit tests, and a production build on every push to `main`.
 
-Run the server locally with `OPENAI_API_KEY=... npm run dev` (or `npm run build` + `npm start`) and open
-`/connect` for the live-adviser journey. Without a key, the adviser shows an honest retry state.
+Run `npm run dev` after configuring `.env.local`. Open `/app/` for the primary chat and `/connect` for the separate adviser experience. Without a key, model-powered actions show an unavailable state and keep the user's text available to retry.
 
 ## Historical material
 

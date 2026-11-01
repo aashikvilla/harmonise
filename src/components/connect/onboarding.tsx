@@ -174,7 +174,7 @@ export default function Onboarding() {
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">2</span>
-                <div><strong>Advise</strong><span>A live AI reflects what it heard and offers next steps.</span></div>
+                <div><strong>Advise</strong><span>Meta Muse Spark reflects what it heard and offers next steps.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">3</span>
@@ -184,7 +184,7 @@ export default function Onboarding() {
             <div className="cx-privacy-list">
               <p>Private by design</p>
               <ul>
-                <li>Your message is sent to a live AI model to generate general guidance.</li>
+                <li>Your message is sent to Meta Muse Spark to generate general guidance.</li>
                 <li>Your conversation is not posted to a community.</li>
                 <li>This prototype does not store conversations in an app database.</li>
                 <li>Community joining is always explicit and consent-based.</li>

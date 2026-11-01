@@ -5,7 +5,7 @@
     "source": "local-fixture",
     "model": null
   },
-  "notice": "All people, communities, events and human responses are fictional. AI inference, messaging, community moderation, and professional services are not connected.",
+  "notice": "All people, communities, events and human responses are fictional. Meta AI can support private chat and user-triggered triage; live messaging, continuous moderation, and professional services are not connected.",
   "leadPersona": {
     "id": "person.arjun",
     "alias": "QuietRiver",

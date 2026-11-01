@@ -220,7 +220,7 @@ export default function Adviser() {
           </button>
         </div>
         <div className="cx-composer-meta">
-          <span>Your message is sent to a live AI model to generate general guidance.</span>
+          <span>Your message is sent to Meta Muse Spark to generate general guidance.</span>
           <span>{draft.trim().length}/{MAX_MESSAGE_LENGTH}</span>
         </div>
       </form>

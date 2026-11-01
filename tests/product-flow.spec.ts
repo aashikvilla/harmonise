@@ -1,5 +1,27 @@
 import { expect, test, type Page } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/chat", async (route) => {
+    const body = route.request().postDataJSON() as { message?: unknown };
+    const message = typeof body.message === "string" ? body.message : "";
+    const familyContext = /family|parents|dad|partner/i.test(message);
+    const wantsTime = /time to decide|at my own pace/i.test(message);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        reply: "Thank you for sharing that. What feels most important to you right now?",
+        suggestedThemes: familyContext ? ["family-expectations", "personal-autonomy"] : [],
+        supportNeed: "human-perspective",
+        needSummary: wantsTime ? "You want time to decide what you want, without someone choosing stay or leave for you." : "You want space to talk through what feels uncertain, at your own pace.",
+      }),
+    });
+  });
+  await page.route("**/api/voice/transcribe", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ transcript: "I want to share these words after reviewing them." }) });
+  });
+});
+
 async function openArjun(page: Page) {
   await page.goto("/app?path=talk");
   await expect(page.getByRole("heading", { name: "You can start anywhere." })).toBeVisible();
@@ -24,20 +46,20 @@ test("first use names the audience and private-to-peer promise before Start priv
   await expect(page.getByRole("heading", { name: "I can’t tell my family what I want without feeling ungrateful." })).toBeVisible();
   await expect(page.getByText("ARJUN · A FICTIONAL STORY", { exact: true })).toBeVisible();
   await expect(page.getByText(/For adults facing family pressure\./i)).toBeVisible();
-  await expect(page.getByText(/Arjun's fictional story · AI and messaging are not connected yet/i)).toBeVisible();
-  await expect(page.getByText("Think it through privately, correct the reflection, then choose whether to share.", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Arjun's fictional story · Meta AI chat when configured/i)).toBeVisible();
+  await expect(page.getByText("Think it through privately, review a tentative reflection, then choose whether to share.", { exact: true })).toBeVisible();
   await expect(page.locator(".entry-mechanism")).toHaveCount(0);
   await page.getByRole("button", { name: "Start privately" }).click();
   await expect(page.getByRole("textbox", { name: "Your message" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Use voice" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Explore quietly" })).toBeVisible();
-  await expect(page.locator(".chat-provenance")).toHaveText("Fictional response · AI is not connected yet");
+  await expect(page.locator(".chat-provenance")).toHaveText("Meta AI · Muse Spark · Review each response and suggested theme");
   await sendChat(page, "Things at home feel uncertain.");
   await expect(page.getByText("Things at home feel uncertain.", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Not quite" })).toBeVisible();
 });
 
-test("a correction changes an editable local reflection instead of claiming a model reply", async ({ page }) => {
+test("a user correction updates the editable Muse Spark reflection", async ({ page }) => {
   await page.goto("/app");
   await page.getByRole("button", { name: "Start privately" }).click();
   await sendChat(page, "Things at home feel uncertain. My family keeps asking what I want.");
@@ -48,8 +70,7 @@ test("a correction changes an editable local reflection instead of claiming a mo
   await page.getByRole("button", { name: "Send" }).click();
   const updated = page.getByRole("textbox", { name: "WHAT HE CONFIRMED · EDITABLE" });
   await expect(updated).toHaveValue("You want time to decide what you want, without someone choosing stay or leave for you.");
-  await expect(page.locator(".causal-understanding").getByText(/Fictional response · AI is not connected yet/i)).toBeVisible();
-  await expect(page.locator(".causal-understanding").getByText(/Muse Spark could suggest a theme from words Arjun shares/i)).toBeVisible();
+  await expect(page.locator(".causal-understanding").getByText(/Muse Spark’s suggestion is editable/i)).toBeVisible();
   await updated.fill("I want to decide at my own pace.");
   await expect(updated).toHaveValue("I want to decide at my own pace.");
 });
@@ -76,27 +97,22 @@ test("scenario and example query params both open an editable unsent Arjun opene
     const composer = page.getByRole("textbox", { name: "Your message" });
     await expect(composer).toHaveValue("I don't know... things at home feel weird lately.");
     await expect(page.getByRole("heading", { name: "You can start anywhere." })).not.toBeFocused();
-    await expect(page.getByText(/Fictional response · AI is not connected yet/i)).toBeVisible();
+    await expect(page.locator(".chat-provenance")).toContainText("Muse Spark");
   }
 });
 
-test("Arjun's four prepared return visits can be opened, edited, and resumed", async ({ page }) => {
+test("Arjun's four prepared return visits can be opened and resumed", async ({ page }) => {
   await page.goto("/app?scenario=arjun");
   await expect(page.getByText("29 written exchanges")).toBeVisible();
   await page.getByRole("button", { name: /Day 1 Something feels strange/ }).click();
   await expect(page.getByText("Things at home feel strange. I don't even know how to explain it.")).toBeVisible();
   await page.getByRole("button", { name: /Day 4 Correcting the assumption/ }).click();
   await expect(page.getByText("I wasn't talking about separating. It's my parents. I can't say no without feeling ungrateful.")).toBeVisible();
-  await page.getByRole("button", { name: "Review your words" }).click();
-  const transcript = page.getByRole("textbox", { name: "Your transcript" });
-  await expect(transcript).toHaveValue("I want to ask Dad for a little time before I answer.");
-  await transcript.fill("I need a week before I answer.");
-  await page.getByRole("button", { name: "Send this text" }).click();
-  await expect(page.getByText("I need a week before I answer.", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Voice transcription is not connected yet/i)).toBeVisible();
   await page.getByRole("button", { name: /Day 9 A conversation/ }).click();
   await expect(page.getByText("Could I try saying: I need until next weekend to think?")).toBeVisible();
   await page.getByRole("button", { name: /Day 4 Correcting the assumption/ }).click();
-  await expect(page.getByText("I need a week before I answer.", { exact: true })).toBeVisible();
+  await expect(page.getByText("I wasn't talking about separating. It's my parents. I can't say no without feeling ungrateful.")).toBeVisible();
   await page.getByRole("button", { name: /Day 16 A question/ }).click();
   await expect(page.getByText("I tried talking to Dad. He listened, but we argued.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Restart" }).click();
@@ -117,7 +133,7 @@ test("microphone denial leaves the text composer usable", async ({ page }) => {
   await expect(page.getByText("I can still type what I want to say.", { exact: true })).toBeVisible();
 });
 
-test("recorded audio reaches an editable typed-transcript fallback before sending", async ({ page }) => {
+test("recorded audio is transcribed by Meta and stays editable before sending", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,
@@ -126,17 +142,25 @@ test("recorded audio reaches an editable typed-transcript fallback before sendin
     class MockRecorder {
       state = "inactive";
       start() { this.state = "recording"; }
-      stop() { this.state = "inactive"; }
+      ondataavailable?: (event: { data: Blob }) => void;
+      onstop?: () => void;
+      stop() { this.state = "inactive"; this.ondataavailable?.({ data: new Blob([new Uint8Array([1])], { type: "audio/webm" }) }); this.onstop?.(); }
+    }
+    class MockAudioContext {
+      decodeAudioData = async () => ({ sampleRate: 24000, length: 24000, numberOfChannels: 1, getChannelData: () => new Float32Array(24000) });
+      close = async () => {};
     }
     Object.defineProperty(window, "MediaRecorder", { configurable: true, value: MockRecorder });
+    Object.defineProperty(window, "AudioContext", { configurable: true, value: MockAudioContext });
   });
   await page.goto("/app?path=talk");
   await page.getByRole("button", { name: "Use voice" }).click();
-  await expect(page.getByText("Listening", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Recording · up to 2 minutes/)).toBeVisible();
   await page.getByRole("button", { name: "Stop and review" }).click();
-  await expect(page.getByText(/Voice transcription is not connected here/i)).toBeVisible();
-  await page.getByRole("textbox", { name: "Your transcript" }).fill("I want to share these words after reviewing them.");
-  await page.getByRole("button", { name: "Send this text" }).click();
+  await page.getByRole("button", { name: "Transcribe with Meta" }).click();
+  await expect(page.getByRole("textbox", { name: "Review and edit the transcript" })).toHaveValue("I want to share these words after reviewing them.");
+  await page.getByRole("button", { name: "Use this in my message" }).click();
+  await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByText("I want to share these words after reviewing them.", { exact: true })).toBeVisible();
 });
 

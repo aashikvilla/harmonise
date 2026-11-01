@@ -3,38 +3,18 @@ import { COMMUNITY_IDS, detectCrisis, leaksCommunityReference } from "@/lib/conn
 import {
   MAX_HISTORY_TURNS,
   MAX_MESSAGE_LENGTH,
-  RATE_LIMIT_MAX_REQUESTS,
-  RATE_LIMIT_WINDOW_MS,
   cleanHistory,
   type AdviceResult,
 } from "@/lib/connect/advice";
+import { isRateLimited, modelFailureStatus, requestMetaChat } from "@/lib/meta-model";
 
 export const runtime = "nodejs";
 
-const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 const MAX_REFLECTION = 600;
 const MAX_STEP = 350;
 const MAX_PERSPECTIVE = 450;
 const MAX_REASON = 300;
 const MAX_MATCHES = 2;
-const LLM_TIMEOUT_MS = 25_000;
-
-/** Lightweight in-memory rate limit (per server instance). */
-const requestLog = new Map<string, number[]>();
-
-function isRateLimited(key: string): boolean {
-  const now = Date.now();
-  const cutoff = now - RATE_LIMIT_WINDOW_MS;
-  const recent = (requestLog.get(key) ?? []).filter((time) => time > cutoff);
-  if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
-    requestLog.set(key, recent);
-    return true;
-  }
-  recent.push(now);
-  requestLog.set(key, recent);
-  if (requestLog.size > 5000) requestLog.clear();
-  return false;
-}
 
 function unavailable(status = 503) {
   return NextResponse.json({ error: "unavailable" }, { status });
@@ -66,7 +46,6 @@ function validAdvice(value: unknown): AdviceResult | null {
     seen.add(entry.id);
     matches.push({ id: entry.id, reason: entry.reason.trim().slice(0, MAX_REASON) });
   }
-  // Fail closed: visible guidance must never name or hint at matching.
   for (const text of [reflection, perspective, ...steps]) {
     if (leaksCommunityReference(text)) return null;
   }
@@ -74,57 +53,54 @@ function validAdvice(value: unknown): AdviceResult | null {
 }
 
 const SYSTEM_PROMPT = [
-  "You are Harmonise Adviser, a calm peer-support guide. You listen, reflect, and offer practical next steps.",
-  "You are not a therapist, doctor, lawyer, or emergency service. Never diagnose, never give legal verdicts, never predict outcomes.",
-  "Rules for the visible fields (reflection, steps, perspective):",
-  "- Never mention communities, matching, groups, circles, or other people the user could meet.",
-  "- Never promise outcomes or claim certainty.",
-  "Rules for matches: pick 0 to 2 community IDs only when the user's words clearly fit. Prefer no match over a weak one.",
-  "- rebuilding: separation, divorce, breakup, co-parenting, identity change, starting over.",
-  "- legal-clarity: preparing questions and decisions before speaking with a qualified legal professional.",
-  "- steady-ground: uncertainty, grief, loneliness, family pressure, anxiety, disrupted routines.",
-  "Keep the reflection to 1-2 sentences, each step to one sentence, the perspective to 1-2 sentences.",
+  "You are Harmonise Adviser, a calm peer-support guide. Listen, reflect, and offer practical next steps.",
+  "You are not a therapist, doctor, lawyer, or emergency service. Never diagnose, give legal verdicts, or predict outcomes.",
+  "In reflection, steps, and perspective, do not mention communities, matching, groups, circles, or other people the user could meet.",
+  "Never promise outcomes or claim certainty. Prefer questions and small user-chosen actions.",
+  "Choose 0 to 2 matches only when the user's words clearly fit; prefer no match over a weak match.",
+  "rebuilding: separation, divorce, breakup, co-parenting, identity change, starting over.",
+  "legal-clarity: preparing questions before speaking with a qualified legal professional. Do not give legal advice.",
+  "steady-ground: uncertainty, grief, loneliness, family pressure, anxiety, disrupted routines.",
+  "Keep reflection and perspective to 1-2 sentences, and each step to one sentence.",
 ].join(" ");
 
-const RESPONSE_SCHEMA = {
-  name: "harmonise_advice",
-  strict: true,
-  schema: {
-    type: "object",
-    properties: {
-      reflection: { type: "string", description: "Short empathetic reflection of what the user shared." },
-      steps: {
-        type: "array",
-        description: "Two to four practical next steps.",
-        items: { type: "string" },
-        minItems: 2,
-        maxItems: 4,
-      },
-      perspective: { type: "string", description: "Short reassuring perspective." },
-      matches: {
-        type: "array",
-        description: "Hidden community matches, revealed only after explicit consent.",
-        items: {
-          type: "object",
-          properties: {
-            id: { type: "string", enum: [...COMMUNITY_IDS] },
-            reason: { type: "string", description: "Short reason this community may fit." },
+const RESPONSE_FORMAT = {
+  type: "json_schema",
+  json_schema: {
+    name: "harmonise_advice",
+    strict: true,
+    schema: {
+      type: "object",
+      properties: {
+        reflection: { type: "string" },
+        steps: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
+        perspective: { type: "string" },
+        matches: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string", enum: [...COMMUNITY_IDS] },
+              reason: { type: "string" },
+            },
+            required: ["id", "reason"],
+            additionalProperties: false,
           },
-          required: ["id", "reason"],
-          additionalProperties: false,
+          maxItems: MAX_MATCHES,
         },
-        maxItems: MAX_MATCHES,
       },
+      required: ["reflection", "steps", "perspective", "matches"],
+      additionalProperties: false,
     },
-    required: ["reflection", "steps", "perspective", "matches"],
-    additionalProperties: false,
   },
-} as const;
+};
 
 export async function POST(request: Request) {
-  const clientKey = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (isRateLimited(clientKey)) {
+  if (isRateLimited(request, "advice", 10)) {
     return NextResponse.json({ error: "rate-limited" }, { status: 429 });
+  }
+  if (Number(request.headers.get("content-length") ?? "0") > 16_000) {
+    return NextResponse.json({ error: "invalid" }, { status: 413 });
   }
 
   let body: unknown;
@@ -140,70 +116,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
   }
 
-  // Deterministic safety screen before any model call.
-  if (detectCrisis(message)) {
-    return NextResponse.json({ crisis: true });
-  }
-
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.warn("advice: OPENAI_API_KEY missing");
-    return unavailable();
-  }
+  if (detectCrisis(message)) return NextResponse.json({ crisis: true });
 
   const history = cleanHistory(record.history).slice(-MAX_HISTORY_TURNS);
-  const started = Date.now();
-  let raw: string;
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: MODEL,
-        store: false,
-        temperature: 0.7,
-        max_tokens: 700,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...history.map((turn) => ({
-            role: turn.role === "user" ? "user" : "assistant",
-            content: turn.text,
-          })),
-          { role: "user", content: message },
-        ],
-        response_format: { type: "json_schema", json_schema: RESPONSE_SCHEMA },
-      }),
-      signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
+    const raw = await requestMetaChat({
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...history.map((turn) => ({ role: turn.role === "user" ? "user" as const : "assistant" as const, content: turn.text })),
+        { role: "user", content: message },
+      ],
+      maxTokens: 700,
+      temperature: 0.7,
+      responseFormat: RESPONSE_FORMAT,
     });
-    if (!response.ok) {
-      console.warn(`advice: model HTTP ${response.status} after ${Date.now() - started}ms`);
-      return unavailable(response.status === 429 ? 503 : 502);
-    }
-    const data = (await response.json()) as {
-      choices?: { message?: { content?: unknown } }[];
-    };
-    const content = data.choices?.[0]?.message?.content;
-    if (typeof content !== "string" || content.length === 0) {
-      console.warn("advice: empty model content");
-      return unavailable(502);
-    }
-    raw = content;
-  } catch {
-    console.warn(`advice: model request failed after ${Date.now() - started}ms`);
-    return unavailable();
+    const advice = validAdvice(JSON.parse(raw) as unknown);
+    return advice ? NextResponse.json(advice) : unavailable(502);
+  } catch (error) {
+    return unavailable(modelFailureStatus(error));
   }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    console.warn("advice: model returned non-JSON");
-    return unavailable(502);
-  }
-  const advice = validAdvice(parsed);
-  if (!advice) {
-    console.warn("advice: model output failed validation");
-    return unavailable(502);
-  }
-  return NextResponse.json(advice);
 }

@@ -1,0 +1,21 @@
+# Decision Notes
+
+## 2026-11-02 — Use Meta Model API directly from server routes
+
+- **Decision:** Use Muse Spark 1.3 Standard for text chat, adviser output, and structured moderation triage; use Muse Voice Transcribe 1.0 for voice input.
+- **Reason:** These models directly fit the current text and speech-to-text use cases. The product does not need image generation, visual segmentation, or a long-horizon coding model at runtime.
+- **Implementation:** Raw server-side HTTP calls to Meta endpoints; `MODEL_API_KEY` is never exposed in browser code. `META_TEXT_MODEL` defaults to `muse-spark-1.3`.
+- **Privacy:** Use Standard mode for sensitive narratives. Do not use Contributor mode for user content. Do not claim zero retention or confidentiality without verifying the applicable provider terms.
+- **Revisit when:** evaluations show a material quality/cost reason to change model or API surface.
+
+## 2026-11-02 — Keep moderation human-led
+
+- **Decision:** Model output may classify and prioritize reported content, but cannot enforce a moderation action.
+- **Reason:** There is no live community backend, staffed review queue, or validated automated enforcement policy. A model result alone cannot safely hide or remove content.
+- **Revisit when:** A real community, authorized reviewer process, appeals, evaluation data, and an approved policy exist. Human decisions remain required even then unless separately approved.
+
+## 2026-11-02 — Serialize releases to `main`
+
+- **Decision:** Parallel coding agents work in isolated branches/worktrees; one integrator merges and pushes each accepted phase to `main`, then starts the next phase from updated `main`.
+- **Reason:** Multiple agents pushing directly to `main` can race and integrate incompatible changes without a shared merge gate.
+- **Revisit when:** CI, branch protection, and an explicitly approved merge queue provide equivalent serialized guarantees.

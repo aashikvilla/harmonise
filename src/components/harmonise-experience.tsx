@@ -13,9 +13,10 @@ import {
   type EntryPath,
   type HarmoniseAction,
   type HarmoniseState,
+  type SupportNeed,
   type ThemeId,
 } from "@/lib/harmonise";
-import { hasFamilyContext, replyForUserMessage } from "@/lib/conversation";
+import { hasFamilyContext } from "@/lib/conversation";
 import { arjunVisits, type VisitTurn } from "@/lib/arjun-visits";
 import { historicalThread, type HistoricalDay } from "@/lib/historical-thread";
 
@@ -59,6 +60,57 @@ function SecondaryButton({ children, onClick, disabled = false }: { children: Re
 
 function textForTheme(theme: ThemeId) {
   return themeLabels[theme];
+}
+
+async function encodeMonoPcmWav(recording: Blob): Promise<Blob> {
+  const audioContext = new AudioContext();
+  try {
+    const decoded = await audioContext.decodeAudioData(await recording.arrayBuffer());
+    const targetRate = 24_000;
+    const sourceRate = decoded.sampleRate;
+    const sampleCount = Math.ceil(decoded.length * targetRate / sourceRate);
+    const samples = new Float32Array(sampleCount);
+    const channels = Array.from({ length: decoded.numberOfChannels }, (_, channel) => decoded.getChannelData(channel));
+
+    for (let i = 0; i < sampleCount; i += 1) {
+      const sourcePosition = i * sourceRate / targetRate;
+      const left = Math.floor(sourcePosition);
+      const fraction = sourcePosition - left;
+      let sum = 0;
+      for (const channel of channels) {
+        const first = channel[Math.min(left, decoded.length - 1)] ?? 0;
+        const second = channel[Math.min(left + 1, decoded.length - 1)] ?? first;
+        sum += first + (second - first) * fraction;
+      }
+      samples[i] = sum / channels.length;
+    }
+
+    const wav = new ArrayBuffer(44 + sampleCount * 2);
+    const view = new DataView(wav);
+    const writeText = (offset: number, value: string) => {
+      for (let i = 0; i < value.length; i += 1) view.setUint8(offset + i, value.charCodeAt(i));
+    };
+    writeText(0, "RIFF");
+    view.setUint32(4, 36 + sampleCount * 2, true);
+    writeText(8, "WAVE");
+    writeText(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, targetRate, true);
+    view.setUint32(28, targetRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeText(36, "data");
+    view.setUint32(40, sampleCount * 2, true);
+    for (let i = 0; i < sampleCount; i += 1) {
+      const sample = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    }
+    return new Blob([wav], { type: "audio/wav" });
+  } finally {
+    await audioContext.close();
+  }
 }
 
 function activeCommunity(state: HarmoniseState) {
@@ -136,14 +188,25 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [activeVisitId, setActiveVisitId] = useState("day-1");
   const [visitHistory, setVisitHistory] = useState<Record<string, VisitTurn[]>>(() => Object.fromEntries(arjunVisits.map((visit) => [visit.id, visit.turns])));
   const [chatTurns, setChatTurns] = useState<{ id: string; role: "you" | "harmonise"; text: string }[]>([]);
+  const [chatPending, setChatPending] = useState(false);
+  const [chatError, setChatError] = useState("");
+  const [suggestedThemes, setSuggestedThemes] = useState<ThemeId[]>([]);
+  const [suggestedNeed, setSuggestedNeed] = useState<{ summary: string; type: SupportNeed }>({ summary: "", type: "not-sure" });
   const [composer, setComposer] = useState(initialPath === "arjun" ? "I don't know... things at home feel weird lately." : "");
   const [understandingConfirmed, setUnderstandingConfirmed] = useState(false);
   const [correctionRequested, setCorrectionRequested] = useState(false);
   const [correctedUnderstanding, setCorrectedUnderstanding] = useState("");
-  const [recordingState, setRecordingState] = useState<"idle" | "recording" | "review">("idle");
+  const [recordingState, setRecordingState] = useState<"idle" | "recording" | "processing" | "review">("idle");
   const [recordingError, setRecordingError] = useState("");
   const [transcriptDraft, setTranscriptDraft] = useState("");
+  const [recordingAudio, setRecordingAudio] = useState<Blob | null>(null);
+  const [transcribing, setTranscribing] = useState(false);
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageResult, setTriageResult] = useState<{ concern: string; severity: string; rationale: string; recommendedAction: string } | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<Blob[]>([]);
+  const cancelledRecordingRef = useRef(false);
+  const recordingTimerRef = useRef<number | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -174,6 +237,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
   useEffect(() => () => {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
   }, []);
 
   function navigate(screen: (typeof navItems)[number]["screen"]) {
@@ -188,11 +252,18 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     stateDispatch({ type: "RESTART" });
     stateDispatch({ type: "START_PATH", path: "talk" });
     setChatTurns([]);
+    setChatError("");
+    setChatPending(false);
+    setSuggestedThemes([]);
+    setSuggestedNeed({ summary: "", type: "not-sure" });
     setComposer("");
     setUnderstandingConfirmed(false);
-    setRecordingError("");
     setRecordingState("idle");
     setTranscriptDraft("");
+    setRecordingAudio(null);
+    setRecordingError("");
+    setTriageResult(null);
+    setModerationDecision("");
     setSpaceTopic("family");
     setTopicChats({ family: [] });
     setActiveVisitId("day-1");
@@ -221,17 +292,6 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     setUnderstandingConfirmed(false);
   }
 
-  function preparedResponseForMessage(text: string, turnNo: number, priorUserMessages: string[]) {
-    const lower = text.toLowerCase();
-    if (lower.includes("forget it") || lower.includes("leave this") || lower.includes("don't want to talk")) {
-      return "That’s okay. We can leave it here. Whenever you want to revisit it, we can start from where you left off—or somewhere new.";
-    }
-    if ((lower.includes("advice") || lower.includes("tell me")) && (lower.includes("marriage") || lower.includes("stay") || lower.includes("leave"))) {
-      return "Understood. I won’t tell you whether to stay or leave. We can keep talking, prepare something you want to say, or hear how other people navigated family pressure.";
-    }
-    return replyForUserMessage(text, turnNo, priorUserMessages);
-  }
-
   function startSeparateTopic(topic: string, opener: string) {
     const currentTurns = chatTurns;
     setTopicChats((chats) => ({ ...chats, [spaceTopic]: currentTurns }));
@@ -251,34 +311,63 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   }
 
   function renderConversation() {
-    function sendChat(text = composer) {
+    async function sendChat(text = composer) {
       const clean = text.trim();
-      if (!clean) return;
-      if (correctionRequested) {
-        setCorrectedUnderstanding(clean.toLowerCase().includes("time")
-          ? "You want time to decide what you want, without someone choosing stay or leave for you."
-          : "You want " + clean.replace(/[.!?]+$/, "").replace(/^I /i, "") + ". This is your draft to edit, not an AI interpretation.");
-        setCorrectionRequested(false);
-      }
-      const turnNo = chatTurns.filter((turn) => turn.role === "you").length + 1;
-      const next = [
-        ...chatTurns,
-        { id: `you-${turnNo}`, role: "you" as const, text: clean },
-        { id: `guide-${turnNo}`, role: "harmonise" as const, text: preparedResponseForMessage(clean, turnNo, chatTurns.filter((turn) => turn.role === "you").map((turn) => turn.text)) },
-      ];
-      setChatTurns(next);
-      setTopicChats((chats) => ({ ...chats, [spaceTopic]: next }));
-      if (state.isFeaturedJourney) {
-        const updated = { ...visitHistory, [activeVisitId]: next };
-        setVisitHistory(updated);
-        try { window.sessionStorage.setItem("harmonise-arjun-visits", JSON.stringify(updated)); } catch { /* session storage is optional */ }
-      }
+      if (!clean || chatPending) return;
+      setChatError("");
       setComposer("");
       setUnderstandingConfirmed(false);
+      setChatPending(true);
+      const userTurn = { id: `you-${Date.now()}`, role: "you" as const, text: clean };
+      setChatTurns((current) => [...current, userTurn]);
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: clean,
+            history: chatTurns.slice(-8).map((turn) => ({ role: turn.role === "you" ? "user" : "adviser", text: turn.text })),
+          }),
+        });
+        const payload: unknown = await response.json().catch(() => null);
+        if (payload && typeof payload === "object" && (payload as Record<string, unknown>).crisis === true) {
+          setChatError("I’m taking you to the safety and support information. This app cannot monitor you or contact emergency services.");
+          stateDispatch({ type: "OPEN_HELP" });
+          return;
+        }
+        const result = payload as { reply?: unknown; suggestedThemes?: unknown; supportNeed?: unknown; needSummary?: unknown } | null;
+        if (!response.ok || !result || typeof result.reply !== "string" || !Array.isArray(result.suggestedThemes) || typeof result.supportNeed !== "string" || typeof result.needSummary !== "string") {
+          setComposer(clean);
+          setChatError("Meta AI couldn’t respond just now. Your message is still here; you can retry or keep exploring without AI.");
+          return;
+        }
+
+        const next = [...chatTurns, userTurn, { id: `meta-${Date.now()}`, role: "harmonise" as const, text: result.reply }];
+        setChatTurns(next);
+        setTopicChats((chats) => ({ ...chats, [spaceTopic]: next }));
+        setSuggestedThemes(result.suggestedThemes.filter((theme): theme is ThemeId => typeof theme === "string" && Object.hasOwn(themeLabels, theme)));
+        setSuggestedNeed({ summary: result.needSummary, type: result.supportNeed as SupportNeed });
+        setCorrectedUnderstanding(result.needSummary);
+        setCorrectionRequested(false);
+        if (state.isFeaturedJourney) {
+          const updated = { ...visitHistory, [activeVisitId]: next };
+          setVisitHistory(updated);
+          try { window.sessionStorage.setItem("harmonise-arjun-visits", JSON.stringify(updated)); } catch { /* session storage is optional */ }
+        }
+      } catch {
+        setComposer(clean);
+        setChatError("Meta AI couldn’t be reached. Your message is still here; you can retry or keep exploring without AI.");
+      } finally {
+        setChatPending(false);
+      }
     }
 
     async function startRecording() {
       setRecordingError("");
+      setRecordingAudio(null);
+      setTranscriptDraft("");
+      cancelledRecordingRef.current = false;
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
         setRecordingError("Voice recording isn’t available in this browser. You can keep typing here.");
         return;
@@ -287,69 +376,117 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaStreamRef.current = stream;
         const recorder = new MediaRecorder(stream);
+        recordingChunksRef.current = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) recordingChunksRef.current.push(event.data);
+        };
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          mediaStreamRef.current = null;
+          recorderRef.current = null;
+          if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
+          recordingTimerRef.current = null;
+          if (cancelledRecordingRef.current) return;
+          try {
+            const recording = new Blob(recordingChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+            if (!recording.size) throw new Error("empty recording");
+            const wav = await encodeMonoPcmWav(recording);
+            if (wav.size > 8 * 1024 * 1024) throw new Error("recording too large");
+            setRecordingAudio(wav);
+            setRecordingState("review");
+          } catch {
+            setRecordingState("idle");
+            setRecordingError("The recording couldn’t be prepared for transcription. Try a shorter recording or type your message.");
+          }
+        };
         recorderRef.current = recorder;
         recorder.start();
         setRecordingState("recording");
+        recordingTimerRef.current = window.setTimeout(() => {
+          if (recorder.state === "recording") {
+            setRecordingState("processing");
+            recorder.stop();
+          }
+        }, 120_000);
       } catch {
         setRecordingError("Microphone access wasn’t granted. You can continue by typing, or try again.");
       }
     }
 
     function stopRecording() {
-      recorderRef.current?.stop();
-      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-      recorderRef.current = null;
-      setTranscriptDraft("");
-      setRecordingState("review");
+      const recorder = recorderRef.current;
+      if (!recorder || recorder.state !== "recording") return;
+      setRecordingState("processing");
+      recorder.stop();
     }
 
     function cancelRecording() {
+      cancelledRecordingRef.current = true;
       if (recorderRef.current?.state === "recording") recorderRef.current.stop();
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
       recorderRef.current = null;
+      if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
+      recordingTimerRef.current = null;
       setRecordingState("idle");
       setTranscriptDraft("");
+      setRecordingAudio(null);
     }
 
-    function reviewTranscript() {
+    async function transcribeRecording() {
+      if (!recordingAudio || transcribing) return;
       setRecordingError("");
-      setRecordingState("review");
-      setTranscriptDraft("I want to ask Dad for a little time before I answer.");
+      setTranscribing(true);
+      try {
+        const form = new FormData();
+        form.append("audio", recordingAudio, "recording.wav");
+        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form });
+        const payload: unknown = await response.json().catch(() => null);
+        const transcript = payload && typeof payload === "object" ? (payload as Record<string, unknown>).transcript : null;
+        if (!response.ok || typeof transcript !== "string" || !transcript.trim()) {
+          setRecordingError("Meta Voice couldn’t transcribe this recording. You can try again or type your words.");
+          return;
+        }
+        setTranscriptDraft(transcript.trim());
+      } catch {
+        setRecordingError("Meta Voice couldn’t be reached. You can try again or type your words.");
+      } finally {
+        setTranscribing(false);
+      }
     }
 
     function exploreExperiences() {
-      const family = hasFamilyContext(chatTurns);
       const mappedTurns = chatTurns.map((turn) => ({ id: turn.id, speaker: turn.role === "you" ? "arjun" as const : "guide" as const, text: turn.text }));
-      stateDispatch({ type: "SYNC_CHAT_CONTEXT", turns: mappedTurns, themes: family ? ["family-expectations", "personal-autonomy"] : [], need: family ? "Perspectives on family expectations, without pressure to choose a relationship outcome." : "Explore without personal context" });
+      stateDispatch({ type: "SYNC_CHAT_CONTEXT", turns: mappedTurns, themes: suggestedThemes, need: suggestedNeed.summary || "Explore without personal context" });
       setUnderstandingConfirmed(true);
       stateDispatch({ type: "OPEN_DISCOVERY" });
     }
 
     return <>
       <p className="lede">{spaceTopic === "family" ? "Talk it through privately, or explore at your own pace." : `A separate ${spaceTopic} conversation. Earlier family context is not included.`}</p>
-      <p className="small-note">Your chats don&apos;t appear in communities. Choose what you share. Your messages stay in this browser session and are not shared unless you choose to share them.</p>
+      <p className="small-note">Your chat is not posted to a community. When you send a message, it is sent to Meta for a Muse Spark response. This prototype keeps the conversation in this browser session.</p>
       {state.isFeaturedJourney && <section className="visit-switcher" aria-label="Arjun's saved visits">
         <div className="visit-switcher-heading"><div><span className="context-eyebrow">ARJUN · FICTIONAL STORY HISTORY</span><strong>Return visits</strong></div><span>{arjunVisits.reduce((total, visit) => total + visit.turns.filter((turn) => turn.role === "you").length, 0)} written exchanges</span></div>
         <div className="visit-buttons">{arjunVisits.map((visit) => <button key={visit.id} type="button" className={activeVisitId === visit.id ? "visit-button selected" : "visit-button"} aria-pressed={activeVisitId === visit.id} onClick={() => openVisit(visit.id)}><strong>{visit.day}</strong><span>{visit.title}</span></button>)}</div>
         <p className="small-note">{arjunVisits.find((visit) => visit.id === activeVisitId)?.intention}. Choose any visit; history stays in this browser tab. Restart clears it.</p>
       </section>}
       <section className="panel conversation-panel organic-chat" aria-label="Conversation">
-        <div className="chat-provenance">Fictional response · AI is not connected yet</div>
+        <div className="chat-provenance">Meta AI · Muse Spark · Review each response and suggested theme</div>
         <div className="chat-log" aria-live="polite" aria-relevant="additions text">
         {chatTurns.length === 0 && <article className="conversation-turn turn-guide"><span>Harmonise · fictional assistant</span><p>We can take this slowly. Is this mainly about something happening with someone, or how you’ve been feeling? You can also just tell me a little more.</p></article>}
-          {chatTurns.map((turn) => <article className={`conversation-turn ${turn.role === "you" ? "turn-arjun" : "turn-guide"}`} key={turn.id}><span>{turn.role === "you" ? "Arjun · {day}".replace("{day}", arjunVisits.find((visit) => visit.id === activeVisitId)?.day ?? "You") : "Harmonise · fictional assistant"}</span><p>{turn.text}</p></article>)}
+        {chatTurns.map((turn) => <article className={`conversation-turn ${turn.role === "you" ? "turn-arjun" : "turn-guide"}`} key={turn.id}><span>{turn.role === "you" ? "Arjun · {day}".replace("{day}", arjunVisits.find((visit) => visit.id === activeVisitId)?.day ?? "You") : turn.id.startsWith("meta-") ? "Harmonise · Meta AI" : "Harmonise · fictional transcript"}</span><p>{turn.text}</p></article>)}
           <div ref={chatEndRef}/>
         </div>
-        {chatTurns.filter((turn) => turn.role === "you").length === 1 && <div className="inline-chat-choices" aria-label="Optional response"><span>Only if it helps:</span>{["Something with someone", "How I’ve felt", "Not sure"].map((choice) => <button key={choice} type="button" onClick={() => sendChat(choice)}>{choice}</button>)}</div>}
+        {chatPending && <div className="small-note" role="status">Muse Spark is preparing a response…</div>}
+        {chatError && <Notice>{chatError}</Notice>}
+        {chatTurns.filter((turn) => turn.role === "you").length === 1 && <div className="inline-chat-choices" aria-label="Optional response"><span>Only if it helps:</span>{["Something with someone", "How I’ve felt", "Not sure"].map((choice) => <button key={choice} type="button" disabled={chatPending} onClick={() => { void sendChat(choice); }}>{choice}</button>)}</div>}
         {chatTurns.filter((turn) => turn.role === "you").length >= 1 && <section className="inline-understanding" aria-labelledby="understanding-inline-title">
-          <div><span className="context-eyebrow">A THOUGHT TO CHECK</span><h2 id="understanding-inline-title">Have I got this right?</h2><p><strong>What you said:</strong> “{chatTurns.filter((turn) => turn.role === "you").at(-1)?.text}”</p><p><strong>Might matter:</strong> {hasFamilyContext(chatTurns) ? "family expectations and making your own choices. This is only a possible reading." : "I don’t have enough context to name a theme yet."}</p><p><strong>What you want now:</strong> {understandingConfirmed ? `${hasFamilyContext(chatTurns) ? "Hear lived experiences without a verdict" : "Explore without personal context"} · confirmed by you` : "Not confirmed yet"}</p></div>
-          <div className="inline-chat-choices"><button type="button" onClick={() => setUnderstandingConfirmed(true)}>Yes, that’s closer</button><button type="button" onClick={() => { setUnderstandingConfirmed(false); setCorrectionRequested(true); }}>Not quite</button><button type="button" onClick={() => { setCorrectionRequested(true); setComposer("I don't want someone to tell me to stay or leave."); }}>Edit in my words</button></div>
+          <div><span className="context-eyebrow">A THOUGHT TO CHECK · AI SUGGESTION</span><h2 id="understanding-inline-title">Have I got this right?</h2><p><strong>What you said:</strong> “{chatTurns.filter((turn) => turn.role === "you").at(-1)?.text}”</p><p><strong>Might matter:</strong> {suggestedThemes.length ? suggestedThemes.map(textForTheme).join(" · ") : "No theme suggested yet. You can keep talking or explore without a match."}</p><p><strong>What you want now:</strong> {understandingConfirmed ? `${suggestedNeed.summary || "Explore without personal context"} · confirmed by you` : "Not confirmed yet"}</p></div>
+          <div className="inline-chat-choices"><button type="button" disabled={chatPending} onClick={() => setUnderstandingConfirmed(true)}>Yes, that’s closer</button><button type="button" disabled={chatPending} onClick={() => { setUnderstandingConfirmed(false); setCorrectionRequested(true); }}>Not quite</button><button type="button" disabled={chatPending} onClick={() => { setCorrectionRequested(true); setComposer("I don't want someone to tell me to stay or leave."); }}>Edit in my words</button></div>
           {correctionRequested && <p className="correction-request-status" role="status">Not quite. Tell me what I missed in your own words.</p>}
           {correctedUnderstanding && <section className="causal-understanding" aria-label="Updated editable understanding">
             <div className="causal-comparison"><div><span className="context-eyebrow">WHAT ARJUN SAID</span><p>{chatTurns.filter((turn) => turn.role === "you").at(-2)?.text ?? "His first words are above."}</p></div><span className="comparison-arrow" aria-hidden="true">→</span><div><label className="context-eyebrow" htmlFor="corrected-understanding">WHAT HE CONFIRMED · EDITABLE</label><textarea id="corrected-understanding" rows={3} value={correctedUnderstanding} onChange={(event) => setCorrectedUnderstanding(event.target.value)}/></div></div>
-            <p className="preview-provenance"><strong>Muse Spark could suggest a theme from words Arjun shares; he decides if it fits.</strong><br/>Fictional response · AI is not connected yet.</p>
+            <p className="preview-provenance"><strong>Muse Spark’s suggestion is editable. It affects community recommendations only after you confirm it.</strong></p>
           </section>}
           {understandingConfirmed && <>
             <section className="private-outcome-choice" aria-label="Arjun's optional private takeaway">
@@ -361,13 +498,14 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
             <div className="inline-chat-choices"><button type="button" onClick={exploreExperiences}>Hear experiences</button><button type="button" onClick={() => setComposer("")}>Keep talking</button></div>
           </>}
         </section>}
-        {recordingState === "recording" && <div className="voice-review" role="status"><strong>Listening</strong><span>Recording stays in this browser and is not sent anywhere.</span><div className="inline-actions"><SecondaryButton onClick={stopRecording}>Stop and review</SecondaryButton><button className="text-button" onClick={cancelRecording}>Cancel recording</button></div></div>}
-        {recordingState === "review" && <div className="voice-review"><strong>Review before sending</strong><p>Voice transcription is not connected here. Type or edit the words you want to send; no audio will be shared.</p><label className="field-label" htmlFor="voice-transcript">Your transcript</label><textarea id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)} placeholder="Type what you said, or cancel and use the composer."/><div className="inline-actions"><PrimaryButton onClick={() => { sendChat(transcriptDraft); setRecordingState("idle"); setTranscriptDraft(""); }} disabled={!transcriptDraft.trim()}>Send this text</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div></div>}
+        {recordingState === "recording" && <div className="voice-review" role="status"><strong>Recording · up to 2 minutes</strong><span>Audio stays in this browser until you choose “Transcribe with Meta”.</span><div className="inline-actions"><SecondaryButton onClick={stopRecording}>Stop and review</SecondaryButton><button className="text-button" onClick={cancelRecording}>Cancel recording</button></div></div>}
+        {recordingState === "processing" && <div className="voice-review" role="status"><strong>Preparing your recording…</strong><span>Audio is being converted in this browser. It has not been sent to Meta yet.</span></div>}
+        {recordingState === "review" && <div className="voice-review"><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); }}>Use this in my message</PrimaryButton></div></>}</div>}
         {recordingError && <Notice>{recordingError}</Notice>}
         <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); sendChat(); }}>
           <label className="sr-only" htmlFor="chat-input">Your message</label>
           <textarea id="chat-input" rows={2} value={composer} onChange={(event) => setComposer(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendChat(); } }} placeholder="Write a message…" />
-          <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div>{state.isFeaturedJourney && <SecondaryButton onClick={reviewTranscript}>Review your words</SecondaryButton>}<SecondaryButton onClick={startRecording}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim()}>Send</PrimaryButton></div></div>
+          <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div><SecondaryButton onClick={startRecording} disabled={chatPending || recordingState === "recording" || recordingState === "processing"}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim() || chatPending}>{chatPending ? "Thinking…" : "Send"}</PrimaryButton></div></div>
         </form>
       </section>
       <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); }}>Start a fresh conversation</button></div>
@@ -578,7 +716,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       </div>
       {!laterChapterActive && <section className="panel chapter-summary"><h2>Your selected next step</h2><p>{chapterOne.nextStep || "No next step selected."}</p>{chapterOne.usefulness && <p>Usefulness: {chapterOne.usefulness === "not-helpful" ? "Not helpful" : chapterOne.usefulness === "skip" ? "Skipped" : feedbackLabel(chapterOne.usefulness)}</p>}</section>}
       {laterChapterActive && <section className="panel chapter-summary"><h2>Chapter 2 next step</h2><p>{state.nextStep || "No next step selected in this chapter yet."}</p></section>}
-      <section className="journey-close"><span className="tag tag-human">HARMONISE</span><h2>Find understanding. Find each other.</h2><p>Designed for future Meta AI to help make relevant human experience easier to reach. People choose what to share and what to carry forward.</p><p className="small-note">This scenario uses local fictional content. No Meta model call occurred in this build; every participant and response is fictional.</p></section>
+      <section className="journey-close"><span className="tag tag-human">HARMONISE</span><h2>Find understanding. Find each other.</h2><p>Muse Spark can help reflect private words and suggest themes. People review those suggestions and choose what to share.</p><p className="small-note">Community members and stories remain fictional in this build. Private chat uses Meta only when you send a message; no live community or human support is connected.</p></section>
     </>;
   }
 
@@ -622,10 +760,33 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   }
 
   function renderModeration() {
+    async function triageReportedPost() {
+      if (triageLoading) return;
+      setTriageLoading(true);
+      setTriageResult(null);
+      try {
+        const response = await fetch("/api/moderation/triage", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: fixtures.reportingWorkflow.flaggedText }),
+        });
+        const result: unknown = await response.json().catch(() => null);
+        if (!response.ok || !result || typeof result !== "object" || typeof (result as Record<string, unknown>).severity !== "string") {
+          setTriageResult({ concern: "unavailable", severity: "unavailable", rationale: "AI triage could not run. A moderator should assess the report directly.", recommendedAction: "human-review" });
+          return;
+        }
+        setTriageResult(result as { concern: string; severity: string; rationale: string; recommendedAction: string });
+      } catch {
+        setTriageResult({ concern: "unavailable", severity: "unavailable", rationale: "AI triage could not run. A moderator should assess the report directly.", recommendedAction: "human-review" });
+      } finally {
+        setTriageLoading(false);
+      }
+    }
+
     return <>
       <p className="lede">A report can be reviewed by an authorized person. A host message alone does not mean moderation happened.</p>
-      <Notice tone="private">Fictional staff workspace · no report is routed to a real reviewer and this screen does not enforce staff permissions.</Notice>
-      <section className="panel moderation-case"><span className="tag tag-suggestion">FICTIONAL REPORTED POST</span><h2>Potentially directive advice</h2><blockquote>“Just cut your parents off. It&apos;s the only solution.”</blockquote><p><strong>Report reason:</strong> Pressuring someone to make a relationship decision.</p><p><strong>AI triage:</strong> Not connected. This fictional content is shown for the human-review workflow, not an AI decision.</p><p><strong>Assigned reviewer:</strong> Ananya · fictional trained moderator</p>{!moderationDecision ? <div className="inline-actions"><PrimaryButton onClick={() => setModerationDecision("Revision requested by the fictional reviewer")}>Request revision</PrimaryButton><SecondaryButton onClick={() => setModerationDecision("Post hidden in this browser session")}>Remove this fictional post</SecondaryButton><button className="text-button" onClick={() => setModerationDecision("No action in this browser session")}>No action</button></div> : <div className="moderation-audit"><strong>Decision recorded</strong><p>{moderationDecision}</p><p>Reviewer: Ananya · fictional</p><p>Audit scope: this browser session only. No post or account changed.</p><button className="text-button" onClick={() => setModerationDecision("")}>Reset this review</button></div>}</section>
+      <Notice tone="private">This demo sends the reported post text to Meta for triage when you choose to run it. AI only prioritizes review; it cannot hide a post or make a moderation decision.</Notice>
+      <section className="panel moderation-case"><span className="tag tag-suggestion">FICTIONAL REPORTED POST</span><h2>Potentially directive advice</h2><blockquote>“{fixtures.reportingWorkflow.flaggedText}”</blockquote><p><strong>Report reason:</strong> {fixtures.reportingWorkflow.possibleConcern}</p><p><strong>AI triage:</strong> Use the result as a review aid. A person must decide what happens.</p>{triageResult ? <div className="moderation-audit" role="status"><strong>{triageResult.severity === "urgent" ? "Urgent review" : triageResult.severity === "review" ? "Human review suggested" : triageResult.severity === "low" ? "No clear concern found" : "Triage unavailable"}</strong><p>Concern: {triageResult.concern}</p><p>{triageResult.rationale}</p><p>Suggested next step: {triageResult.recommendedAction}. This is not an enforcement action.</p></div> : <div className="inline-actions"><PrimaryButton onClick={() => { void triageReportedPost(); }} disabled={triageLoading}>{triageLoading ? "Reviewing…" : "Run Meta AI triage"}</PrimaryButton></div>}{!moderationDecision ? <div className="inline-actions"><PrimaryButton onClick={() => setModerationDecision("Revision requested by the fictional reviewer")}>Request revision</PrimaryButton><SecondaryButton onClick={() => setModerationDecision("Post hidden in this browser session")}>Remove this fictional post</SecondaryButton><button className="text-button" onClick={() => setModerationDecision("No action in this browser session")}>No action</button></div> : <div className="moderation-audit"><strong>Human review choice recorded</strong><p>{moderationDecision}</p><p>Audit scope: this browser session only. No post or account changed.</p><button className="text-button" onClick={() => setModerationDecision("")}>Reset this review</button></div>}</section>
     </>;
   }
 
@@ -641,7 +802,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
   function renderCurrentScreen() {
     switch (state.screen) {
-      case "entry": return <div className="entry-first-use"><div className="entry-first-layout"><div className="entry-copy"><span className="tag tag-private">Start with a private thought</span><p className="small-note">Arjun&apos;s fictional story · AI and messaging are not connected yet</p><p className="entry-audience-note">For adults facing family pressure.</p><p className="entry-audience-promise">Think it through privately, correct the reflection, then choose whether to share.</p><div className="entry-first-actions"><PrimaryButton onClick={() => stateDispatch({ type: "START_PATH", path: "talk" })}>Start privately</PrimaryButton><SecondaryButton onClick={() => stateDispatch({ type: "START_PATH", path: "quiet" })}>Explore lived experiences</SecondaryButton></div><p className="small-note">Your private words stay separate from anything you might choose to share.</p></div><HumanConnectionIllustration/></div></div>;
+      case "entry": return <div className="entry-first-use"><div className="entry-first-layout"><div className="entry-copy"><span className="tag tag-private">Start with a private thought</span><p className="small-note">Arjun&apos;s fictional story · Meta AI chat when configured</p><p className="entry-audience-note">For adults facing family pressure.</p><p className="entry-audience-promise">Think it through privately, review a tentative reflection, then choose whether to share.</p><div className="entry-first-actions"><PrimaryButton onClick={() => stateDispatch({ type: "START_PATH", path: "talk" })}>Start privately</PrimaryButton><SecondaryButton onClick={() => stateDispatch({ type: "START_PATH", path: "quiet" })}>Explore lived experiences</SecondaryButton></div><p className="small-note">Your chat is sent to Meta only when you send a message. Nothing is posted to a community automatically.</p></div><HumanConnectionIllustration/></div></div>;
       case "conversation": return renderConversation();
       case "understanding": return renderUnderstanding();
       case "discovery": return renderDiscovery();
@@ -661,14 +822,14 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
   return <main className="harmonise-app">
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="app-header"><div className="header-inner"><Brand/><div className="header-status">Fictional people · services are not connected</div><div className="header-actions"><button className="text-button" onClick={restartJourney}>Restart</button><Link className="leave-link" href="/">Home</Link></div></div></header>
+    <header className="app-header"><div className="header-inner"><Brand/><div className="header-status">Fictional community · Meta AI chat when configured</div><div className="header-actions"><button className="text-button" onClick={restartJourney}>Restart</button><Link className="leave-link" href="/">Home</Link></div></div></header>
     {state.screen !== "entry" && <nav className="primary-nav" aria-label="Main navigation">{navItems.map((item) => <button key={item.screen} className={state.screen === item.screen || (item.screen === "discovery" && ["community", "experience", "question", "reply", "reflection"].includes(state.screen)) || (item.screen === "help" && ["professional", "moderation"].includes(state.screen)) ? "nav-item active" : "nav-item"} aria-current={state.screen === item.screen ? "page" : undefined} onClick={() => navigate(item.screen)}>{item.label}</button>)}</nav>}
     <section id="main-content" className="app-main" aria-labelledby="page-title">
       <div className={`page-topline ${state.screen === "entry" ? "entry-topline" : ""}`}><div><span className="page-kicker">{state.screen === "entry" ? "ARJUN · A FICTIONAL STORY" : "HARMONISE"}</span><h1 id="page-title" className={state.screen === "entry" ? "entry-headline" : undefined} ref={headingRef} tabIndex={-1}>{appHeading(state)}</h1></div>{state.screen !== "entry" && state.screen !== "conversation" && <button className="text-button back-action" onClick={() => stateDispatch({ type: "BACK" })}>← Back</button>}</div>
       <div key={state.screen} className="screen-content">{renderCurrentScreen()}</div>
       {state.error && state.screen !== "question" && state.screen !== "contribute" && <p className="error-message" role="alert">{state.error}</p>}
     </section>
-    <footer className="app-footer"><span>Harmonise</span><span>Fictional people and written responses · AI, messaging, and professional services are not connected</span><button className="footer-link" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>Help &amp; safety</button></footer>
+    <footer className="app-footer"><span>Harmonise</span><span>Fictional community · Meta AI chat · no live peer messaging or human support</span><button className="footer-link" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>Help &amp; safety</button></footer>
   </main>;
 }
 
