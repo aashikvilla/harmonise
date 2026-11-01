@@ -35,8 +35,9 @@ export async function requestMetaChat(options: ChatOptions): Promise<string> {
       body: JSON.stringify({
         model: configuredTextModel(),
         messages: options.messages,
-        max_tokens: options.maxTokens ?? 600,
+        max_completion_tokens: options.maxTokens ?? 600,
         temperature: options.temperature ?? 0.6,
+        reasoning_effort: "minimal",
         ...(options.responseFormat ? { response_format: options.responseFormat } : {}),
       }),
       signal: AbortSignal.timeout(30_000),

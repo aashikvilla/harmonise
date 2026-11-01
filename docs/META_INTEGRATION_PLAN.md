@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phase 0 implemented; local live-provider verification and the remaining phases are tracked below.
+**Status:** Phase 0 implemented and locally verified; the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -16,10 +16,13 @@ This plan takes Harmonise from a visitor arriving on the homepage through privat
 - [x] The chat, voice, adviser, and triage interfaces explain when text or audio is sent to Meta.
 - [x] The moderator screen requires a human decision; no AI result directly hides or publishes a post.
 - [x] A reproducible browser-flow test stub is prepared so routine UI tests do not spend Meta credits.
-- [ ] Verify the configured API key against Meta with synthetic inputs; record status and usage without logging the key or private user content.
-- [ ] Verify the final production build, lint, typecheck, and browser journeys after the last changes.
+- [x] Verify the configured API key and all four Meta routes using synthetic text/audio; no key or private user content was logged.
+- [x] Verify the final production build, lint, typecheck, and 60 desktop/mobile browser journeys after the integration changes.
+- [ ] Surface Meta token-usage and request-latency metadata safely so live evaluation spend can be reported.
 
 **Current boundaries:** session state is not a durable account; communities and peers are fixtures; the triage screen submits one fictional reported post; there is no event stream or background monitor; voice is input-only; no real post, peer message, or human review is delivered.
+
+**Local verification:** chat, adviser, triage, and voice transcription returned HTTP 200 in synthetic local smoke calls. Muse Spark uses minimal reasoning and the current `max_completion_tokens` parameter; moderation has a 700-token output cap. The production build, lint, typecheck, and all 60 mocked browser journeys passed. Token usage and credit spend were not surfaced by the current adapter and remain an explicit Phase 1 task.
 
 ## Model assignment
 

@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Triage this reported community post:\n\n${text}` },
       ],
-      maxTokens: 250,
+      maxTokens: 700,
       temperature: 0,
       responseFormat: RESPONSE_FORMAT,
     });

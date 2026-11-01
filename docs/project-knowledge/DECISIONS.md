@@ -8,6 +8,12 @@
 - **Privacy:** Use Standard mode for sensitive narratives. Do not use Contributor mode for user content. Do not claim zero retention or confidentiality without verifying the applicable provider terms.
 - **Revisit when:** evaluations show a material quality/cost reason to change model or API surface.
 
+## 2026-11-02 — Bound Muse Spark reasoning and output for short flows
+
+- **Decision:** Use the documented `max_completion_tokens` parameter and `reasoning_effort: "minimal"` for the current short structured chat, adviser, and triage requests; allow up to 700 completion tokens for triage.
+- **Reason:** Local synthetic calls initially returned no visible completion under the previous settings. The documented parameter and minimal reasoning made chat/adviser succeed; a larger triage cap allowed structured classification to complete.
+- **Revisit when:** Evaluations compare quality, latency, and measured token cost across representative synthetic cases.
+
 ## 2026-11-02 — Keep moderation human-led
 
 - **Decision:** Model output may classify and prioritize reported content, but cannot enforce a moderation action.

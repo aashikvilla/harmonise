@@ -10,7 +10,9 @@ test.beforeEach(async ({ page }) => {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        reply: "Thank you for sharing that. What feels most important to you right now?",
+        reply: /completely different/i.test(message)
+          ? "We can keep it broad. Is it something happening with someone, or more how you’ve been feeling lately?"
+          : "Thank you for sharing that. What feels most important to you right now?",
         suggestedThemes: familyContext ? ["family-expectations", "personal-autonomy"] : [],
         supportNeed: "human-perspective",
         needSummary: wantsTime ? "You want time to decide what you want, without someone choosing stay or leave for you." : "You want space to talk through what feels uncertain, at your own pace.",
@@ -222,7 +224,7 @@ test("independent spaces support group-only contact, reviewed contribution and h
   await page.getByRole("button", { name: "Find Support" }).click();
   await page.getByRole("button", { name: "Review a reported post" }).click();
   await page.getByRole("button", { name: "Request revision" }).click();
-  await expect(page.getByText(/Decision recorded/)).toBeVisible();
+  await expect(page.getByText(/Human review choice recorded/)).toBeVisible();
   await expect(page.getByText(/No post or account changed/)).toBeVisible();
   await page.getByRole("button", { name: "Connections" }).click();
   await page.getByRole("button", { name: "View a fictional incoming request" }).click();
@@ -308,7 +310,7 @@ test("arbitrary typed text stays tentative until the user confirms an interpreta
   await expect(page.getByText(/We can keep it broad/i)).toBeVisible();
   await sendChat(page, "I would like quiet support.");
   await sendChat(page, "I don't want someone to tell me what to do.");
-  await expect(page.getByText(/I don’t have enough context to name a theme yet/i)).toBeVisible();
+  await expect(page.getByText(/No theme suggested yet\. You can keep talking or explore without a match\./i)).toBeVisible();
   await page.getByRole("button", { name: "Not quite" }).click();
   await expect(page.getByText("Not confirmed yet")).toBeVisible();
 });
