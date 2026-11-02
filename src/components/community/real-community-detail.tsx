@@ -767,7 +767,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
         </p>
       )}
 
-      {!signedIn && community.launch_status !== "pending_review" && (
+      {!activeMember && community.launch_status !== "pending_review" && community.launch_status !== "rejected" && community.launch_status !== "archived" && (
         <div className="grid gap-4 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
           <h3 className="text-lg font-semibold">What happens inside</h3>
           <ul className="grid gap-2 text-sm text-[var(--muted)]">
@@ -776,8 +776,8 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
             <li>Humans moderate; nothing is decided by software alone.</li>
           </ul>
           <ol className="grid gap-1 text-sm font-semibold">
-            <li>1. Create a private account (under a minute).</li>
-            <li>2. Pick an alias used only in this circle.</li>
+            {!signedIn && <li>1. Create a private account (under a minute).</li>}
+            <li>{signedIn ? "1." : "2."} Pick an alias used only in this circle.</li>
           </ol>
         </div>
       )}
