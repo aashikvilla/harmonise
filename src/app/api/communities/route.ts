@@ -6,6 +6,7 @@ import { bodyTooLarge, parseJsonBody } from "@/lib/api-guard";
 import { ensureProfile } from "@/lib/db/sessions";
 import { createPendingCommunity, getCommunityAgent } from "@/lib/db/community";
 import { randomUUID } from "node:crypto";
+import type { CommunityScopePackage } from "@/lib/db/types";
 
 export const runtime = "nodejs";
 
@@ -43,6 +44,31 @@ function safeTopics(value: unknown): string[] | null {
   return topics;
 }
 
+function safeScopeList(value: unknown, maxItems: number, maxLength: number) {
+  if (!Array.isArray(value) || value.length > maxItems) return null;
+  const items: string[] = [];
+  for (const entry of value) {
+    const text = sanitizeText(entry);
+    if (!text || text.length < 2 || text.length > maxLength) return null;
+    if (!items.some((existing) => existing.toLocaleLowerCase("en-US") === text.toLocaleLowerCase("en-US"))) items.push(text);
+  }
+  return items;
+}
+
+function safeScopePackage(value: unknown): CommunityScopePackage | null | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const raw = value as Record<string, unknown>;
+  const includedTopics = safeScopeList(raw.includedTopics, 8, 180);
+  const adjacentTopics = safeScopeList(raw.adjacentTopics, 8, 180);
+  const outOfScopeTopics = safeScopeList(raw.outOfScopeTopics, 8, 180);
+  const norms = safeScopeList(raw.norms, 8, 180);
+  const starterPrompts = safeScopeList(raw.starterPrompts, 5, 180);
+  const welcomeMessage = sanitizeText(raw.welcomeMessage);
+  if (!includedTopics || !adjacentTopics || !outOfScopeTopics || !norms || !starterPrompts || welcomeMessage === null || welcomeMessage.length > 500) return null;
+  return { includedTopics, adjacentTopics, outOfScopeTopics, norms, welcomeMessage, starterPrompts };
+}
+
 function communityId(name: string) {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 35) || "community";
   return `${slug}-${randomUUID().replaceAll("-", "").slice(0, 8)}`;
@@ -65,7 +91,8 @@ export async function POST(request: Request) {
   const name = sanitizeText(body.name);
   const description = sanitizeText(body.description);
   const topics = safeTopics(body.topics);
-  if (!name || name.length < 3 || name.length > 80 || description === null || description.length < 20 || description.length > 500 || !topics) {
+  const scopePackage = safeScopePackage(body.scopeDraft);
+  if (!name || name.length < 3 || name.length > 80 || description === null || description.length < 20 || description.length > 500 || !topics || scopePackage === null) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
   }
   try {
@@ -76,6 +103,7 @@ export async function POST(request: Request) {
       description,
       topics,
       ownerId: user.id,
+      scopePackage,
     });
     const agent = await getCommunityAgent(community.id);
     if (!agent) return NextResponse.json({ error: "unavailable" }, { status: 503 });
@@ -89,6 +117,7 @@ export async function POST(request: Request) {
       agent: {
         displayName: agent.display_name,
         status: agent.status,
+        scopePackage: agent.scope_package,
         disclosure: "AI helper. It offers advisory safety triage to human moderators and cannot take moderation actions.",
       },
     }, { status: 201 });

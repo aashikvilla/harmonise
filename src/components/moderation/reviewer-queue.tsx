@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AuthCard from "@/components/account/auth-card";
+import { ScopeStewardshipPanel } from "@/components/moderation/scope-stewardship-panel";
 
 type Assignment = { community_id: string; community_name: string };
 
@@ -215,6 +216,8 @@ export default function ReviewerQueue() {
           {notice}
         </p>
       )}
+
+      {communityId && <ScopeStewardshipPanel communityId={communityId} />}
 
       {flags.length > 0 && (
         <div className="grid gap-3">
