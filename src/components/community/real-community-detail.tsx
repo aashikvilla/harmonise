@@ -27,6 +27,17 @@ type Post = { id: string; body: string; status: string; created_at: string; auth
 
 type Reply = { id: string; body: string; created_at: string; author_alias: string };
 
+function timeAgo(iso: string) {
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 async function getJson<T>(path: string): Promise<{ status: number; body: T | null }> {
   try {
     const response = await fetch(path, { credentials: "include" });
@@ -350,13 +361,13 @@ function PostCard({
           <span className="rounded-full bg-[var(--sage)] px-2 py-0.5 text-xs">Question</span>
         )}
         <span>·</span>
-        <time>{new Date(post.created_at).toLocaleString()}</time>
+        <time title={new Date(post.created_at).toLocaleString()}>{timeAgo(post.created_at)}</time>
         {post.status !== "visible" && moderator && <span className="rounded-full bg-[var(--peach)] px-2 py-0.5 text-xs">Held for review</span>}
       </div>
       {membership !== null && post.author_alias === membership.alias && post.status !== "visible" && (
         <div role="status" className="mt-2 rounded-lg bg-[var(--peach)] p-3 text-sm">
           {post.status === "held"
-            ? "Held for human review â€” only you see this for now. Nothing is decided yet."
+            ? "Held for human review — only you see this for now. Nothing is decided yet."
             : "Removed by a moderator. You can still appeal below."}{" "}
           {!decisionId && "A moderator decision is still pending."}
         </div>
@@ -466,7 +477,7 @@ function PostCard({
               {replies.map((reply) => (
                 <li key={reply.id} className="rounded-lg bg-[var(--paper)] p-3">
                   <p className="text-sm text-[var(--muted)]">
-                    <strong className="text-[var(--ink)]">{reply.author_alias}</strong> · {new Date(reply.created_at).toLocaleString()}
+                    <strong className="text-[var(--ink)]">{reply.author_alias}</strong> · <time title={new Date(reply.created_at).toLocaleString()}>{timeAgo(reply.created_at)}</time>
                   </p>
                   <p className="mt-1 whitespace-pre-wrap text-sm">{reply.body}</p>
                 </li>
