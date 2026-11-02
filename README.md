@@ -13,7 +13,7 @@ Open <http://localhost:3000/> for the Motion Revival homepage. Browse `/app` or 
 
 ## Product experience
 
-The demo screens support private conversations, a user-correctable understanding, fictional story discovery, local demo participation, reflections, and support information. Live communities support authenticated membership, posts, replies, reports, human-reviewed moderation, and private per-community AI guidance when the required migrations are applied. The interface adapts to desktop and mobile and respects reduced-motion preferences.
+The demo screens support private conversations, a user-correctable understanding, fictional story discovery, local demo participation, reflections, and support information. Live communities support authenticated membership, posts, replies, reports, human-reviewed moderation, and private per-community AI guidance. The scope migrations are deployed to Supabase. The interface adapts to desktop and mobile and respects reduced-motion preferences.
 
 Fictional people and prepared content in `/app` and `/connect` are identified in the interface; those demos do not become live community posts. Live community posts and moderation records use Supabase. The setup copilot, member guide, voice transcription, chat, adviser, and triage each disclose their Meta transfer at the point of use. Model output never makes a moderation decision. Community moderation is not continuous until a worker is scheduled and human coverage is staffed.
 
@@ -29,7 +29,7 @@ Copy-Item .env.example .env.local
 
 Set `MODEL_API_KEY` in `.env.local`. `META_TEXT_MODEL` defaults to `muse-spark-1.3`. Do not add a `NEXT_PUBLIC_` prefix or commit `.env.local`. For hosted deployments, add the same variables as protected server runtime secrets.
 
-The Meta routes include `/api/chat` (private conversation and structured theme suggestions), `/api/advice` (the `/connect` adviser), `/api/voice/transcribe` (WAV transcription), `/api/moderation/triage` (reported-post triage), `/api/communities/propose/assist` (optional community setup drafting), and `/api/communities/[id]/guide` (private, scope-grounded answers for active members). Moderator-selected scope review is available at `/api/communities/[id]/scope-proposals`; it does not scan posts in the background or apply changes without a human decision. The scope migration files must be applied before those routes can use the live database. Human moderation decisions are still required.
+The Meta routes include `/api/chat` (private conversation and structured theme suggestions), `/api/advice` (the `/connect` adviser), `/api/voice/transcribe` (WAV transcription), `/api/moderation/triage` (reported-post triage), `/api/communities/propose/assist` (optional community setup drafting), and `/api/communities/[id]/guide` (private, scope-grounded answers for active members). Moderator-selected scope review is available at `/api/communities/[id]/scope-proposals`; it does not scan posts in the background or apply changes without a human decision. The scope schema is deployed to the live Supabase project. Human moderation decisions are still required.
 
 `META_SETUP_MODEL` is server-only, defaults to `muse-spark-1.3`, and may select `muse-wonder-1.0` only outside production for controlled synthetic evaluation. It has no automatic fallback. Do not use Contributor mode for sensitive user content.
 

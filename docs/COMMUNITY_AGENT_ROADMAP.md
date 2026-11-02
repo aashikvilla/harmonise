@@ -11,7 +11,7 @@
 - Added moderator-selected excerpt scope recommendations, versioned approval/rollback, and explicit split acceptance that creates a private pending proposal without memberships or notifications.
 - Muse Spark remains the default. Muse Wonder is available only through the server-side setup-model switch for controlled non-production evaluation; no Wonder comparison has been run yet.
 - Automatic delegated scope changes are disabled. No timeout approves a scope change or launches a community.
-- The two scope migrations have not been applied remotely. Do not enable the live feature until they are reviewed/applied in order and a staffed reviewer/coverage path is configured.
+- The two scope migrations are applied to the live Supabase project in order. Existing community scope stewardship requires an active moderator; split proposals still need the existing allowlisted launch reviewer and coverage confirmation before launch.
 - Typecheck, lint, and production build passed per feature branch. No automated or browser tests were run in this implementation pass.
 
 ## Product goal

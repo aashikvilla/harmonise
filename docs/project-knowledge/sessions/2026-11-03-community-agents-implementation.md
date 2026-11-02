@@ -11,15 +11,16 @@
 - Implemented the active-member private guide on `community-guide`: approved scope package plus public community metadata and the current question only; no posts, replies, private chat, publishing, or contact actions.
 - Implemented scope stewardship on `scope-stewardship`: moderator-selected excerpt with point-of-use Meta disclosure; the excerpt is not retained; recommendations are versioned and human-reviewed; moderators can approve, reject, or roll back.
 - Accepted split recommendations create one private `pending_review` proposal transactionally and idempotently, without memberships, posts, notifications, or invitations. The usual allowlisted launch reviewer and coverage confirmation remain required.
-- Merged all three feature branches to local `develop`; current integration head is `d10d861`.
-- Added architecture, decision, past-mistake, roadmap, model-audit, and README updates describing the new boundaries and pending database rollout.
+- Merged all three feature branches to local `develop`; pushed the resulting integration to `main` at `db1e0ec`.
+- Added architecture, decision, past-mistake, roadmap, model-audit, and README updates describing the new boundaries and deployed schema.
 
 ## Verification and limits
 
 - Feature worktrees and the combined integration worktree passed `npm run typecheck`, `npm run lint`, and `npm run build`.
-- No unit, browser, or other tests were run. No Supabase migration was applied remotely, no production deployment was changed, and no live Meta model call was made for this implementation.
+- No tests were run manually in this deployment pass, and no live Meta model call was made for implementation. The normal GitHub workflow triggered on `main` and was still in progress at handoff.
 - Migrations `20261102195744_20261102192729_community_scope_stewardship.sql` and `20261102195748_20261102194236_scope_split_proposals.sql` were applied to the live Supabase project in order. The filenames were aligned to the versions recorded by the migration service so future CLI migration checks will not replay them.
 - A post-apply privilege query confirmed the new scope-change table has RLS enabled, grants no read access to `anon` or `authenticated`, and grants service-role access; scope review, rollback, and split-approval functions execute only as `service_role`.
 - `COMMUNITY_REVIEWER_USER_IDS`, named reviewer coverage, and the moderation worker schedule remain unconfigured; these features do not imply continuous moderation.
+- Vercel's production deployment for `db1e0ec` reached `READY`. Existing required Meta/Supabase variables are configured; no new deployment variable was required because setup defaults to Muse Spark.
 - Optional auto-application of scope changes is not enabled. Silence or timeout never approves a change or launches a community.
 - The setup-model switch defaults to Spark; Wonder has not yet been compared on synthetic cases. The install audit surfaced 2 critical and 17 moderate development-tooling advisories in the existing lockfile; no dependency changes were made.
