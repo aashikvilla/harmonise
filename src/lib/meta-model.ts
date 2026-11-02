@@ -1,5 +1,7 @@
 const META_API_BASE = "https://api.meta.ai/v1";
 const DEFAULT_TEXT_MODEL = "muse-spark-1.3";
+const DEFAULT_SETUP_MODEL = "muse-spark-1.3";
+const SETUP_MODELS = new Set(["muse-spark-1.3", "muse-wonder-1.0"]);
 const MODEL_ID_PATTERN = /^[a-z0-9][a-z0-9._/-]{0,63}$/i;
 const CHAT_TIMEOUT_MS = 30_000;
 
@@ -7,6 +9,8 @@ type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 
 type ChatOptions = {
   messages: ChatMessage[];
+  /** Server-selected model override. Never pass through a client-supplied model id. */
+  model?: string;
   maxTokens?: number;
   temperature?: number;
   responseFormat?: Record<string, unknown>;
@@ -48,6 +52,18 @@ export function configuredTextModel() {
   return process.env.META_TEXT_MODEL?.trim() || DEFAULT_TEXT_MODEL;
 }
 
+/**
+ * Setup copilot model switch for controlled synthetic evaluation only.
+ * The client cannot select this value, and failures do not fall back to another model.
+ */
+export function configuredSetupModel() {
+  const model = process.env.META_SETUP_MODEL?.trim() || DEFAULT_SETUP_MODEL;
+  if (!SETUP_MODELS.has(model) || (model === "muse-wonder-1.0" && process.env.NODE_ENV === "production")) {
+    throw new MetaModelError(503, "invalid-model");
+  }
+  return model;
+}
+
 function validModelId(value: string) {
   return MODEL_ID_PATTERN.test(value);
 }
@@ -73,7 +89,7 @@ function parseUsage(data: Record<string, unknown>): MetaUsage {
 export async function requestMetaChatDetailed(options: ChatOptions): Promise<MetaResult> {
   const apiKey = process.env.MODEL_API_KEY;
   if (!apiKey) throw new MetaModelError(503, "missing-key");
-  const model = configuredTextModel();
+  const model = options.model ?? configuredTextModel();
   if (!validModelId(model)) throw new MetaModelError(503, "invalid-model");
 
   const started = Date.now();
