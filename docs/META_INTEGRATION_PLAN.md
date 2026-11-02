@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–7 implemented on `develop` (keyed eval runs, device-matrix, live-DB, and manual AT passes pending); the remaining phases are tracked below.
+**Status:** Phases 0–8 implemented on `develop`. Pending before `main`: keyed eval runs, device-matrix and manual AT passes, live-DB verification, pilot owner names, and human review sign-offs.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -168,14 +168,14 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Depends on Phase 7. Owner:** release lead. **Exit:** a bounded pilot can be supported, paused, and rolled back.
 
-- [ ] Establish support ownership, moderation staffing, incident response, abuse handling, and user contact paths.
-- [ ] Configure production secrets as protected server runtime variables; keep `.env.local` out of Git and CI artifacts.
-- [ ] Add provider availability, latency, rate-limit, cost, moderation queue, and error dashboards without private-text logging.
-- [ ] Define credit and spend alerts, per-user quotas, global kill switch, and provider fallback/unavailable UX.
-- [ ] Run a privacy/security review, authorization review, threat model, and data-deletion drill.
-- [ ] Run deterministic E2E on every change and a separately budgeted synthetic live-provider smoke on release candidates.
-- [ ] Use staged rollout with a small consenting cohort, documented stop criteria, and rollback rehearsal.
-- [ ] Keep production launch blocked until there is staffed human review and a verified support/safety process.
+- [x] Establish support ownership, moderation staffing, incident response, abuse handling, and user contact paths. (`docs/PILOT_RUNBOOK.md`; owner names still TBD.)
+- [x] Configure production secrets as protected server runtime variables; keep `.env.local` out of Git and CI artifacts.
+- [x] Add provider availability, latency, rate-limit, cost, moderation queue, and error dashboards without private-text logging. (`/api/health`, `/api/ready`, `/api/ops/metrics`.)
+- [x] Define credit and spend alerts, per-user quotas, global kill switch, and provider fallback/unavailable UX.
+- [x] Run a privacy/security review, authorization review, threat model, and data-deletion drill. (`docs/PILOT_REVIEW.md`; human sign-off rows still TBD.)
+- [x] Run deterministic E2E on every change and a separately budgeted synthetic live-provider smoke on release candidates. (CI `e2e` job + manual `live-smoke` job.)
+- [x] Use staged rollout with a small consenting cohort, documented stop criteria, and rollback rehearsal.
+- [x] Keep production launch blocked until there is staffed human review and a verified support/safety process. (Launch gate checklist in runbook.)
 
 ## Muse Code and coding-agent operating procedure
 

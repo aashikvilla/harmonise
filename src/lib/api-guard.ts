@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { MetaUsage } from "@/lib/meta-model";
+import { recordRouteMetric } from "@/lib/ops-metrics";
 
 /** Shared server-only guards for Meta-backed routes. Never logs request bodies. */
 
@@ -51,6 +52,14 @@ export function logRouteCall(fields: RouteLogFields) {
     if (fields.usage.totalTokens !== undefined) line.totalTokens = fields.usage.totalTokens;
   }
   console.log(JSON.stringify(line));
+  recordRouteMetric({
+    route: fields.route,
+    status: fields.status,
+    latencyMs: fields.latencyMs,
+    providerLatencyMs: fields.providerLatencyMs,
+    inputTokens: fields.usage?.inputTokens,
+    outputTokens: fields.usage?.outputTokens,
+  });
 }
 
 export type MetaHeaders = {

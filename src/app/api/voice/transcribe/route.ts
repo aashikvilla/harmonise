@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { logRouteCall, newRequestId, withMetaHeaders } from "@/lib/api-guard";
 import { checkRateLimit } from "@/lib/meta-model";
+import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
+import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 
 export const runtime = "nodejs";
 
@@ -19,6 +21,15 @@ export async function POST(request: Request) {
     return withMetaHeaders(NextResponse.json(body, { status }), { requestId, ...meta });
   };
 
+  if (isKillSwitchOn()) {
+    recordKillSwitchDrop();
+    return finish({ error: "unavailable" }, 503, "unavailable", { errorKind: "kill-switch" });
+  }
+  const quotaUser = await userIdForQuota(request);
+  if (quotaUser && checkUserQuota(quotaUser, "voice")) {
+    recordQuotaDrop();
+    return finish({ error: "rate-limited" }, 429, "rate-limited");
+  }
   if (await checkRateLimit(request, "voice", 8)) {
     return finish({ error: "rate-limited" }, 429, "rate-limited");
   }
