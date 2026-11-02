@@ -1,9 +1,25 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useSession, type NameMode } from "@/lib/connect/session";
+import { useSession } from "@/lib/connect/session";
 import { CoachDashboardPreview } from "@/components/connect/coaches";
+
+const DEMO_EMAIL = "demo@harmonise.example";
+const DEMO_PASSWORD = "MuseDemo2026!";
+const DEMO_DISPLAY_NAME = "Quiet Fern";
+
+function subscribeToHydration() {
+  return () => {};
+}
+
+function getClientHydrationSnapshot() {
+  return true;
+}
+
+function getServerHydrationSnapshot() {
+  return false;
+}
 
 function Brand() {
   return (
@@ -20,81 +36,89 @@ function Brand() {
 function MemberForm() {
   const { dispatch } = useSession();
   const router = useRouter();
-  const [nameMode, setNameMode] = useState<NameMode>("alias");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const ready = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  );
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState(DEMO_PASSWORD);
   const [adult, setAdult] = useState(false);
+  const [providerConsent, setProviderConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (name.trim().length === 0) {
-      setError(nameMode === "alias" ? "Choose an alias to continue." : "Enter your name to continue.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError("Enter a valid email address.");
+    if (email.trim().toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
+      setError("Those demo credentials do not match. Use the credentials shown above.");
       return;
     }
     if (!adult) {
       setError("Please confirm you are 18 or older.");
       return;
     }
-    dispatch({ type: "enter", displayName: name.trim(), nameMode, email: email.trim(), demo: false });
+    if (!providerConsent) {
+      setError("Please confirm that your message will be sent to Meta Muse Spark.");
+      return;
+    }
+    dispatch({ type: "enter", displayName: DEMO_DISPLAY_NAME, nameMode: "alias", email: DEMO_EMAIL, demo: true });
     router.push("/connect/member");
   }
 
   return (
-    <form onSubmit={submit} noValidate aria-label="Member entry">
-      <div className="cx-field" role="radiogroup" aria-label="How should Harmonise know you?">
-        <label className="cx-radio-row">
-          <input type="radio" name="nameMode" checked={nameMode === "alias"} onChange={() => setNameMode("alias")} />
-          <span><strong>Use an alias.</strong> Stay private; direct 1:1 coach requests stay off.</span>
+    <div>
+      <div className="cx-demo-credentials" aria-label="Demo credentials">
+        <p className="cx-demo-title">Demo account</p>
+        <dl>
+          <div><dt>Email</dt><dd>{DEMO_EMAIL}</dd></div>
+          <div><dt>Password</dt><dd>{DEMO_PASSWORD}</dd></div>
+        </dl>
+        <p>These shared demo credentials are not a private or real account.</p>
+      </div>
+      <form onSubmit={submit} noValidate aria-label="Demo account sign in">
+        <div className="cx-field">
+          <label className="cx-label" htmlFor="cx-demo-email">Demo email</label>
+          <input
+            id="cx-demo-email"
+            className="cx-input"
+            type="email"
+            autoComplete="username"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </div>
+        <div className="cx-field">
+          <label className="cx-label" htmlFor="cx-demo-password">Demo password</label>
+          <input
+            id="cx-demo-password"
+            className="cx-input"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </div>
+        <label className="cx-check-row">
+          <input type="checkbox" checked={adult} onChange={(event) => setAdult(event.target.checked)} />
+          <span>I confirm I am 18 or older.</span>
         </label>
-        <label className="cx-radio-row">
-          <input type="radio" name="nameMode" checked={nameMode === "real"} onChange={() => setNameMode("real")} />
-          <span><strong>Use my real name.</strong> Enables coach introduction previews.</span>
+        <label className="cx-check-row">
+          <input type="checkbox" checked={providerConsent} onChange={(event) => setProviderConsent(event.target.checked)} />
+          <span>I understand my message will be sent to Meta Muse Spark for a response.</span>
         </label>
-      </div>
-      <div className="cx-field">
-        <label className="cx-label" htmlFor="cx-entry-name">{nameMode === "alias" ? "Your alias" : "Your name"}</label>
-        <input
-          id="cx-entry-name"
-          className="cx-input"
-          type="text"
-          autoComplete="nickname"
-          maxLength={40}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder={nameMode === "alias" ? "e.g. Quiet Fern" : "e.g. Jordan Lee"}
-        />
-      </div>
-      <div className="cx-field">
-        <label className="cx-label" htmlFor="cx-entry-email">Email</label>
-        <input
-          id="cx-entry-email"
-          className="cx-input"
-          type="email"
-          autoComplete="email"
-          maxLength={120}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="you@example.com"
-        />
-      </div>
-      <label className="cx-check-row">
-        <input type="checkbox" checked={adult} onChange={(event) => setAdult(event.target.checked)} />
-        <span>I confirm I am 18 or older.</span>
-      </label>
-      {error ? <p className="cx-error" role="alert">{error}</p> : null}
-      <div className="cx-disclaimer">
-        Prototype only: Harmonise is not therapy, diagnosis, legal advice, financial advice, or emergency response.
-        No real account is created and entries reset on refresh.
-      </div>
-      <div className="cx-cta-row">
-        <button type="submit" className="cx-btn cx-btn-primary cx-btn-block">Find support</button>
-      </div>
-    </form>
+        {error ? <p className="cx-error" role="alert">{error}</p> : null}
+        <div className="cx-disclaimer">
+          Demo only: sign-in and circle membership stay in this browser session. No account, conversation, or community
+          post is written to Supabase. Use fictional details; do not enter information that identifies you.
+          Harmonise is not therapy, diagnosis, legal advice, financial advice, or emergency response.
+        </div>
+        <div className="cx-cta-row">
+          <button type="submit" disabled={!ready} className="cx-btn cx-btn-primary cx-btn-block">
+            Sign in and continue to chat
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
@@ -144,14 +168,7 @@ function CoachPath() {
 }
 
 export default function Onboarding() {
-  const { dispatch } = useSession();
-  const router = useRouter();
   const [path, setPath] = useState<"member" | "coach">("member");
-
-  function exploreDemo() {
-    dispatch({ type: "enter", displayName: "Guest explorer", nameMode: "alias", email: "", demo: true });
-    router.push("/connect/member");
-  }
 
   return (
     <main className="cx-gate">
@@ -170,31 +187,31 @@ export default function Onboarding() {
             <ol className="cx-flow">
               <li>
                 <span className="cx-flow-num" aria-hidden="true">1</span>
-                <div><strong>Listen</strong><span>Explain privately, in your own words. Nothing is posted.</span></div>
+                <div><strong>Sign in to the demo</strong><span>Use the shared demo credentials; no new account is created.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">2</span>
-                <div><strong>Advise</strong><span>Meta Muse Spark reflects what it heard and offers next steps.</span></div>
+                <div><strong>Chat privately</strong><span>Meta Muse Spark reflects what it heard and offers next steps.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">3</span>
-                <div><strong>You choose connection</strong><span>Communities appear only after you ask to see them.</span></div>
+                <div><strong>You choose a circle</strong><span>Sample communities appear only after you ask to see them.</span></div>
               </li>
             </ol>
             <div className="cx-privacy-list">
               <p>Private by design</p>
               <ul>
-                <li>Your message is sent to Meta Muse Spark to generate general guidance.</li>
+                <li>Meta Muse Spark generates general guidance from the message you send.</li>
                 <li>Your conversation is not posted to a community.</li>
-                <li>This prototype does not store conversations in an app database.</li>
-                <li>Community joining is always explicit and consent-based.</li>
+                <li>Demo chat and circle membership stay in this browser session, not the app database.</li>
+                <li>Sample circles appear after you ask and joining is your choice.</li>
                 <li>Raw conversation should never automatically become a public profile or community post.</li>
               </ul>
             </div>
           </div>
           <section className="cx-gate-card cx-card-white" aria-label="Enter Harmonise">
-            <p className="cx-kicker">Prototype entry</p>
-            <h2>Begin, on your terms</h2>
+            <p className="cx-kicker">Demo sign-in</p>
+            <h2>Continue without creating an account</h2>
             <div className="cx-path-tabs" role="tablist" aria-label="Entry path">
               <button
                 type="button"
@@ -203,7 +220,7 @@ export default function Onboarding() {
                 className="cx-path-tab"
                 onClick={() => setPath("member")}
               >
-                Find support
+                Member demo
               </button>
               <button
                 type="button"
@@ -212,15 +229,10 @@ export default function Onboarding() {
                 className="cx-path-tab"
                 onClick={() => setPath("coach")}
               >
-                Give support
+                Coach preview
               </button>
             </div>
             {path === "member" ? <MemberForm /> : <CoachPath />}
-            <div className="cx-demo-row">
-              <button type="button" className="cx-btn cx-btn-ghost" onClick={exploreDemo}>
-                Explore without entering details
-              </button>
-            </div>
           </section>
         </div>
       </div>

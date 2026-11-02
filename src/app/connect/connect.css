@@ -133,6 +133,19 @@
   font-size: 14px;
   line-height: 1.55;
 }
+.cx-demo-credentials {
+  margin: 16px 0 18px;
+  padding: 15px 17px;
+  border: 1px solid #ded6cd;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fffaf5, #f6efe8);
+}
+.cx-demo-credentials p { margin: 0; color: var(--cx-muted); font-size: 13px; line-height: 1.5; }
+.cx-demo-credentials .cx-demo-title { margin-bottom: 8px; color: var(--cx-forest-deep); font-size: 14px; font-weight: 800; }
+.cx-demo-credentials dl { display: grid; gap: 6px; margin: 0 0 8px; }
+.cx-demo-credentials dl div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.cx-demo-credentials dt { color: var(--cx-muted); font-size: 12px; font-weight: 700; }
+.cx-demo-credentials dd { margin: 0; overflow-wrap: anywhere; color: var(--cx-ink); font-size: 14px; font-weight: 700; }
 
 /* ---------- Gate / onboarding ---------- */
 .cx-gate {

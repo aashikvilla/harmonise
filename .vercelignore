@@ -1,0 +1,26 @@
+# Historical material and demos are not part of the running application.
+/archive/
+/demo-videos/
+/public/demo-videos/
+
+# Never upload video captures or demo footage, regardless of where they live.
+**/*.mp4
+**/*.mov
+**/*.m4v
+**/*.webm
+**/*.avi
+**/*.mkv
+**/*.mpeg
+**/*.mpg
+**/*.3gp
+**/*.ogv
+**/*.wmv
+**/*.flv
+
+# Build and evaluation inputs are only needed in development and CI.
+/docs/
+/tests/
+/evals/
+/test-results/
+/playwright-report/
+/coverage/

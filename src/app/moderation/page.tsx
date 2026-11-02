@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ReviewerQueue from "@/components/moderation/reviewer-queue";
+import CommunityProposalReviewQueue from "@/components/moderation/community-proposal-review-queue";
 
 export const metadata: Metadata = {
   title: "harmonize. — Moderation review",
@@ -20,6 +21,7 @@ export default function ModerationPage() {
         Reported posts reach authorized humans with full context. AI suggestions advise; only people decide.
       </p>
       <div className="mt-6">
+        <CommunityProposalReviewQueue />
         <ReviewerQueue />
       </div>
     </main>

@@ -9,6 +9,7 @@ type Community = {
   name: string;
   description: string;
   visibility: "public" | "member";
+  launch_status?: "pending_review" | "approved";
   memberCount: number;
   postCount: number;
 };
@@ -91,19 +92,26 @@ export default function RealCommunityList() {
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
         <h2 className="text-xl font-semibold">No communities yet</h2>
         <p className="mt-2 text-[var(--muted)]">
-          No one has opened a community here. When one opens, it will appear with real member and post counts.
+          No one has opened a community here yet. You can suggest one for human review.
         </p>
+        <Link href="/communities/propose" className="button button-primary mt-4">Suggest a community</Link>
       </div>
     );
   }
 
   return (
+    <>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--lilac)] p-4 sm:px-5">
+      <p className="text-sm">Can’t find a space that fits? Suggest one for human review.</p>
+      <Link href="/communities/propose" className="button button-secondary">Suggest a community</Link>
+    </div>
     <ul className="grid gap-4 sm:grid-cols-2">
       {communities.map((community) => (
         <li key={community.id} className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-hover)]">
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wide">
+            {community.launch_status === "pending_review" && <span className="rounded-full bg-[var(--peach)] px-3 py-1 text-[var(--ink)]">Waiting for human review</span>}
             <span className="rounded-full bg-[var(--sage)] px-3 py-1 text-[var(--sage-ink)]">
-              {community.visibility === "public" ? "Public" : "Members only"}
+              {community.launch_status === "pending_review" ? "Private proposal" : community.visibility === "public" ? "Public" : "Members only"}
             </span>
             <span className="text-[var(--muted)]">
               {community.memberCount} {community.memberCount === 1 ? "member" : "members"} · {community.postCount}{" "}
@@ -127,10 +135,11 @@ export default function RealCommunityList() {
             href={`/communities/${community.id}`}
             className="mt-4 inline-block rounded-full bg-[var(--ink)] px-5 py-2.5 text-white"
           >
-            View community
+            {community.launch_status === "pending_review" ? "View proposal" : "View community"}
           </Link>
         </li>
       ))}
     </ul>
+    </>
   );
 }

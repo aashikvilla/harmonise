@@ -1,6 +1,7 @@
 import { CONSENT_VERSION, sha256Hex } from "@/lib/consent";
 import type {
   CommunityRow,
+  CommunityAgentRow,
   ConsentRecordRow,
   MembershipRow,
   PostReplyRow,
@@ -12,8 +13,18 @@ import { ensureProfile } from "@/lib/db/sessions";
 import { enqueueModerationEvent } from "@/lib/db/moderation";
 
 export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number };
+export type PublicCommunity = Omit<CommunityWithCounts, "created_by" | "reviewed_by" | "reviewed_at" | "coverage_confirmed_at">;
 export type PostWithAuthor = PostRow & { author_alias: string };
 export type ReplyWithAuthor = PostReplyRow & { author_alias: string };
+
+export function publicCommunity(community: CommunityWithCounts): PublicCommunity {
+  const safe: Record<string, unknown> = { ...community };
+  delete safe.created_by;
+  delete safe.reviewed_by;
+  delete safe.reviewed_at;
+  delete safe.coverage_confirmed_at;
+  return safe as PublicCommunity;
+}
 
 export function validCommunityId(value: string) {
   return /^[a-z0-9-]{3,48}$/.test(value);
@@ -26,8 +37,16 @@ export function validAlias(value: unknown): string | null {
   return alias;
 }
 
-export async function listCommunities(): Promise<CommunityWithCounts[]> {
-  const rows = await supabaseRest<CommunityRow[]>("communities", { query: "?select=*&order=name.asc" });
+export async function listCommunities(userId?: string): Promise<CommunityWithCounts[]> {
+  const publicRows = await supabaseRest<CommunityRow[]>("communities", {
+    query: "?launch_status=eq.approved&select=*&order=name.asc",
+  });
+  const ownedPending = userId
+    ? await supabaseRest<CommunityRow[]>("communities", {
+        query: `?launch_status=eq.pending_review&created_by=eq.${userId}&select=*&order=created_at.desc`,
+      })
+    : [];
+  const rows = [...publicRows, ...ownedPending];
   return Promise.all(
     rows.map(async (community) => {
       const [memberCount, postCount] = await Promise.all([
@@ -50,6 +69,49 @@ export async function getCommunityWithCounts(id: string): Promise<CommunityWithC
   return { ...community, memberCount, postCount };
 }
 
+export async function createPendingCommunity(input: {
+  id: string;
+  name: string;
+  description: string;
+  topics: string[];
+  ownerId: string;
+}): Promise<CommunityRow> {
+  const rows = await supabaseRest<CommunityRow[]>("rpc/create_pending_community", {
+    method: "POST",
+    body: {
+      p_id: input.id,
+      p_name: input.name,
+      p_description: input.description,
+      p_topics: input.topics,
+      p_owner_id: input.ownerId,
+    },
+  });
+  const created = selectSingle(rows);
+  if (!created) throw new Error("community not created");
+  return created;
+}
+
+export async function getCommunityAgent(communityId: string): Promise<CommunityAgentRow | null> {
+  const rows = await supabaseRest<CommunityAgentRow[]>("community_moderator_agents", {
+    query: `?community_id=eq.${encodeURIComponent(communityId)}&select=id,community_id,display_name,status,community_context,created_at&limit=1`,
+  });
+  return selectSingle(rows);
+}
+
+export async function reviewPendingCommunity(communityId: string, reviewerId: string, coverageConfirmed: boolean) {
+  const rows = await supabaseRest<CommunityRow[]>("rpc/review_community_launch", {
+    method: "POST",
+    body: { p_community_id: communityId, p_reviewer_id: reviewerId, p_coverage_confirmed: coverageConfirmed },
+  });
+  return selectSingle(rows);
+}
+
+export async function listPendingCommunityReviews() {
+  return supabaseRest<CommunityRow[]>("communities", {
+    query: "?launch_status=eq.pending_review&select=id,name,description,topics,created_at&order=created_at.asc",
+  });
+}
+
 export async function getMembership(userId: string, communityId: string): Promise<MembershipRow | null> {
   const rows = await supabaseRest<MembershipRow[]>("memberships", {
     query: `?user_id=eq.${userId}&community_id=eq.${communityId}&select=*`,
@@ -67,7 +129,7 @@ export type JoinResult = { membership: MembershipRow } | { error: "not-found" | 
 export async function joinCommunity(userId: string, communityId: string, alias: string): Promise<JoinResult> {
   await ensureProfile(userId);
   const community = await getCommunityWithCounts(communityId);
-  if (!community) return { error: "not-found" };
+  if (!community || community.launch_status !== "approved") return { error: "not-found" };
   const existing = await getMembership(userId, communityId);
   if (existing?.status === "blocked") return { error: "blocked" };
   if (existing) {
@@ -100,7 +162,7 @@ export type PostsAccess = { ok: true; moderator: boolean } | { ok: false; reason
 
 export async function checkPostsAccess(userId: string | null, communityId: string): Promise<PostsAccess> {
   const community = await getCommunityWithCounts(communityId);
-  if (!community) return { ok: false, reason: "not-found" };
+  if (!community || community.launch_status !== "approved") return { ok: false, reason: "not-found" };
   if (community.visibility === "public") {
     const moderator = userId ? await isModerator(userId, communityId) : false;
     return { ok: true, moderator };

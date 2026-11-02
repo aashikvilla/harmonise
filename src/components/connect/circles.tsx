@@ -1,8 +1,34 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { COMMUNITIES, SAMPLE_FEEDS, SCHEDULED_CARDS, type CommunityId, type FeedPost } from "@/lib/connect/catalog";
+import { COMMUNITY_PROGRESS_DEMO_FIXTURES } from "@/lib/community-progress-demo";
 import { useSession } from "@/lib/connect/session";
+
+function CommunityProgressExamples() {
+  const labels = {
+    "new-member": "Getting started",
+    contributor: "Contributor",
+    "community-regular": "Community regular",
+  };
+
+  return <section className="cx-card-white" aria-label="Sample community activity levels">
+    <p className="cx-kicker">DEMO EXAMPLES · NOT LIVE MEMBERS</p>
+    <h2 className="cx-section-title">Community activity levels</h2>
+    <ul className="cx-feed">
+      {COMMUNITY_PROGRESS_DEMO_FIXTURES.filter((fixture) => fixture.demoOnly).map((fixture) => <li key={fixture.alias} className="cx-post">
+        <div className="cx-card-meta">
+          <strong>{fixture.alias}</strong>
+          <span className="cx-tag cx-tag-green">{labels[fixture.level]}</span>
+        </div>
+        <p>{fixture.contributions} visible contributions across {fixture.activeDays} active {fixture.activeDays === 1 ? "day" : "days"}</p>
+      </li>)}
+    </ul>
+    <p className="cx-note">Live levels use distinct visible posts and replies across days. They describe activity only and don’t imply trust, expertise, or a verified role.</p>
+    <Link className="cx-btn cx-btn-soft" href="/communities">Explore live communities</Link>
+  </section>;
+}
 
 function CircleFeed({ circleId }: { circleId: CommunityId }) {
   const { state, dispatch } = useSession();
@@ -99,6 +125,7 @@ export default function Circles() {
         <button type="button" className="cx-btn cx-btn-primary" onClick={() => dispatch({ type: "set-tab", tab: "find" })}>
           Talk with the adviser
         </button>
+        <div style={{ marginTop: "24px" }}><CommunityProgressExamples /></div>
       </section>
     );
   }
@@ -145,6 +172,7 @@ export default function Circles() {
           </section>
         );
       })}
+      <CommunityProgressExamples />
     </div>
   );
 }

@@ -9,7 +9,7 @@ type QueueItem = {
   report: { id: string; reason: string; status: string; created_at: string };
   target: { kind: string; id: string; body: string; status: string; author_alias: string } | null;
   reporter_alias: string;
-  suggestion: { concern: string; severity: string; rationale: string; uncertainty: string; policy_version: string } | null;
+  suggestion: { concern: string; severity: string; rationale: string; uncertainty: string; policy_version: string; helper?: { display_name: string; kind: "ai" } } | null;
   decisions: { id: string; decision: string; rationale: string; policy_version: string; created_at: string }[];
   appeals: { id: string; reason: string; status: string; created_at: string }[];
 };
@@ -48,7 +48,7 @@ async function sendJson<T>(path: string, method: string, data?: unknown): Promis
 type LiveFlag = {
   eventId: string;
   excerpt: string;
-  suggestion: { concern: string; severity: string; rationale: string; uncertainty: string };
+  suggestion: { concern: string; severity: string; rationale: string; uncertainty: string; helper?: { display_name: string; kind: "ai" } };
   createdAt: string;
 };
 
@@ -223,7 +223,7 @@ export default function ReviewerQueue() {
             <div key={flag.eventId} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4 text-sm">
               <p>
                 <strong>{flag.suggestion.severity}</strong> · {flag.suggestion.concern} · uncertainty{" "}
-                {flag.suggestion.uncertainty} · {new Date(flag.createdAt).toLocaleString()}
+                {flag.suggestion.uncertainty} · {flag.suggestion.helper?.display_name ?? "AI triage"} · {new Date(flag.createdAt).toLocaleString()}
               </p>
               <p className="mt-1 whitespace-pre-wrap text-[var(--muted)]">{flag.excerpt}</p>
               <p className="mt-1">{flag.suggestion.rationale}</p>
@@ -268,7 +268,7 @@ export default function ReviewerQueue() {
               {item.suggestion ? (
                 <p className="mt-1">
                   {item.suggestion.concern} · {item.suggestion.severity} · uncertainty {item.suggestion.uncertainty} ·
-                  policy {item.suggestion.policy_version} — {item.suggestion.rationale}
+                  policy {item.suggestion.policy_version} · {item.suggestion.helper?.display_name ?? "AI triage"} — {item.suggestion.rationale}
                 </p>
               ) : (
                 <p className="mt-1 text-[var(--muted)]">No AI suggestion yet — decide from the content and policy.</p>
