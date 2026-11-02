@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–4 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
+**Status:** Phases 0–5 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -128,12 +128,12 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Depends on Phase 2; can progress in parallel with Phase 4 after API contracts are agreed. Owner:** community/backend agent. **Exit:** membership, reading, posting, and consent are real server operations with access checks.
 
-- [ ] Define communities, memberships, roles, approved experiences, posts, replies, reports, and availability.
-- [ ] Implement server-authorized read and write paths; verify database access policies with positive and negative cases.
-- [ ] Separate visitor-readable content from member-only content and private conversations.
-- [ ] Implement explicit join/leave, pseudonymous profile, quiet-reader path, and exact-text/audience review before posting.
-- [ ] Add real-time updates only after authorization, moderation, abuse limits, and reconnect semantics are defined.
-- [ ] Replace fictional participant counts and messages with truthful empty, loading, and error states until real data exists.
+- [x] Define communities, memberships, roles, approved experiences, posts, replies, reports, and availability (curated experiences reuse posts plus moderation decisions).
+- [x] Implement server-authorized read and write paths; verify database access policies with positive and negative cases (gated spec; live-DB run pending).
+- [x] Separate visitor-readable content from member-only content and private conversations.
+- [x] Implement explicit join/leave, pseudonymous profile, quiet-reader path, and exact-text/audience review before posting.
+- [x] Add real-time updates only after authorization, moderation, abuse limits, and reconnect semantics are defined. (Decision: deferred — manual refresh instead; no live socket.)
+- [x] Replace fictional participant counts and messages with truthful empty, loading, and error states until real data exists (real `/communities` surface; labeled prototype demos untouched).
 
 ## Phase 6 — Human moderation pipeline and AI triage agent
 

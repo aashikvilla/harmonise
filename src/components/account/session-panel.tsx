@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import AuthCard from "@/components/account/auth-card";
 import { markSignedOut, setSyncSession } from "@/lib/session-sync";
 
 export type ResumeTurn = { role: "you" | "harmonise"; text: string };
@@ -43,9 +44,6 @@ export default function SessionPanel({
   const [dbEnabled, setDbEnabled] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -54,6 +52,22 @@ export default function SessionPanel({
     if (list.status === 200 && Array.isArray(list.body?.sessions)) setSessions(list.body.sessions);
   }, []);
 
+  const checkSession = useCallback(async () => {
+    const me = await api("/api/auth/me");
+    if (me.status === 200) {
+      setSignedIn(true);
+      await loadSessions();
+      return;
+    }
+    if (me.status === 401) {
+      const refreshed = await api("/api/auth/refresh", { method: "POST" });
+      if (refreshed.status === 200 && (await api("/api/auth/me")).status === 200) {
+        setSignedIn(true);
+        await loadSessions();
+      }
+    }
+  }, [loadSessions]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -61,72 +75,21 @@ export default function SessionPanel({
       if (cancelled) return;
       const enabled = config.body?.databaseEnabled === true;
       setDbEnabled(enabled);
-      if (enabled) {
-        const me = await api("/api/auth/me");
-        if (cancelled) return;
-        if (me.status === 200) {
-          setSignedIn(true);
-          await loadSessions();
-        } else if (me.status === 401) {
-          const refreshed = await api("/api/auth/refresh", { method: "POST" });
-          if (cancelled) return;
-          if (refreshed.status === 200 && (await api("/api/auth/me")).status === 200) {
-            setSignedIn(true);
-            await loadSessions();
-          }
-        }
-      }
-      setReady(true);
+      if (enabled) await checkSession();
+      if (!cancelled) setReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [loadSessions]);
+  }, [checkSession]);
 
   if (!ready || !dbEnabled) return null;
-
-  async function sendCode() {
-    setBusy(true);
-    setError("");
-    const result = await api("/api/auth/otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    setBusy(false);
-    if (result.status === 200) {
-      setCodeSent(true);
-    } else if (result.status === 429) {
-      setError("Too many code requests. Wait a minute and try again.");
-    } else {
-      setError("The sign-in code could not be sent. Try again.");
-    }
-  }
-
-  async function verifyCode() {
-    setBusy(true);
-    setError("");
-    const result = await api("/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code }),
-    });
-    setBusy(false);
-    if (result.status === 200) {
-      setSignedIn(true);
-      setCode("");
-      await loadSessions();
-    } else {
-      setError("That code did not match. Check the latest email and try again.");
-    }
-  }
 
   async function signOut() {
     await api("/api/auth/signout", { method: "POST" });
     markSignedOut();
     setSignedIn(false);
     setSessions([]);
-    setCodeSent(false);
     onNewSession();
   }
 
@@ -189,36 +152,7 @@ export default function SessionPanel({
   }
 
   if (!signedIn) {
-    return (
-      <section className="panel session-panel" aria-label="Save and resume conversations">
-        <span className="context-eyebrow">OPTIONAL ACCOUNT · PRIVATE ONLY</span>
-        <h2>Save and resume across devices</h2>
-        <p className="small-note">
-          With an account, your private conversations are stored for you alone and expire after 90 days without use.
-          Nothing is shared with any community. You can export or delete everything at any time.
-        </p>
-        <label className="field-label" htmlFor="session-email">Email for a sign-in code</label>
-        <input id="session-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-        {codeSent && (
-          <>
-            <label className="field-label" htmlFor="session-email-code">6-digit code from your email</label>
-            <input id="session-email-code" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value)} />
-          </>
-        )}
-        {error && <p className="notice">{error}</p>}
-        <div className="inline-actions">
-          {!codeSent ? (
-            <button type="button" className="button button-primary" disabled={busy || !email.trim()} onClick={() => void sendCode()}>
-              {busy ? "Sending…" : "Email me a code"}
-            </button>
-          ) : (
-            <button type="button" className="button button-primary" disabled={busy || !code.trim()} onClick={() => void verifyCode()}>
-              {busy ? "Checking…" : "Sign in"}
-            </button>
-          )}
-        </div>
-      </section>
-    );
+    return <AuthCard heading="Save and resume across devices" onSignedIn={() => void checkSession()} />;
   }
 
   return (
@@ -262,6 +196,9 @@ export default function SessionPanel({
         <button type="button" className="text-button" onClick={() => void exportData()}>Export my data</button>
         <button type="button" className="text-button" onClick={() => void signOut()}>Sign out</button>
       </div>
+      <p className="small-note">
+        <a href="/communities">Browse real communities</a> with this same account.
+      </p>
     </section>
   );
 }

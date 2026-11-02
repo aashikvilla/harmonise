@@ -90,6 +90,19 @@ export function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
+export async function supabaseCount(table: string, query: string): Promise<number> {
+  const base = supabaseUrl();
+  if (!base || !process.env.SUPABASE_SERVICE_ROLE_KEY) throw new SupabaseError(503, "not-configured");
+  const withSelect = query.includes("select=") ? query : `${query}&select=id`;
+  const response = await fetch(`${base}/rest/v1/${table}${withSelect}`, {
+    headers: { ...serviceHeaders(), Prefer: "count=exact" },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!response.ok) throw new SupabaseError(502, "count-failed");
+  const total = Number((response.headers.get("content-range") ?? "").split("/")[1]);
+  return Number.isFinite(total) ? total : 0;
+}
+
 export function dbFailureStatus(error: unknown) {
   if (error instanceof SupabaseError) {
     if (error.code === "not-configured") return 503;
