@@ -33,6 +33,7 @@ type ScopeChange = {
   applied_at: string | null;
   rolled_back_at: string | null;
   rollback_rationale: string | null;
+  split_community_id: string | null;
 };
 
 async function readJson<T>(response: Response): Promise<T | null> {
@@ -124,7 +125,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ decision, rationale }),
       });
-      const body = await readJson<{ error?: string }>(response);
+      const body = await readJson<{ error?: string; change?: ScopeChange }>(response);
       if (!response.ok) {
         setError(body?.error === "scope-changed" ? "The community scope changed after this suggestion was created. Refresh and review it again." : body?.error === "rollback-unavailable" ? "This change can no longer be rolled back because a later scope version is active." : "That review decision could not be recorded.");
         await loadChanges();
@@ -134,7 +135,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
       setNotice(decision === "rollback"
         ? "The previous community scope was restored. The version history keeps both changes."
         : change.recommendation_kind === "split" && decision === "approved"
-        ? "Split recommendation accepted. A separate community still needs its own proposal and human launch review."
+        ? `Private pending community proposal created${body?.change?.split_community_id ? ` (${body.change.split_community_id})` : ""}. It awaits separate launch review; nobody was notified or invited.`
         : decision === "approved" ? "Scope update applied and recorded." : "Suggestion rejected and recorded.");
       await loadChanges();
     } catch {
@@ -231,7 +232,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
                     {draft.newCommunityScopePackage.norms.length > 0 && <p className="mt-1"><span className="font-semibold">Norms:</span> {draft.newCommunityScopePackage.norms.join(" · ")}</p>}
                     {draft.newCommunityScopePackage.welcomeMessage && <p className="mt-2"><span className="font-semibold">Welcome:</span> {draft.newCommunityScopePackage.welcomeMessage}</p>}
                     {draft.newCommunityScopePackage.starterPrompts.length > 0 && <p className="mt-1"><span className="font-semibold">Starter prompts:</span> {draft.newCommunityScopePackage.starterPrompts.join(" · ")}</p>}
-                    <p className="mt-2 text-xs text-[var(--muted)]">Accepting this suggestion records that a split is recommended; it does not create or launch a community.</p>
+                    <p className="mt-2 text-xs text-[var(--muted)]">Accepting creates a private pending community proposal. It is not launched, and nobody is notified or invited. A separate allowlisted launch reviewer must confirm human coverage before launch.</p>
                   </div>
                 )}
 
@@ -252,7 +253,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
                     </label>
                     <div className="flex flex-wrap gap-2">
                       <button type="button" disabled={busy} onClick={() => void decide(change, "approved")} className="min-h-11 rounded-full bg-[var(--ink)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-                        {change.recommendation_kind === "split" ? "Accept split recommendation" : "Approve and apply scope"}
+                        {change.recommendation_kind === "split" ? "Create private proposal" : "Approve and apply scope"}
                       </button>
                       <button type="button" disabled={busy} onClick={() => void decide(change, "rejected")} className="min-h-11 rounded-full border border-[var(--line)] bg-white px-4 py-2 text-sm font-semibold disabled:opacity-50">
                         Reject suggestion
@@ -260,6 +261,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
                     </div>
                   </div>
                 )}
+                {change.split_community_id && <p className="text-sm text-[var(--muted)]">Private pending proposal: {change.split_community_id}. Waiting for separate allowlisted launch review and human coverage confirmation; nobody was notified or invited.</p>}
                 {change.status === "approved" && change.applied_at && !change.rolled_back_at && (
                   <div className="grid gap-2">
                     <label className="grid gap-1 text-sm font-semibold" htmlFor={`scope-rollback-note-${change.id}`}>

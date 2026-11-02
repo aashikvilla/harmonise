@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { bodyTooLarge, parseJsonBody } from "@/lib/api-guard";
-import { reviewCommunityScopeChange, rollbackCommunityScopeChange, validCommunityId } from "@/lib/db/community";
+import { approveCommunityScopeSplit, getCommunityScopeChange, reviewCommunityScopeChange, rollbackCommunityScopeChange, validCommunityId } from "@/lib/db/community";
 import { dbFailureStatus, getAuthUser, isDatabaseConfigured, isUuid, SupabaseError } from "@/lib/db/supabase";
 import { isCommunityModerator } from "@/lib/db/moderation";
 
@@ -24,6 +24,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
   try {
     if (!(await isCommunityModerator(user.id, id))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    const reviewedProposal = body.decision === "approved" ? await getCommunityScopeChange(id, proposalId) : null;
+    if (body.decision === "approved" && !reviewedProposal) return NextResponse.json({ error: "not-found" }, { status: 404 });
     const change = body.decision === "rollback"
       ? await rollbackCommunityScopeChange({
           changeId: proposalId,
@@ -31,6 +33,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           reviewerId: user.id,
           rationale: body.rationale.trim(),
         })
+      : body.decision === "approved" && reviewedProposal?.recommendation_kind === "split"
+        ? await approveCommunityScopeSplit({
+            changeId: proposalId,
+            communityId: id,
+            reviewerId: user.id,
+            rationale: body.rationale.trim(),
+          })
       : await reviewCommunityScopeChange({
           changeId: proposalId,
           communityId: id,

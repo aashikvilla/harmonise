@@ -159,6 +159,13 @@ export async function listCommunityScopeChanges(communityId: string) {
   });
 }
 
+export async function getCommunityScopeChange(communityId: string, changeId: string) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("community_scope_changes", {
+    query: `?id=eq.${encodeURIComponent(changeId)}&community_id=eq.${encodeURIComponent(communityId)}&select=*&limit=1`,
+  });
+  return selectSingle(rows);
+}
+
 export async function reviewCommunityScopeChange(input: {
   changeId: string;
   communityId: string;
@@ -173,6 +180,24 @@ export async function reviewCommunityScopeChange(input: {
       p_community_id: input.communityId,
       p_reviewer_id: input.reviewerId,
       p_decision: input.decision,
+      p_rationale: input.rationale,
+    },
+  });
+  return selectSingle(rows);
+}
+
+export async function approveCommunityScopeSplit(input: {
+  changeId: string;
+  communityId: string;
+  reviewerId: string;
+  rationale: string;
+}) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("rpc/approve_community_scope_split", {
+    method: "POST",
+    body: {
+      p_change_id: input.changeId,
+      p_community_id: input.communityId,
+      p_reviewer_id: input.reviewerId,
       p_rationale: input.rationale,
     },
   });

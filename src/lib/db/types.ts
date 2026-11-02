@@ -113,6 +113,7 @@ export type CommunityScopeChangeRow = {
   rolled_back_by: string | null;
   rolled_back_at: string | null;
   rollback_rationale: string | null;
+  split_community_id: string | null;
 };
 
 export type MembershipRow = {
