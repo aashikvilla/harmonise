@@ -9,6 +9,7 @@ import type {
 } from "@/lib/db/types";
 import { isUuid, selectSingle, supabaseCount, supabaseRest } from "@/lib/db/supabase";
 import { ensureProfile } from "@/lib/db/sessions";
+import { enqueueModerationEvent } from "@/lib/db/moderation";
 
 export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number };
 export type PostWithAuthor = PostRow & { author_alias: string };
@@ -240,7 +241,9 @@ export async function createReply(
   return { reply: { ...reply, author_alias: membership.alias } };
 }
 
-export type CreateReportResult = { report: ReportRow } | { error: "not-found" | "forbidden" | "blocked" | "invalid-target" };
+export const MAX_OPEN_REPORTS_PER_COMMUNITY = 200;
+
+export type CreateReportResult = { report: ReportRow } | { error: "not-found" | "forbidden" | "blocked" | "invalid-target" | "community-busy" };
 
 export async function createReport(
   userId: string,
@@ -257,15 +260,21 @@ export async function createReport(
   if (!membership) return { error: "not-found" };
   if (membership.status === "blocked") return { error: "blocked" };
   if (membership.status !== "active") return { error: "forbidden" };
+  const openReports = await supabaseCount("reports", `?community_id=eq.${communityId}&status=eq.open`);
+  if (openReports >= MAX_OPEN_REPORTS_PER_COMMUNITY) return { error: "community-busy" };
+  let excerpt = "";
   if (hasPost) {
     const posts = await supabaseRest<PostRow[]>("posts", {
-      query: `?id=eq.${target.postId}&community_id=eq.${communityId}&select=id`,
+      query: `?id=eq.${target.postId}&community_id=eq.${communityId}&select=id,body`,
     });
-    if (posts.length === 0) return { error: "invalid-target" };
+    const post = selectSingle(posts);
+    if (!post) return { error: "invalid-target" };
+    excerpt = post.body;
   } else {
-    const replies = await supabaseRest<PostReplyRow[]>("post_replies", { query: `?id=eq.${target.replyId}&select=id,post_id` });
+    const replies = await supabaseRest<PostReplyRow[]>("post_replies", { query: `?id=eq.${target.replyId}&select=id,post_id,body` });
     const reply = selectSingle(replies);
     if (!reply) return { error: "invalid-target" };
+    excerpt = reply.body;
     const posts = await supabaseRest<PostRow[]>("posts", {
       query: `?id=eq.${reply.post_id}&community_id=eq.${communityId}&select=id`,
     });
@@ -284,5 +293,17 @@ export async function createReport(
   });
   const report = selectSingle(rows);
   if (!report) throw new Error("report not created");
+  try {
+    await enqueueModerationEvent({
+      communityId,
+      reportId: report.id,
+      type: "report",
+      targetPostId: hasPost ? target.postId : null,
+      targetReplyId: hasReply ? target.replyId : null,
+      excerpt,
+    });
+  } catch {
+    /* A queue failure must never lose the report itself. */
+  }
   return { report };
 }

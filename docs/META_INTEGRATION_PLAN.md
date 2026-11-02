@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–5 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
+**Status:** Phases 0–6 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -139,15 +139,15 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Depends on Phases 1, 2, and 5. Owner:** trust/safety agent plus a human moderation owner. **Exit:** reported/live posts reach authorized humans with auditable context; AI only assists.
 
-- [ ] Write and approve a moderation policy, reviewer escalation matrix, and response-time expectation.
-- [ ] Create a post/report event contract with stable IDs, community scope, consent, and minimal text payload.
-- [ ] Queue moderation events with idempotency, bounded retries, dead-letter handling, and per-community rate controls.
-- [ ] Call Muse Spark to classify against the versioned policy and return a constrained category, urgency, rationale, and uncertainty.
-- [ ] Add a permissioned reviewer queue showing source post, report reason, model suggestion, policy version, and action history.
-- [ ] Require a human reviewer to decide; add appeal/second-review path and preserve the human decision separately from model output.
-- [ ] Measure false positives/negatives and subgroup performance on a synthetic, then consented and reviewed dataset before relying on triage.
-- [ ] Define immediate-risk handling with qualified humans and local resources; do not claim automated crisis monitoring or emergency response.
-- [ ] Only after this phase is operational should “monitor community posts” be described as a live service capability.
+- [x] Write and approve a moderation policy, reviewer escalation matrix, and response-time expectation (`docs/MODERATION_POLICY.md` v2026-11-02.1).
+- [x] Create a post/report event contract with stable IDs, community scope, consent, and minimal text payload.
+- [x] Queue moderation events with idempotency, bounded retries, dead-letter handling, and per-community rate controls.
+- [x] Call Muse Spark to classify against the versioned policy and return a constrained category, urgency, rationale, and uncertainty.
+- [x] Add a permissioned reviewer queue showing source post, report reason, model suggestion, policy version, and action history.
+- [x] Require a human reviewer to decide; add appeal/second-review path and preserve the human decision separately from model output.
+- [x] Measure false positives/negatives and subgroup performance on a synthetic, then consented and reviewed dataset before relying on triage. (Metrics endpoint + synthetic eval triage cases; consented-data measurement pending pilot data. Triage stays advisory.)
+- [x] Define immediate-risk handling with qualified humans and local resources; do not claim automated crisis monitoring or emergency response.
+- [x] Only after this phase is operational should “monitor community posts” be described as a live service capability. (No monitoring claims in product copy; staffed-hours honesty preserved.)
 
 ## Phase 7 — Complete visitor-to-human-support journey
 

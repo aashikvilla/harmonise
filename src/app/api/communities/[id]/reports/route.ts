@@ -27,7 +27,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       record.reason,
     );
     if ("error" in result) {
-      const status = result.error === "invalid-target" ? 400 : result.error === "blocked" ? 403 : result.error === "not-found" ? 404 : 403;
+      const status =
+        result.error === "invalid-target" ? 400
+        : result.error === "community-busy" ? 429
+        : result.error === "blocked" ? 403
+        : result.error === "not-found" ? 404
+        : 403;
       return NextResponse.json({ error: result.error }, { status });
     }
     logRouteCall({ route: "POST /api/communities/[id]/reports", status: 200, latencyMs: Date.now() - started, requestId, outcome: "ok" });
