@@ -19,6 +19,8 @@ import {
 import { hasFamilyContext } from "@/lib/conversation";
 import { arjunVisits, type VisitTurn } from "@/lib/arjun-visits";
 import { historicalThread, type HistoricalDay } from "@/lib/historical-thread";
+import SessionPanel, { type ResumePayload } from "@/components/account/session-panel";
+import { saveConversation, setSyncSession } from "@/lib/session-sync";
 
 const navItems = [
   { label: "My Space", screen: "conversation" as const },
@@ -201,6 +203,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [transcriptDraft, setTranscriptDraft] = useState("");
   const [recordingAudio, setRecordingAudio] = useState<Blob | null>(null);
   const [transcribing, setTranscribing] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [triageLoading, setTriageLoading] = useState(false);
   const [triageResult, setTriageResult] = useState<{ concern: string; severity: string; rationale: string; recommendedAction: string } | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -361,6 +364,13 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         setTopicChats((chats) => ({ ...chats, [spaceTopic]: next }));
         setSuggestedThemes(result.suggestedThemes.filter((theme): theme is ThemeId => typeof theme === "string" && Object.hasOwn(themeLabels, theme)));
         setSuggestedNeed({ summary: result.needSummary, type: result.supportNeed as SupportNeed });
+        void saveConversation(next.map((turn) => ({ role: turn.role, text: turn.text })), {
+          suggestedThemes: result.suggestedThemes.filter((theme): theme is ThemeId => typeof theme === "string" && Object.hasOwn(themeLabels, theme)),
+          confirmedThemes: [],
+          supportNeed: result.supportNeed,
+          needSummary: result.needSummary,
+          correctionRequested,
+        });
         setCorrectedUnderstanding(result.needSummary);
         setCorrectionRequested(false);
         if (state.isFeaturedJourney) {
@@ -374,6 +384,38 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       } finally {
         setChatPending(false);
       }
+    }
+
+    function resumeSession(payload: ResumePayload) {
+      const turns = payload.turns.map((turn, index) => ({ id: `srv-${payload.sessionId}-${index}`, role: turn.role, text: turn.text }));
+      setChatTurns(turns);
+      setTopicChats((chats) => ({ ...chats, [spaceTopic]: turns }));
+      setComposer("");
+      setChatError("");
+      const supportedNeeds = ["human-perspective", "quiet-reading", "shared-activity", "not-sure"];
+      setSuggestedThemes((payload.understanding?.suggested ?? []).filter((theme): theme is ThemeId => Object.hasOwn(themeLabels, theme)));
+      setSuggestedNeed({ summary: payload.understanding?.summary ?? "", type: (supportedNeeds.includes(payload.understanding?.need ?? "") ? payload.understanding?.need : "not-sure") as SupportNeed });
+      setCorrectedUnderstanding(payload.understanding?.summary ?? "");
+      setUnderstandingConfirmed((payload.understanding?.confirmed.length ?? 0) > 0);
+      setCorrectionRequested(false);
+      setActiveSessionId(payload.sessionId);
+    }
+
+    function beginNewServerSession() {
+      setChatTurns([]);
+      setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] }));
+      setComposer("");
+      setChatError("");
+      setSuggestedThemes([]);
+      setSuggestedNeed({ summary: "", type: "not-sure" });
+      setCorrectedUnderstanding("");
+      setUnderstandingConfirmed(false);
+      setCorrectionRequested(false);
+      setActiveSessionId(null);
+    }
+
+    function handleSessionDeleted(id: string) {
+      if (id === activeSessionId) beginNewServerSession();
     }
 
     async function startRecording() {
@@ -511,6 +553,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         <p className="small-note">{arjunVisits.find((visit) => visit.id === activeVisitId)?.intention}. Choose any visit; history stays in this browser tab. Restart clears it.</p>
       </section>}
       <section className="panel conversation-panel organic-chat" aria-label="Conversation">
+        <SessionPanel activeSessionId={activeSessionId} onResume={resumeSession} onNewSession={beginNewServerSession} onSessionDeleted={handleSessionDeleted} />
         <div className="chat-provenance">Meta AI · Muse Spark · Review each response and suggested theme</div>
         <div className="chat-log" aria-live="polite" aria-relevant="additions text">
         {chatTurns.length === 0 && <article className="conversation-turn turn-guide"><span>Harmonise · fictional assistant</span><p>We can take this slowly. Is this mainly about something happening with someone, or how you’ve been feeling? You can also just tell me a little more.</p></article>}
@@ -548,7 +591,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div><SecondaryButton onClick={startRecording} disabled={chatPending || recordingState === "recording" || recordingState === "processing"}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim() || chatPending}>{chatPending ? "Thinking…" : "Send"}</PrimaryButton></div></div>
         </form>
       </section>
-      <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); }}>Start a fresh conversation</button></div>
+      <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); setActiveSessionId(null); setSyncSession(null); }}>Start a fresh conversation</button></div>
       <div className="space-start-links"><button className="text-button" onClick={() => setComposer("I'm not sure where to start.")}>Not sure where to start</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore communities</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>Find a person to talk to</button></div>
     </>;
   }

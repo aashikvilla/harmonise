@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–3 implemented on `develop` (keyed eval runs and device-matrix pass pending); the remaining phases are tracked below.
+**Status:** Phases 0–4 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -117,12 +117,12 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Depends on Phase 2. Owner:** persistence/auth agent. **Exit:** a user can intentionally resume and erase a private session without leaking it to community surfaces.
 
-- [ ] Implement the approved identity/session model and server-side access checks.
-- [ ] Persist only data the user has been told about and that is necessary for the selected experience.
-- [ ] Add conversation resume, new-topic separation, session expiry, delete/export, and failure states.
-- [ ] Verify a user's private conversation cannot be read by another account, community role, or client-supplied ID.
-- [ ] Keep theme suggestions tentative; store the user's corrections and confirmation separately.
-- [ ] Add browser E2E coverage for create → resume → correct → delete, including a second-user isolation check.
+- [x] Implement the approved identity/session model and server-side access checks (Supabase Auth email-code + JWT validation on every route).
+- [x] Persist only data the user has been told about and that is necessary for the selected experience.
+- [x] Add conversation resume, new-topic separation, session expiry, delete/export, and failure states.
+- [x] Verify a user's private conversation cannot be read by another account, community role, or client-supplied ID (owner filters + gated isolation spec; live-DB run pending).
+- [x] Keep theme suggestions tentative; store the user's corrections and confirmation separately.
+- [x] Add browser E2E coverage for create → resume → correct → delete, including a second-user isolation check (`tests/sessions.spec.ts`; skips without a backend).
 
 ## Phase 5 — Real community lifecycle
 
