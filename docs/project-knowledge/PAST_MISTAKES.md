@@ -28,6 +28,14 @@ schema their work depended on. Before parallelizing, compare the requested base
 with the accepted integration branch and fast-forward only the already-accepted
 baseline; then recreate or rebase clean feature worktrees before editing.
 
+## 2026-11-03 — Long browser journeys can exceed the default timeout under parallel viewport runs
+
+The desktop version of a 70-plus-step product journey passed alone in 28 seconds
+but exceeded Playwright's 30-second test timeout when desktop and mobile
+projects ran alongside other specs. Give unusually long journeys explicit
+headroom and rerun the full suite; a test timeout at its final action can hide
+that the UI transition itself succeeded.
+
 ## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
 The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A once-daily worker and no named moderators do not provide continuous monitoring or timely human response. Keep the limitation visible until backlog recovery and staffed escalation are operating.

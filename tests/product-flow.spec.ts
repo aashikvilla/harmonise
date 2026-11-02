@@ -167,6 +167,9 @@ test("recorded audio is transcribed by Meta and stays editable before sending", 
 });
 
 test("independent spaces support group-only contact, reviewed contribution and human review", async ({ page }) => {
+  // This is the longest desktop journey; allow the same headroom as the
+  // neighboring live-backend journeys when both viewport projects run.
+  test.setTimeout(60_000);
   const externalRequests: string[] = [];
   const appOrigin = new URL(process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000").origin;
   page.on("request", (request) => {
