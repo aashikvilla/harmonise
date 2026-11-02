@@ -14,7 +14,7 @@ This runbook is the manual guide for reviewing the current hackathon journey. It
 
 - [ ] Open the deployed app (or the local app at `http://localhost:3000`) and confirm the home page renders.
 - [x] Confirm the production Vercel project has `MODEL_API_KEY` and `META_TEXT_MODEL` configured. The key stays server-side.
-- [x] Confirm Supabase migrations `0001`, `0002`, `20261102183254`, `20261102183300`, and `20261102185148` are applied. They add contribution progress/optional roles, community launch review/helper provisioning, and the built-in community topic backfill.
+- [x] Confirm Supabase migrations `0001`, `0002`, `20261102183254`, `20261102183300`, `20261102185148`, `20261102204240`, and `20261102204243` are applied. They add contribution progress/optional roles, community launch review/helper provisioning, built-in topics, community engagement, and reviewer notes.
 - [x] Confirm the production server has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Never expose the service-role key to browser code.
 - [ ] For the live proposal approval segment, configure `COMMUNITY_REVIEWER_USER_IDS` with the UUID of a real signed-in reviewer. The production role-verification flag is currently false; only turn it on for a deliberate role-verification demo.
 - [ ] Have a real reviewer available who can honestly confirm the proposed space has human moderation coverage. The checkbox records an attestation; it does not schedule or staff future coverage.

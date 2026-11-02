@@ -9,6 +9,10 @@ After applying remotely, compare the remote migration list with exact local file
 versions; align checked-in filenames before merging so later `db push` does not
 replay or misorder migrations.
 
+The Supabase MCP may assign the migration version from its apply time even when
+the submitted name contains the checked-in timestamp. Rename the local migration
+prefix to the returned remote version immediately, then compare both lists again.
+
 ## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
 The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A worker endpoint without a scheduled caller and named moderators does not provide continuous monitoring or timely human response. Keep the limitation visible until the worker schedule and staffed escalation are operating.
