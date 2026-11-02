@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AuthCard from "@/components/account/auth-card";
+import { CommunityHelperCard } from "@/components/community/community-helper-card";
+import { CommunityProgressCard } from "@/components/community/community-progress-card";
 import { CONSENT_VERSION } from "@/lib/consent";
 
 type Community = {
@@ -9,6 +11,7 @@ type Community = {
   name: string;
   description: string;
   visibility: "public" | "member";
+  launch_status?: "pending_review" | "approved";
   memberCount: number;
   postCount: number;
 };
@@ -373,6 +376,11 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
       const blockedList = await getJson<{ blocked?: string[] }>(`/api/communities/${communityId}/blocks`);
       setBlocked(Array.isArray(blockedList.body?.blocked) ? blockedList.body.blocked : []);
     }
+    if (info.body.community.launch_status === "pending_review") {
+      setPosts([]);
+      setPostsState("denied");
+      return;
+    }
     const feed = await getJson<{ posts?: Post[]; moderator?: boolean }>(`/api/communities/${communityId}/posts`);
     if (feed.status === 200 && Array.isArray(feed.body?.posts)) {
       setPosts(feed.body.posts);
@@ -479,7 +487,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
     <div className="grid gap-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">
-          {community.visibility === "public" ? "Public community" : "Members-only community"} · real members, real posts
+          {community.launch_status === "pending_review" ? "Private proposal" : community.visibility === "public" ? "Public community" : "Members-only community"} · real members, real posts
         </p>
         <h2 className="mt-1 text-3xl font-semibold">{community.name}</h2>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">{community.description || "No description yet."}</p>
@@ -488,6 +496,13 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
           {community.postCount === 1 ? "post" : "posts"}
         </p>
       </div>
+
+      {community.launch_status === "pending_review" && (
+        <div role="status" className="rounded-xl border border-[var(--line)] bg-[var(--peach)] p-4">
+          <p className="font-semibold">Waiting for human review</p>
+          <p className="mt-1 text-sm">This proposal is private. People can’t find, join, or post in it until a reviewer approves the purpose and confirms human coverage.</p>
+        </div>
+      )}
 
       {notice && (
         <p role="status" className="rounded-lg bg-[var(--peach)] p-3 text-sm">
@@ -548,6 +563,13 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
           <button type="button" disabled={busy} onClick={() => void leave()} className="underline">
             Leave this community
           </button>
+        </div>
+      )}
+
+      {activeMember && (
+        <div className="grid gap-4">
+          <CommunityHelperCard communityId={communityId} />
+          {community.launch_status !== "pending_review" && <CommunityProgressCard communityId={communityId} />}
         </div>
       )}
 

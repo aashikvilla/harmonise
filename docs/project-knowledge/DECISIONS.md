@@ -39,3 +39,9 @@
 - **Reason:** Community creation must not imply public access or staffed moderation. Helper identity and per-community context must remain auditable without granting the model enforcement powers.
 - **Implementation:** Migration `0004_community_lifecycle.sql` adds lifecycle metadata, default-deny helper storage, provisioning trigger, and RPCs; API routes validate ownership and reviewer authorization; triage records the helper ID/display name alongside advisory output.
 - **Revisit when:** The pilot has a staffed moderation schedule and launch review workflow backed by an operational source of coverage assignments.
+
+## 2026-11-02 — Keep the shared demo login local to the prototype
+
+- **Decision:** `/connect` accepts one public demo credential pair and stores only a fictional alias/profile in browser session state. Demo circle joins stay local and never create Supabase Auth users, conversations, memberships, or posts.
+- **Reason:** The hackathon walkthrough needs a zero-setup entry point, while the real `/communities` and `/moderation` product surfaces already use Supabase-backed identity and authorization. Mixing these paths would imply security and persistence that the demo does not provide.
+- **Revisit when:** The `/connect` journey is migrated to authenticated, persisted community APIs; remove the shared demo credentials then.

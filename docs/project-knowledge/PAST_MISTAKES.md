@@ -36,3 +36,10 @@ Every suite run enqueues moderation events nobody drains, so a manual worker
 call triages the oldest stale event instead of the fresh probe (113-deep
 backlog observed). Clear synthetic backlog before worker verification, and
 remember advisory post events (report_id null) sort alongside report events.
+
+## 2026-11-02 — Client forms can submit before hydration
+
+An immediate Playwright click after navigating from the homepage iframe could
+submit a client-only form as a native GET before React attached its handler.
+Keep submit controls disabled until the client handler is ready, and have E2E
+flows wait for the enabled state before submitting.
