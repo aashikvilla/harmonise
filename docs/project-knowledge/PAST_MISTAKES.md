@@ -9,6 +9,14 @@ After applying remotely, compare the remote migration list with exact local file
 versions; align checked-in filenames before merging so later `db push` does not
 replay or misorder migrations.
 
+## 2026-11-03 — A requested integration branch can lag the accepted product baseline
+
+`develop` did not yet contain community-lifecycle code already merged to `main`,
+so feature worktrees created from `develop` lacked the proposal flow and helper
+schema their work depended on. Before parallelizing, compare the requested base
+with the accepted integration branch and fast-forward only the already-accepted
+baseline; then recreate or rebase clean feature worktrees before editing.
+
 ## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
 The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A worker endpoint without a scheduled caller and named moderators does not provide continuous monitoring or timely human response. Keep the limitation visible until the worker schedule and staffed escalation are operating.

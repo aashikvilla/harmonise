@@ -45,3 +45,11 @@
 - **Decision:** `/connect` accepts one public demo credential pair and stores only a fictional alias/profile in browser session state. Demo circle joins stay local and never create Supabase Auth users, conversations, memberships, or posts.
 - **Reason:** The hackathon walkthrough needs a zero-setup entry point, while the real `/communities` and `/moderation` product surfaces already use Supabase-backed identity and authorization. Mixing these paths would imply security and persistence that the demo does not provide.
 - **Revisit when:** The `/connect` journey is migrated to authenticated, persisted community APIs; remove the shared demo credentials then.
+
+## 2026-11-03 — Keep community scope changes versioned and human-reviewed
+
+- **Decision:** Bind each community guide to a versioned scope package. Use AI to draft proposal packages and recommend clarify/expand/split changes, but require an active human moderator to apply an existing-community scope change. Explicitly accepting a split may create one private `pending_review` proposal; it never publishes the new community or moves members/posts.
+- **Reason:** A scope change affects member expectations. Model confidence or reviewer silence cannot establish community consent, launch readiness, or human coverage.
+- **Implementation:** The setup copilot uses Muse Spark by default; `META_SETUP_MODEL` is server-only and restricted to Spark/Wonder for non-production evaluation. The member guide receives only approved scope/public metadata and the current question. Scope recommendations use a moderator-selected excerpt, disclosed before submission; raw excerpt text is not stored. Split creation is transactional and idempotent, and launch still requires the allowlisted reviewer and coverage attestation.
+- **Not enabled:** Timeout-based approval, background post scanning, automatic scope expansion, automated moderation enforcement, member invites, or agent-authored public posts/replies.
+- **Revisit when:** A staffed pilot has member-governance rules, representative scope-quality evaluations, clear ownership, notices/appeals, and explicit approval for any delegated low-risk changes.
