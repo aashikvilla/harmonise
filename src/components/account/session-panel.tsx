@@ -89,6 +89,15 @@ export default function SessionPanel({
     };
   }, [checkSession]);
 
+  useEffect(() => {
+    if (!signedIn) return;
+    const reload = () => {
+      void loadSessions();
+    };
+    window.addEventListener("harmonise:sessions-changed", reload);
+    return () => window.removeEventListener("harmonise:sessions-changed", reload);
+  }, [signedIn, loadSessions]);
+
   if (!ready || !dbEnabled) return null;
 
   async function deleteAccount() {

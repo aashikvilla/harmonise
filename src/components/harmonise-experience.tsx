@@ -301,6 +301,15 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   }, [chatTurns.length]);
 
   useEffect(() => {
+    const adopt = (event: Event) => {
+      const id = (event as CustomEvent<{ sessionId?: unknown }>).detail?.sessionId;
+      if (typeof id === "string") setActiveSessionId(id);
+    };
+    window.addEventListener("harmonise:sessions-changed", adopt);
+    return () => window.removeEventListener("harmonise:sessions-changed", adopt);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {

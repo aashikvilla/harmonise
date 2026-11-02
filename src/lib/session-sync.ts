@@ -79,6 +79,7 @@ export async function saveConversation(turns: SyncTurn[], understanding: SyncUnd
       }
       if (created.status !== 200 || typeof created.body?.session?.id !== "string") return;
       sessionId = created.body.session.id;
+      window.dispatchEvent(new CustomEvent("harmonise:sessions-changed", { detail: { sessionId } }));
     }
     const saved = savedCounts.get(sessionId) ?? 0;
     const pending = turns.slice(saved);
