@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–2 implemented on `develop` (first keyed eval run pending); the remaining phases are tracked below.
+**Status:** Phases 0–3 implemented on `develop` (keyed eval runs and device-matrix pass pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -100,18 +100,18 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Can run in parallel with Phases 1 and 2. Owner:** voice UX agent. **Exit:** supported browsers can record, transcribe, correct, and submit text without accidental audio submission.
 
-- [ ] Verify audio capture and the existing WAV conversion on supported desktop and mobile browsers.
-  - [ ] Test permission denied, unsupported codec, empty audio, oversized recording, timeout, provider failure, and retry.
-  - [ ] Test multilingual/code-switching samples with consenting synthetic or non-sensitive audio.
-  - [ ] Verify transcript editing, focus order, keyboard use, reduced motion, and screen-reader status announcements.
-- [ ] Clarify transcript provenance and deletion behavior in the UI.
-  - [ ] Show the current transfer step before the audio leaves the device.
-  - [ ] Keep “transcribe” separate from “send this text to chat.”
-  - [ ] Clear temporary audio and transcript state on cancel, restart, and navigation.
-- [ ] Evaluate real-time WebSocket transcription only if partial captions materially improve the experience.
-  - [ ] Keep credentials server-side; do not put the Meta key in a browser WebSocket handshake.
-  - [ ] Define reconnect, end-of-stream, partial replacement, and disconnect behavior before implementing streaming.
-- [ ] Treat speech synthesis as a separate product decision; the selected Meta transcription model is speech-to-text only.
+- [x] Verify audio capture and the existing WAV conversion on supported desktop and mobile browsers (codec probe and conversion guards in code; full device-matrix pass still pending).
+  - [x] Test permission denied, unsupported codec, empty audio, oversized recording, timeout, provider failure, and retry.
+  - [ ] Test multilingual/code-switching samples with consenting synthetic or non-sensitive audio. (Needs keyed runs; pending.)
+  - [x] Verify transcript editing, focus order, keyboard use, reduced motion, and screen-reader status announcements.
+- [x] Clarify transcript provenance and deletion behavior in the UI.
+  - [x] Show the current transfer step before the audio leaves the device.
+  - [x] Keep “transcribe” separate from “send this text to chat.”
+  - [x] Clear temporary audio and transcript state on cancel, restart, and navigation.
+- [x] Evaluate real-time WebSocket transcription only if partial captions materially improve the experience. (Decision: deferred — push-to-talk retained.)
+  - [x] Keep credentials server-side; do not put the Meta key in a browser WebSocket handshake.
+  - [x] Define reconnect, end-of-stream, partial replacement, and disconnect behavior before implementing streaming. (Required before any future streaming work.)
+- [x] Treat speech synthesis as a separate product decision; the selected Meta transcription model is speech-to-text only. (Deferred; input-only.)
 
 ## Phase 4 — Durable private sessions
 

@@ -209,6 +209,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const recordingTimerRef = useRef<number | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const transcriptAreaRef = useRef<HTMLTextAreaElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousScreenRef = useRef(state.screen);
   const community = activeCommunity(state);
@@ -239,6 +240,18 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
   }, []);
+  useEffect(() => {
+    if (transcriptDraft) transcriptAreaRef.current?.focus();
+  }, [transcriptDraft]);
+  useEffect(() => {
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    recorderRef.current = null;
+    setRecordingAudio(null);
+    setTranscriptDraft("");
+    setRecordingState("idle");
+  }, [state.screen]);
 
   function navigate(screen: (typeof navItems)[number]["screen"]) {
     if (screen === "conversation") stateDispatch({ type: "OPEN_CONVERSATION" });
@@ -375,7 +388,14 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaStreamRef.current = stream;
-        const recorder = new MediaRecorder(stream);
+        const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) => {
+          try {
+            return typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(candidate);
+          } catch {
+            return false;
+          }
+        });
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
         recordingChunksRef.current = [];
         recorder.ondataavailable = (event) => {
           if (event.data.size > 0) recordingChunksRef.current.push(event.data);
@@ -389,9 +409,17 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           if (cancelledRecordingRef.current) return;
           try {
             const recording = new Blob(recordingChunksRef.current, { type: recorder.mimeType || "audio/webm" });
-            if (!recording.size) throw new Error("empty recording");
+            if (!recording.size) {
+              setRecordingState("idle");
+              setRecordingError("No audio was captured. Check your microphone, then try again or type your message.");
+              return;
+            }
             const wav = await encodeMonoPcmWav(recording);
-            if (wav.size > 8 * 1024 * 1024) throw new Error("recording too large");
+            if (wav.size > 8 * 1024 * 1024) {
+              setRecordingState("idle");
+              setRecordingError("That recording is longer than the 2-minute limit. Try a shorter recording or type your message.");
+              return;
+            }
             setRecordingAudio(wav);
             setRecordingState("review");
           } catch {
@@ -440,15 +468,27 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       try {
         const form = new FormData();
         form.append("audio", recordingAudio, "recording.wav");
-        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form });
+        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form, signal: AbortSignal.timeout(60_000) });
         const payload: unknown = await response.json().catch(() => null);
         const transcript = payload && typeof payload === "object" ? (payload as Record<string, unknown>).transcript : null;
+        if (response.status === 413) {
+          setRecordingError("That recording is too large to transcribe. Try a shorter recording or type your words.");
+          return;
+        }
+        if (response.status === 429 || response.status === 503) {
+          setRecordingError("Meta Voice is busy right now. Your recording is kept for review; try again in a moment or type your words.");
+          return;
+        }
         if (!response.ok || typeof transcript !== "string" || !transcript.trim()) {
           setRecordingError("Meta Voice couldn’t transcribe this recording. You can try again or type your words.");
           return;
         }
         setTranscriptDraft(transcript.trim());
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.name === "TimeoutError") {
+          setRecordingError("Transcription timed out. Your recording is kept for review; try again or type your words.");
+          return;
+        }
         setRecordingError("Meta Voice couldn’t be reached. You can try again or type your words.");
       } finally {
         setTranscribing(false);
@@ -500,7 +540,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         </section>}
         {recordingState === "recording" && <div className="voice-review" role="status"><strong>Recording · up to 2 minutes</strong><span>Audio stays in this browser until you choose “Transcribe with Meta”.</span><div className="inline-actions"><SecondaryButton onClick={stopRecording}>Stop and review</SecondaryButton><button className="text-button" onClick={cancelRecording}>Cancel recording</button></div></div>}
         {recordingState === "processing" && <div className="voice-review" role="status"><strong>Preparing your recording…</strong><span>Audio is being converted in this browser. It has not been sent to Meta yet.</span></div>}
-        {recordingState === "review" && <div className="voice-review"><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); }}>Use this in my message</PrimaryButton></div></>}</div>}
+        {recordingState === "review" && <div className="voice-review"><p className="sr-only" role="status">{transcribing ? "Transcribing your recording with Meta Voice." : transcriptDraft ? "Transcript ready. Review and edit it before sending." : "Recording ready for review. Nothing has been sent to Meta yet."}</p><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea ref={transcriptAreaRef} id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><p className="preview-provenance">Transcript from Meta Voice Transcribe · editable here · audio is deleted when you cancel or leave · nothing is sent to chat until you press Send.</p><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); document.getElementById("chat-input")?.focus(); }}>Use this in my message</PrimaryButton></div></>}</div>}
         {recordingError && <Notice>{recordingError}</Notice>}
         <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); sendChat(); }}>
           <label className="sr-only" htmlFor="chat-input">Your message</label>
