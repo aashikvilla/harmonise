@@ -49,6 +49,9 @@ export default function SessionPanel({
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [renaming, setRenaming] = useState<{ id: string; title: string } | null>(null);
+  const [receipt, setReceipt] = useState("");
+  const [deletedAt, setDeletedAt] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     const list = await api<{ sessions?: SessionSummary[] }>("/api/sessions");
@@ -104,6 +107,8 @@ export default function SessionPanel({
       markSignedOut();
       setSignedIn(false);
       setSessions([]);
+      setDeletedAt(new Date().toLocaleString());
+      setShowDelete(false);
       onNewSession();
     } else {
       setError("Account deletion did not complete. Try again.");
@@ -149,6 +154,24 @@ export default function SessionPanel({
     });
   }
 
+  async function saveRename() {
+    if (!renaming || !renaming.title.trim()) return;
+    setBusy(true);
+    setError("");
+    const result = await api(`/api/sessions/${renaming.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: renaming.title.trim() }),
+    });
+    setBusy(false);
+    if (result.status === 200) {
+      setSessions((current) => current.map((session) => (session.id === renaming.id ? { ...session, title: renaming.title.trim() } : session)));
+      setRenaming(null);
+    } else {
+      setError("That conversation could not be renamed. Try again.");
+    }
+  }
+
   async function removeSession(id: string) {
     setBusy(true);
     const result = await api(`/api/sessions/${id}`, { method: "DELETE" });
@@ -162,7 +185,7 @@ export default function SessionPanel({
   }
 
   async function exportData() {
-    const result = await api<unknown>("/api/account/export");
+    const result = await api<{ sessions?: unknown[] }>("/api/account/export");
     if (result.status !== 200 || !result.body) {
       setError("Export is unavailable right now. Try again.");
       return;
@@ -174,6 +197,20 @@ export default function SessionPanel({
     link.download = "harmonise-export.json";
     link.click();
     URL.revokeObjectURL(url);
+    const count = Array.isArray(result.body.sessions) ? result.body.sessions.length : 0;
+    setReceipt(`Exported ${count} conversation${count === 1 ? "" : "s"} on ${new Date().toLocaleString()}.`);
+  }
+
+  if (deletedAt && !signedIn) {
+    return (
+      <section className="panel session-panel" aria-label="Account deleted">
+        <span className="context-eyebrow">DELETION RECEIPT</span>
+        <h2>Your data was deleted</h2>
+        <p className="small-note">
+          Your account, private sessions, memberships, posts, and consents were deleted on {deletedAt}.
+        </p>
+      </section>
+    );
   }
 
   if (!signedIn) {
@@ -191,13 +228,31 @@ export default function SessionPanel({
           {sessions.map((session) => (
             <li key={session.id}>
               <div>
-                <strong>{session.title}</strong>
+                {renaming?.id === session.id ? (
+                  <input
+                    aria-label="Conversation title"
+                    value={renaming.title}
+                    disabled={busy}
+                    onChange={(event) => setRenaming({ id: session.id, title: event.target.value })}
+                  />
+                ) : (
+                  <strong>{session.title}</strong>
+                )}
                 <span className="small-note">{new Date(session.last_active_at).toLocaleString()}</span>
               </div>
               <div className="inline-actions">
                 <button type="button" className="button button-secondary" disabled={busy || activeSessionId === session.id} onClick={() => void resume(session.id)}>
                   {activeSessionId === session.id ? "Open" : "Resume"}
                 </button>
+                {renaming?.id === session.id ? (
+                  <button type="button" className="button button-secondary" disabled={busy || !renaming.title.trim()} onClick={() => void saveRename()}>
+                    Save
+                  </button>
+                ) : (
+                  <button type="button" className="text-button" disabled={busy} onClick={() => setRenaming({ id: session.id, title: session.title })}>
+                    Rename
+                  </button>
+                )}
                 <button type="button" className="text-button" disabled={busy} onClick={() => void removeSession(session.id)}>
                   Delete
                 </button>
@@ -207,6 +262,7 @@ export default function SessionPanel({
         </ul>
       )}
       {error && <p className="notice">{error}</p>}
+      {receipt && <p className="small-note">{receipt}</p>}
       <div className="inline-actions">
         <button
           type="button"

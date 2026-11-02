@@ -3,7 +3,7 @@
 export type SessionStatus = "active" | "expired" | "deleted";
 export type MessageRole = "user" | "assistant";
 export type CommunityVisibility = "public" | "member";
-export type CommunityLaunchStatus = "pending_review" | "approved" | "rejected";
+export type CommunityLaunchStatus = "pending_review" | "approved" | "rejected" | "archived";
 export type MembershipRole = "member" | "moderator";
 export type MembershipStatus = "active" | "left" | "blocked";
 export type ConsentAction = "post" | "reply" | "question";
@@ -55,6 +55,7 @@ export type CommunityRow = {
   reviewed_by: string | null;
   reviewed_at: string | null;
   coverage_confirmed_at: string | null;
+  review_note: string;
   created_at: string;
 };
 
@@ -145,6 +146,27 @@ export type PostRow = {
   body: string;
   status: ContentStatus;
   created_at: string;
+  kind?: string;
+};
+
+export type PostReactionRow = {
+  id: string;
+  post_id: string;
+  membership_id: string;
+  kind: string;
+  created_at: string;
+};
+
+export type PromotionRequestRow = {
+  id: string;
+  community_id: string;
+  membership_id: string;
+  requested_role: string;
+  note: string;
+  status: string;
+  reviewer_rationale: string;
+  created_at: string;
+  decided_at: string | null;
 };
 
 export type PostReplyRow = {

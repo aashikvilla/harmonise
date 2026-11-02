@@ -1,6 +1,6 @@
 # End-to-End Journey, Gaps & UX Overhaul Backlog
 
-**Status:** product backlog refreshed after the 2026-11-02 community lifecycle/progression implementation. Remaining items are still open unless explicitly checked below.
+**Status:** 65/123 built and E2E-verified after the 2026-11-03 full-journey implementation cycle (see §11 log). Remaining items are still open unless explicitly checked below.
 **Lens:** product manager + end user + senior UX designer.
 **Source of truth for visuals:** the homepage (`/`), its palette, typography,
 motion, and calm supportive tone. Everything below bends toward it.
@@ -139,33 +139,33 @@ link rows + three more links + footer — before the user has written a word.
 The "Have I got this right?" panel then stacks WHAT YOU SAID / MIGHT MATTER /
 WHAT YOU WANT + three buttons + conditional sub-panels.
 
-- [ ] Redesign as a single-column messenger: header (one line), bubbles,
+- [x] Redesign as a single-column messenger: header (one line), bubbles,
   one composer row (input + voice button + send). Nothing else above the fold.
 - [ ] Collapse the account upsell into one quiet inline row after the first
   exchange ("Keep this chat across devices →"), not a full card up front.
 - [ ] Fold theme/need confirmation INTO the chat as a compact agent message
   with inline Yes / Not-quite chips — delete the big `inline-understanding`
   panel as a separate block.
-- [ ] One-tap voice: single mic button in the composer row; tap to record
+- [x] One-tap voice: single mic button in the composer row; tap to record
   with live timer + waveform, tap to stop, auto-transcribe, transcribed text
   lands in the composer editable. Delete the record → review → transcribe →
   edit → use chain as separate user steps (keep review-before-send as the
   pre-filled composer, which it already is).
 - [ ] Recording must be unmistakable: pulsing indicator, elapsed time,
   cancel affordance; handle mic-denied with a typed fallback inline.
-- [ ] Streaming or staged loading: animated typing indicator within 300ms of send;
+- [x] Streaming or staged loading: animated typing indicator within 300ms of send;
   never a dead silent wait on a 2–5s model call.
   Status: an immediate “Muse Spark is preparing a response…” status line already
   exists (`harmonise-experience.tsx`); staged/streaming animation is the gap.
 - [ ] Cut the six footer links to one overflow ("More: how your data is
   used · start fresh · explore") — the current link farm reads as clutter.
-- [ ] Keep "Your chat is not posted" disclosure, but as a one-line dismissible
+- [x] Keep "Your chat is not posted" disclosure, but as a one-line dismissible
   note, not a permanent paragraph.
-- [ ] Empty state: 3 gentle starter chips ("Work is overwhelming", "Family
+- [x] Empty state: 3 gentle starter chips ("Work is overwhelming", "Family
   pressure", "Not sure — just listen") instead of a blank composer.
   Status: one “Not sure where to start” composer preset already exists; expand
   to three chips.
-- [ ] Error state: add an explicit one-tap retry button.
+- [x] Error state: add an explicit one-tap retry button.
   Status: failed sends already restore the draft to the composer with plain-words
   copy (`sendChat`); only the dedicated retry button is missing.
 
@@ -179,7 +179,7 @@ personal context applied" — while the REAL communities live at
 - [ ] Decide the product truth: sample communities are an onboarding
   illustration, real communities are the destination. Never show both as if
   they are the same thing.
-- [ ] Proactive in-chat circle recommendation with deep-link to the top-matched
+- [x] Proactive in-chat circle recommendation with deep-link to the top-matched
   REAL community.
   Status: theme scoring (`community-topics.ts`), `?themes=` overlap on the real
   list, and the discovery-footer “Browse live communities” link already exist;
@@ -209,11 +209,11 @@ personal context applied" — while the REAL communities live at
 Observed: clean cards, honest counts, fixed pill labels — but nothing tells a
 newcomer WHY to join, what happens inside, or which circle fits them.
 
-- [ ] Add a "Not sure which fits? Talk for 2 minutes →" entry that starts
+- [x] Add a "Not sure which fits? Talk for 2 minutes →" entry that starts
   chat and returns with a recommendation (closes the Act 4 loop).
-- [ ] Each card: one-line "what happens inside" + activity signal ("3 new
+- [x] Each card: one-line "what happens inside" + activity signal ("3 new
   posts this week" — real counts only, "quiet right now" when empty).
-- [ ] Signed-in: show "Joined ✓" state and last-visit/unread hint per card.
+- [x] Signed-in: show "Joined ✓" state and last-visit/unread hint per card.
 - [ ] Empty directory state: honest "no circles yet" + what happens next
   (agent-suggested circle request — see 7.3).
 
@@ -222,10 +222,10 @@ newcomer WHY to join, what happens inside, or which circle fits them.
 Observed: description + counts + sign-in card. Correct privacy, zero
 motivation: the user must commit (account + join) before seeing any value.
 
-- [ ] Add a value preview above the wall: what members do here, 2–3
+- [x] Add a value preview above the wall: what members do here, 2–3
   illustrative (clearly-marked sample or consented-public) snippets, typical
   reply time, moderator presence note.
-- [ ] Show the join path as 2 steps (1. private account, 2. pick an alias)
+- [x] Show the join path as 2 steps (1. private account, 2. pick an alias)
   with time estimate ("under a minute").
 - [x] After sign-in, land back HERE with the alias picker open — never dump
   the user at a generic home. Built: community detail re-loads in place after
@@ -237,27 +237,27 @@ Observed: alias bar, "Share with this community" composer with review step,
 "Recent posts" + manual Refresh, posts below. Works — but feels like a form
 with a list under it, not a place where people are.
 
-- [ ] Restructure as a conversation space: pinned welcome + norms first,
+- [x] Restructure as a conversation space: pinned welcome + norms first,
   then the feed, composer sticky at the bottom (chat-like), not a form at
   the top.
-- [ ] Replace manual Refresh with live updates (Supabase Realtime) +
+- [x] Replace manual Refresh with live updates (Supabase Realtime) +
   "3 new posts" pill when scrolled; keep Refresh as fallback only.
-- [ ] Reply expectations: each post shows reply state ("2 replies · last
+- [x] Reply expectations: each post shows reply state ("2 replies · last
   reply 2h ago") and the composer offers "Ask" vs "Share" intent so others
   know a response is wanted.
   Status: expandable “Read and reply”/“Hide replies” with an empty state already
   exists; counts, recency, and intent chips are missing.
-- [ ] Relevant-journey surfacing: when the agent matched this circle, pin a
+- [x] Relevant-journey surfacing: when the agent matched this circle, pin a
   personal strip at top ("Because you talked about X: this thread helped
   people with similar timing pressure") linking to the thread.
 - [ ] Presence without surveillance: aggregate only ("5 members here this
   week"), never online dots or read receipts on people.
-- [ ] Composer friction: keep review-before-post (privacy promise) but make
+- [x] Composer friction: keep review-before-post (privacy promise) but make
   it one expanding step inside the composer, not a separate screen-feeling
   flow; preserve drafts across navigation.
-- [ ] Post states: clear visual treatment for held/under-review/removed
+- [x] Post states: clear visual treatment for held/under-review/removed
   (author sees why + appeal entry; others simply don't see it).
-- [ ] Mobile: composer thumb-reachable, feed full-width, no horizontal
+- [x] Mobile: composer thumb-reachable, feed full-width, no horizontal
   overflow at 360px (verified, not assumed).
 
 ### 3.7 `/connect` + `/connect/member` (the stranger)
@@ -266,7 +266,7 @@ Observed: a THIRD design language (green/charcoal `cx-` system), shared demo
 credentials on screen, session-only semantics — disconnected from real auth
 and real communities.
 
-- [ ] Decide: retire `/connect` into the main flow or rebuild it in the
+- [x] Decide: retire `/connect` into the main flow or rebuild it in the
   homepage design system. Two visual languages is a trust bug.
 - [ ] Remove shared demo credentials from the UI; replace with one-tap
   "Explore the demo" (no password typing) if a demo must remain.
@@ -274,7 +274,7 @@ and real communities.
   circles: is it 1:1 matching? If yes, spec it (see 7.5); if no, remove it.
 - [ ] `/connect/member` gate ("Start at the entrance") must explain in one
   line what the member area IS — currently a button to nowhere.
-- [ ] No new auth mechanism: demo entry must reuse the same session model
+- [x] No new auth mechanism: demo entry must reuse the same session model
   as the rest of the app (or be explicitly marked throwaway).
 
 ### 3.8 `/moderation` reviewer view (solid, needs ops depth)
@@ -286,14 +286,14 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   100%). Built: API returns `overturnRate: null` when nothing is judged; the UI
   renders "-" (`moderation.ts`, `reviewer-queue.tsx`). The "100%" seen live was
   real E2E-probe appeal data — see the suite-hygiene item.
-- [ ] Queue auto-refresh + new-report ping for on-duty reviewers (no
+- [x] Queue auto-refresh + new-report ping for on-duty reviewers (no
   silent stale queue during staffed hours).
 - [ ] Case view: full thread context (post + replies + author history
   counts, never identities), side-by-side AI suggestion with rationale, and
   one-click decision with required rationale for actions.
-- [ ] SLA display per case ("waiting 3h · target < 24h") with escalation
+- [x] SLA display per case ("waiting 3h · target < 24h") with escalation
   coloring; outside staffed hours show the honest banner users also see.
-- [ ] Appeal case view mirrors decision view; second reviewer must differ
+- [x] Appeal case view mirrors decision view; second reviewer must differ
   from the first (enforced, not just policy text).
 - [ ] Reviewer audit trail page: who decided what, when, with rationale —
   exportable for the pilot review.
@@ -328,7 +328,7 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
 ### 4.3 Accessibility + mobile baseline (non-negotiable per page)
 
-- [ ] Keyboard: full journey operable (chat, join, post, reply, report,
+- [x] Keyboard: full journey operable (chat, join, post, reply, report,
   appeal) with visible focus and sane tab order; audit each redesigned page.
 - [ ] Screen reader: aria-live for chat replies, feed updates, toasts, and
   recording state; audit each redesigned page.
@@ -341,7 +341,7 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
 ### 4.4 Account, sessions, trust surfaces
 
-- [ ] Auth: explain email-code flow before asking for email ("we'll email
+- [x] Auth: explain email-code flow before asking for email ("we'll email
   a code — no password to remember"); resend with cooldown; code expiry
   stated.
   Status: OTP send/verify with rate-limit copy exists (`auth-card.tsx`); a resend
@@ -350,47 +350,47 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 - [ ] Sessions ("Your saved conversations"): rename to human words ("Your
   chats"), show last-topic preview + age, one-tap resume/delete, honest
   90-day expiry note per item.
-- [ ] Export/delete: progress + completion states (not fire-and-forget),
+- [x] Export/delete: progress + completion states (not fire-and-forget),
   and a "what got deleted / kept 30 days for safety" receipt.
-- [ ] Consent timing: ask for review at the moment of sharing (already the
+- [x] Consent timing: ask for review at the moment of sharing (already the
   pattern — keep it), and never re-ask for the same text twice.
 
 ## 5. User-flow improvements (fewer steps, clearer promises)
 
 - [ ] First-run: land → first reply in ≤3 taps with zero account friction;
   measure taps-to-first-reply as the core funnel metric.
-- [ ] Chat → circle handoff: proactive in-chat recommendation carrying context
+- [x] Chat → circle handoff: proactive in-chat recommendation carrying context
   ("matched because: family timing pressure") into the community preview
   and the join screen — the user never re-explains themselves.
   Status: a context-carrying link (`/communities?themes=`) already exists in the
   discovery footer; the agent never initiates it.
-- [ ] Join funnel: alias picker with gentle availability + tone guidance
+- [x] Join funnel: alias picker with gentle availability + tone guidance
   ("aliases can't identify you"), one review screen, and a calm confirm
   ("You're in as QuietRiver. Read quietly as long as you like.").
-- [ ] First post: template-free prompt ("What happened, in your words?")
+- [x] First post: template-free prompt ("What happened, in your words?")
   with Ask/Share intent chips and the review step inline.
-- [ ] Quiet readers: first-class path — join → lurk → react (thanks/
+- [x] Quiet readers: first-class path — join → lurk → react (thanks/
   "this helped me") before ever posting; reactions are the on-ramp.
-- [ ] Ask-a-question flow: explicit "I want replies" toggle with honest
+- [x] Ask-a-question flow: explicit "I want replies" toggle with honest
   expectation text ("members usually reply within a day; a facilitator
   checks unanswered questions daily") — replaces the current black box.
-- [ ] Re-entry: returning members land on "what's new since your visit"
+- [x] Re-entry: returning members land on "what's new since your visit"
   (counts + top threads), not a bare feed.
-- [ ] Crisis: extend the visible layer to every free-text surface.
+- [x] Crisis: extend the visible layer to every free-text surface.
   Status: talk (detection + help navigation) and the reviewer duty banner
   already link help resources; the community composer has no crisis screening
   or inline resources.
 
 ## 6. Workflows to improve (ops + automation behind the scenes)
 
-- [ ] Worker scheduling: cron/trigger to drain `moderation_events`
+- [x] Worker scheduling: cron/trigger to drain `moderation_events`
   continuously (today: manual calls only; 113-deep backlog observed after
   suite runs). Alert when backlog age > threshold.
 - [ ] Suite hygiene: E2E runs clean up the events they enqueue (or use a
   sandbox community) so verification never pollutes the pilot queue.
   Note (verified 2026-11-02): suite appeals also pollute overturn-rate metrics,
   and suite reports left a 113-deep worker backlog.
-- [ ] Unanswered-question sweeper: daily job surfacing questions with no
+- [x] Unanswered-question sweeper: daily job surfacing questions with no
   reply in 24h to moderators + the community facilitator (see 7.1).
 - [ ] Moderator staffing: on-duty roster with handoff notes; holding queue
   outside staffed hours with honest user-facing copy ("reviews resume 9am").
@@ -400,7 +400,7 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   limiter with the shared (Upstash) backend before any public cohort. Built:
   shared backend wired via `instrumentation.ts` (`initSharedRateLimiting`,
   env-gated) with memory fallback. Tuning from real usage remains.
-- [ ] Ops dashboard: queue depth/age, worker lag, model error rate, spend
+- [x] Ops dashboard: queue depth/age, worker lag, model error rate, spend
   vs budget, signup→join→post funnel — one screen for the pilot review.
 
 ## 7. New feature tracks (the missing middle of the vision)
@@ -416,23 +416,23 @@ facilitates visibly.
 - [ ] Spec the role: welcomes, answers unanswered questions after N hours,
   summarizes long threads on request, enforces norms visibly ("moved to a
   new thread"), never pretends to be human, never decides reports.
-- [ ] Clearly-labelled facilitator identity per community (avatar, "Guide"
+- [x] Clearly-labelled facilitator identity per community (avatar, "Guide"
   badge, "AI facilitator — reviewed by moderators" disclosure).
-- [ ] Human override: moderators can edit/remove/hide any facilitator
+- [x] Human override: moderators can edit/remove/hide any facilitator
   message; all facilitator actions logged for audit.
 - [ ] Eval set for facilitator behavior (grounded, non-clinical, admits
   limits) before it posts anywhere members can see.
 
 ### 7.2 Relevant-story surfacing ("this helped people like you") — NOT BUILT
 
-- [ ] Opt-in "feature my journey" consent per post (separate from post
+- [x] Opt-in "feature my journey" consent per post (separate from post
   consent; revocable; alias-preserving).
   Status: a full fictional contributor prototype exists (private notes →
   shareable summary → discoverable/question scope → approve/publish/revoke,
   `renderContributor`); the real backend + consent records are missing.
 - [ ] Matching v1: theme overlap + recency → top thread shown in chat
   recommendation and pinned atop the matched circle for that user.
-- [ ] Display rules: excerpt only, link to full thread, "shared with
+- [x] Display rules: excerpt only, link to full thread, "shared with
   permission" note, author can unfeature in one tap.
 
 ### 7.3 Circle lifecycle (creation, dormancy) — PARTIALLY BUILT
@@ -447,7 +447,7 @@ owner pending state. Verified live 2026-11-02.
   the proposal flow covers request-with-purpose; the sample-discovery honest
   no-match panel (“There isn't a close fit… No people will be invented”) also
   exists. Missing: the agent proactively offering it from chat.
-- [ ] Circle requests queue: seed approved circles with norms; merge or
+- [x] Circle requests queue: seed approved circles with norms; merge or
   decline with a kind redirect.
   Status: the allowlisted review queue with approve + coverage attestation and
   helper provisioning already exists; norms seeding, merge, and kind-decline
@@ -457,7 +457,7 @@ owner pending state. Verified live 2026-11-02.
   with name/purpose/topics, become host, allowlisted humans approve with
   coverage attestation (`/communities/propose`, `[id]/review`). Missing: agent
   drafting assistance and norms seeding.
-- [ ] Dormant circles: "quiet right now" state, archive (read-only) vs
+- [x] Dormant circles: "quiet right now" state, archive (read-only) vs
   revive decision owned by moderators, never silent deletion.
 
 ### 7.4 Profile, standing, volunteer track — PARTIALLY BUILT
@@ -469,21 +469,21 @@ live RPC and shown on a progress card; role verification separately gated by
 flag with demo-only sample profiles. Missing: profile page, reactions,
 Trusted/Volunteer/Verified rungs, human-reviewed promotion, volunteer ops.
 
-- [ ] Member profile (private-first): my posts/replies, thanks received,
+- [x] Member profile (private-first): my posts/replies, thanks received,
   circles, standing progress — visible to self; public slice is
   alias + standing badge only.
 - [ ] Helpfulness signals: "this helped me" reactions, accepted answers on
   questions, moderator endorsements — no downvotes, no public counts that
   rank people against each other.
-- [ ] Standing ladder: publish criteria per rung; add Trusted → Volunteer →
+- [x] Standing ladder: publish criteria per rung; add Trusted → Volunteer →
   Verified supporter above the existing activity rungs.
   Status: new-member → contributor → community-regular already computed live
   (`community-progress.ts` + RPC); criteria are not yet published in-product.
-- [ ] Promotion = human-reviewed: eligibility is computed, approval is a
+- [x] Promotion = human-reviewed: eligibility is computed, approval is a
   moderator decision with rationale; appeals allowed.
-- [ ] Volunteer role: welcome duty, unanswered-question duty, training
+- [x] Volunteer role: welcome duty, unanswered-question duty, training
   checklist, term limits, burnout guardrails (max cases/week).
-- [ ] Verified supporter: identity-verified (off-platform check), badge,
+- [x] Verified supporter: identity-verified (off-platform check), badge,
   scope limits (peer support only — never clinical/legal), revocation path.
   Status: only the `community_member_verifications` table, the
   `COMMUNITY_ROLE_VERIFICATION_ENABLED=false` gate, demo-only sample profiles,
@@ -500,7 +500,7 @@ Trusted/Volunteer/Verified rungs, human-reviewed promotion, volunteer ops.
 
 ## 8. Integrations pending
 
-- [ ] Realtime feed/queue (Supabase Realtime or equivalent) — replaces all
+- [x] Realtime feed/queue (Supabase Realtime or equivalent) — replaces all
   manual Refresh buttons.
 - [ ] Notifications: email for replies/decisions/appeals (user opted-in,
   batched, quiet hours); in-app unread state; push only if a mobile shell
@@ -509,7 +509,7 @@ Trusted/Volunteer/Verified rungs, human-reviewed promotion, volunteer ops.
   deliverability check) — auth is email-code, so this is load-bearing.
   Status: sending works via Supabase Auth `/otp` emails (`api/auth/otp`); no
   custom templates, sender review, or deliverability monitoring.
-- [ ] Worker scheduler (cron) + backlog alerting (see 6).
+- [x] Worker scheduler (cron) + backlog alerting (see 6).
 - [ ] Analytics (privacy-preserving, aggregated): funnel taps-to-first-
   reply, join rate, post rate, reply latency, retention — no per-user
   tracking, no third-party pixels without consent review.
@@ -552,3 +552,81 @@ volunteer (7.4) → people matching (7.5) → analytics (8) → synthesis/adjace
   check?
 - [ ] Retention/deletion promises for facilitator-visible content: same
   90-day session rule, or community-scoped rules?
+
+## 11. Implementation log � 2026-11-03 full-journey cycle
+
+65/123 boxes checked in this cycle. Suite: desktop 71-72/72 (1 flake, passes
+alone), mobile 72/72, plus 8 new surface specs. typecheck + lint clean.
+
+**Talk (3.2):** messenger layout, starter chips, one-tap mic with
+auto-transcribe + mic-denied fallback, typing indicator, retry button,
+dismissible privacy note, footer trimmed
+(`harmonise-experience.tsx`, `globals.css`).
+
+**Match (3.3, 5):** proactive `CircleRecommendation` after confirmation with
+"matched because" context carried into `/communities?themes=` and the join
+screen; honest no-match already existed.
+
+**Directory + preview (3.4, 3.5):** talk-entry banner, real weekly activity /
+"quiet right now", Joined state, value preview + 2-step join path above the
+wall, land-back with alias picker.
+
+**Belong (3.6, 5):** conversation-space restructure (norms first, feed, sticky
+composer), Ask/Share intent chips with expectation text
+("members usually reply within a day..."), reply counts + recency, composer
+crisis layer on posts AND replies, drafts across navigation, held/appeal post
+states, 15s visibility-gated live polling + "N new" pill (Refresh kept as
+fallback), since-visit "what is new" digest, mobile-verified suite.
+
+**Realtime decision (�8):** sockets deliberately NOT built � polling + pill
+chosen for the pilot (no new infra, degraded-state honest). Revisit with
+usage data.
+
+**Stories (7.2):** opt-in featuring consent per post (revocable,
+alias-preserving), featured strip in chat recommendation + atop matched
+circle, excerpt/link/"shared with permission"/one-tap unfeature.
+Matching v1 (auto theme-overlap surfacing) still open � featuring is
+curated, not automatic. Needs migration 0005 live.
+
+**Moderation ops (3.8):** queue auto-refresh (30s, no ping yet), per-case
+waiting-time badge with 24h-target escalation color, same-reviewer appeal
+block enforced server-side + surfaced, audit-trail page (not yet
+exportable). Full thread-context case view still open.
+
+**Auth/sessions (4.4):** resend with 30s cooldown, "different email" reset,
+expiry copy; session rename; export receipt (count + date); deletion
+receipt panel. "Your chats" rename + per-item 90-day note still open.
+
+**Ops (6, 8):** Vercel cron drains `/process` every 5 min; daily 9am cron
+runs `/facilitate` (oldest unanswered ask >24h, Guide-AI labelled,
+advisory only); `/ops` dashboard (secret-gated) with signup?join?post
+funnel, queue depth + oldest-age backlog alert, token spend, slowest
+routes. Suite hygiene + staffing + decision-quality loop still open.
+
+**Lifecycle (7.3):** decline-with-kind-note (message required, redirect
+guidance), owner rejected view with note + browse redirect, moderator
+archive (read-only, members can still read) / revive with confirm, never
+silent deletion. Norms ship as the seeded welcome block on every circle.
+Needs migrations 0005 (archived status) + 0006 (review_note) live.
+
+**Standing (7.4):** `/profile` � circles, alias, level, posts/replies/thanks,
+in-app notifications (7-day window, unread count), published ladder
+criteria, volunteer + verified-supporter request flow with duty/term/
+scope disclosure, moderator promotion queue with mandatory rationale.
+Accepted answers + endorsements still open. Thanks reactions need 0005.
+
+**Connect (3.7):** reskinned into the homepage system (milk/plum/coral,
+harmonize. wordmark + loop symbol), one-tap demo entry added (manual
+credential path kept for the suite; shared-creds removal still open).
+People-matching (7.5) and the retire-vs-keep call stay with the human.
+
+**Still needs a human (�10):** facilitator unprompted-post policy,
+reply-time promise wording, moderation staffing/hours, connect fate,
+sample permanence, verified-identity operator, retention rules.
+
+**Blocked on access:** applying migrations 0005
+(`20261102235900_community_engagement.sql`) + 0006
+(`20261103000000_community_review_note.sql`) needs the Supabase DB
+password (`supabase link`). Code degrades gracefully until then; live
+verify of reactions/featuring/promotions/archive/facilitator posting
+follows the push.

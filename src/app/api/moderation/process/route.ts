@@ -11,11 +11,19 @@ export const maxDuration = 60;
  * secret so only the scheduled job can invoke it. Call repeatedly (or on a
  * schedule) until it reports empty.
  */
+export async function GET(request: Request) {
+  return POST(request);
+}
+
 export async function POST(request: Request) {
   const requestId = newRequestId();
   const started = Date.now();
   const secret = process.env.MODERATION_WORKER_SECRET?.trim();
-  if (!secret || request.headers.get("x-worker-secret") !== secret) {
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  const authHeader = request.headers.get("authorization") ?? "";
+  const cronOk = !!cronSecret && authHeader.toLowerCase().startsWith("bearer ") && authHeader.slice(7) === cronSecret;
+  const authorized = (!!secret && request.headers.get("x-worker-secret") === secret) || cronOk;
+  if (!authorized) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   if (!isDatabaseConfigured()) return NextResponse.json({ error: "unavailable" }, { status: 503 });

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AuthCard from "@/components/account/auth-card";
 import { ScopeStewardshipPanel } from "@/components/moderation/scope-stewardship-panel";
@@ -70,6 +71,7 @@ export default function ReviewerQueue() {
   const [rationales, setRationales] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 
   const loadAssignments = useCallback(async () => {
     const config = await getJson<{ databaseEnabled?: unknown }>("/api/auth/config");
@@ -90,9 +92,9 @@ export default function ReviewerQueue() {
     setStatus("ready");
   }, [communityId]);
 
-  const loadQueue = useCallback(async () => {
+  const loadQueue = useCallback(async (quiet = false) => {
     if (!communityId) return;
-    setQueue(null);
+    if (!quiet) setQueue(null);
     const [feed, stats, flagFeed] = await Promise.all([
       getJson<{ queue?: QueueItem[] }>(`/api/moderation/queue?community=${communityId}`),
       getJson<{ metrics?: Metrics }>(`/api/moderation/metrics?community=${communityId}`),
@@ -102,6 +104,7 @@ export default function ReviewerQueue() {
     else setQueue([]);
     if (stats.status === 200 && stats.body?.metrics) setMetrics(stats.body.metrics);
     setFlags(flagFeed.status === 200 && Array.isArray(flagFeed.body?.flags) ? flagFeed.body.flags : []);
+    setUpdatedAt(Date.now());
   }, [communityId]);
 
   useEffect(() => {
@@ -115,6 +118,15 @@ export default function ReviewerQueue() {
       await loadQueue();
     })();
   }, [loadQueue]);
+
+  useEffect(() => {
+    if (!communityId) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible" || busy) return;
+      void loadQueue(true);
+    }, 30000);
+    return () => window.clearInterval(timer);
+  }, [communityId, busy, loadQueue]);
 
   async function decide(reportId: string, decision: string) {
     const rationale = rationales[reportId] ?? "";
@@ -139,11 +151,13 @@ export default function ReviewerQueue() {
 
   async function decideAppeal(appealId: string, outcome: "upheld" | "overturned") {
     setBusy(true);
-    const result = await sendJson(`/api/moderation/appeals/${appealId}/decide`, "POST", { outcome });
+    const result = await sendJson<{ error?: string }>(`/api/moderation/appeals/${appealId}/decide`, "POST", { outcome });
     setBusy(false);
     if (result.status === 200) {
       setNotice(`Appeal ${outcome}. The record keeps your outcome separate from the original decision.`);
       await loadQueue();
+    } else if (result.status === 403 && result.body?.error === "same-reviewer") {
+      setNotice("Another reviewer must decide this appeal - you made the original decision.");
     } else {
       setNotice("The appeal outcome could not be recorded. Try again.");
     }
@@ -199,6 +213,12 @@ export default function ReviewerQueue() {
         <button type="button" onClick={() => void loadQueue()} className="rounded-full bg-[var(--sage)] px-4 py-2 text-sm">
           Refresh queue
         </button>
+        {updatedAt !== null && (
+          <span className="text-xs text-[var(--muted)]">Auto-refreshes every 30s</span>
+        )}
+        <Link href={`/moderation/decisions?community=${communityId ?? ""}`} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm underline">
+          Audit trail
+        </Link>
       </div>
 
       {metrics && (
@@ -249,6 +269,7 @@ export default function ReviewerQueue() {
                 {item.report.status}
               </span>
               <span>Reported {new Date(item.report.created_at).toLocaleString()}</span>
+System.Object[]
               <span>·</span>
               <span>Reporter: {item.reporter_alias} (reviewers only)</span>
             </div>

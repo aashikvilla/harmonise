@@ -23,12 +23,39 @@ function getServerHydrationSnapshot() {
 
 function Brand() {
   return (
-    <div className="cx-brand" aria-label="Harmonise">
-      <span className="cx-brand-mark" aria-hidden="true">H</span>
+    <div className="cx-brand" aria-label="harmonize.">
+      <span className="cx-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40">
+          <path d="M8 23C8 14 15 9 23 9C31 9 34 15 29 20C23 26 12 22 12 29C12 34 22 34 28 26" />
+          <circle cx="31" cy="24" r="2.6" />
+        </svg>
+      </span>
       <span>
-        <span className="cx-brand-name">Harmonise<em>.</em></span>
+        <span className="cx-brand-name">harmonize<em>.</em></span>
         <span className="cx-tagline" style={{ display: "block" }}>Human growth, shared.</span>
       </span>
+    </div>
+  );
+}
+
+function OneTapDemo() {
+  const { dispatch } = useSession();
+  const router = useRouter();
+
+  function enter() {
+    dispatch({ type: "enter", displayName: DEMO_DISPLAY_NAME, nameMode: "alias", email: DEMO_EMAIL, demo: true });
+    router.push("/connect/member");
+  }
+
+  return (
+    <div className="cx-onetap">
+      <button type="button" className="cx-btn cx-btn-primary cx-btn-block" onClick={enter}>
+        Try the demo in one tap
+      </button>
+      <p className="cx-note">
+        One tap confirms you are 18 or older and that demo messages are sent to Meta Muse Spark. Shared demo
+        account — nothing is saved. Prefer the manual sign-in below instead.
+      </p>
     </div>
   );
 }
@@ -67,6 +94,7 @@ function MemberForm() {
 
   return (
     <div>
+      <OneTapDemo />
       <div className="cx-demo-credentials" aria-label="Demo credentials">
         <p className="cx-demo-title">Demo account</p>
         <dl>

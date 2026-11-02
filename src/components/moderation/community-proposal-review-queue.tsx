@@ -10,6 +10,8 @@ export default function CommunityProposalReviewQueue() {
   const [confirmed, setConfirmed] = useState<Record<string, boolean>>({});
   const [busyId, setBusyId] = useState("");
   const [notice, setNotice] = useState("");
+  const [declining, setDeclining] = useState("");
+  const [message, setMessage] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -63,6 +65,35 @@ export default function CommunityProposalReviewQueue() {
     }
   }
 
+  async function decline(proposal: Proposal) {
+    if (!message.trim()) {
+      setNotice("Write a kind note first — the proposer reads it.");
+      return;
+    }
+    setBusyId(proposal.id);
+    setNotice("");
+    try {
+      const response = await fetch(`/api/communities/${encodeURIComponent(proposal.id)}/review`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision: "declined", message: message.trim() }),
+      });
+      if (response.ok) {
+        setProposals((items) => items.filter((item) => item.id !== proposal.id));
+        setDeclining("");
+        setMessage("");
+        setNotice(`${proposal.name} was declined with your note. Suggest an existing circle where it fits.`);
+      } else {
+        setNotice("The proposal could not be declined. Try again or check reviewer access.");
+      }
+    } catch {
+      setNotice("The review service is unavailable. Your decision was not confirmed.");
+    } finally {
+      setBusyId("");
+    }
+  }
+
   if (state === "hidden") return null;
 
   return <section aria-labelledby="community-proposals-heading" className="mb-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
@@ -94,6 +125,33 @@ export default function CommunityProposalReviewQueue() {
         <button type="button" disabled={!confirmed[proposal.id] || Boolean(busyId)} onClick={() => void approve(proposal)} className="button button-primary mt-2">
           {busyId === proposal.id ? "Approving…" : "Approve community launch"}
         </button>
+        {declining === proposal.id ? (
+          <div className="mt-3 rounded-lg bg-[var(--lilac)] p-3">
+            <label className="block text-sm font-semibold" htmlFor={`decline-note-${proposal.id}`}>
+              Kind note to the proposer (required — name a circle to join instead where one fits)
+            </label>
+            <textarea
+              id={`decline-note-${proposal.id}`}
+              rows={3}
+              maxLength={1000}
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              className="mt-1 w-full rounded-lg border border-[var(--line)] bg-white p-2 text-sm"
+            />
+            <div className="mt-2 flex gap-2">
+              <button type="button" disabled={Boolean(busyId)} onClick={() => void decline(proposal)} className="button button-primary">
+                {busyId === proposal.id ? "Declining…" : "Decline with note"}
+              </button>
+              <button type="button" onClick={() => { setDeclining(""); setMessage(""); }} className="min-h-11 text-sm underline">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" disabled={Boolean(busyId)} onClick={() => setDeclining(proposal.id)} className="mt-2 min-h-11 text-sm underline">
+            Decline with a kind note…
+          </button>
+        )}
       </li>)}
     </ul>}
   </section>;
