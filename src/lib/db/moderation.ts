@@ -369,7 +369,7 @@ export async function fileAppeal(userId: string, decisionId: string, reason: str
   return { appeal };
 }
 
-export type AppealDecisionResult = { appeal: AppealRow } | { error: "not-found" | "forbidden" | "closed" };
+export type AppealDecisionResult = { appeal: AppealRow } | { error: "not-found" | "forbidden" | "closed" | "same-reviewer" };
 
 export async function decideAppeal(userId: string, appealId: string, outcome: "upheld" | "overturned"): Promise<AppealDecisionResult> {
   if (!isUuid(appealId)) return { error: "not-found" };
@@ -383,6 +383,12 @@ export async function decideAppeal(userId: string, appealId: string, outcome: "u
   const report = selectSingle(reports);
   if (!report) return { error: "not-found" };
   if (!(await isCommunityModerator(userId, report.community_id))) return { error: "forbidden" };
+  if (decision.reviewer_user_id === userId) {
+    const mods = await supabaseRest<Array<{ user_id: string }>>("memberships", {
+      query: `?community_id=eq.${report.community_id}&role=eq.moderator&status=eq.active&select=user_id`,
+    });
+    if (mods.some((row) => row.user_id !== userId)) return { error: "same-reviewer" };
+  }
   const rows = await supabaseRest<AppealRow[]>("appeals", {
     method: "PATCH",
     query: `?id=eq.${appealId}`,
@@ -446,4 +452,48 @@ export async function getMetrics(communityId: string): Promise<ModerationMetrics
     appeals: { open: appealCounts.open ?? 0, upheld: appealCounts.upheld ?? 0, overturned: appealCounts.overturned ?? 0 },
     overturnRate: judged > 0 ? (appealCounts.overturned ?? 0) / judged : null,
   };
+}
+
+
+export type DecisionLogEntry = {
+  id: string;
+  communityId: string;
+  reportId: string;
+  reportReason: string;
+  decision: string;
+  rationale: string;
+  reviewerAlias: string;
+  createdAt: string;
+  appealStatus: string | null;
+};
+
+export async function getDecisionLog(userId: string, communityId: string): Promise<DecisionLogEntry[] | { error: "forbidden" }> {
+  if (!(await isCommunityModerator(userId, communityId))) return { error: "forbidden" };
+  const reports = await supabaseRest<ReportRow[]>("reports", {
+    query: `?community_id=eq.${communityId}&order=created_at.desc&select=*&limit=100`,
+  });
+  const entries: DecisionLogEntry[] = [];
+  for (const report of reports) {
+    const decisions = await supabaseRest<ModerationDecisionRow[]>("moderation_decisions", {
+      query: `?report_id=eq.${report.id}&order=created_at.desc&select=*`,
+    });
+    for (const decision of decisions) {
+      const [reviewers, appeals] = await Promise.all([
+        supabaseRest<MembershipRow[]>("memberships", { query: `?user_id=eq.${decision.reviewer_user_id}&community_id=eq.${communityId}&select=alias&limit=1` }),
+        supabaseRest<AppealRow[]>("appeals", { query: `?decision_id=eq.${decision.id}&order=created_at.desc&select=status&limit=1` }),
+      ]);
+      entries.push({
+        id: decision.id,
+        communityId,
+        reportId: report.id,
+        reportReason: report.reason,
+        decision: decision.decision,
+        rationale: decision.rationale,
+        reviewerAlias: reviewers[0]?.alias ?? "Former moderator",
+        createdAt: decision.created_at,
+        appealStatus: appeals[0]?.status ?? null,
+      });
+    }
+  }
+  return entries;
 }

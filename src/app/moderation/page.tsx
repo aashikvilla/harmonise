@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ReviewerQueue from "@/components/moderation/reviewer-queue";
+import PromotionQueue from "@/components/moderation/promotion-queue";
 import CommunityProposalReviewQueue from "@/components/moderation/community-proposal-review-queue";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function ModerationPage() {
       <div className="mt-6">
         <CommunityProposalReviewQueue />
         <ReviewerQueue />
+        <PromotionQueue />
       </div>
     </main>
   );

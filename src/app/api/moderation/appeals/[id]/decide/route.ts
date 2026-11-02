@@ -22,7 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const result = await decideAppeal(user.id, id, record.outcome);
     if ("error" in result) {
-      const status = result.error === "forbidden" ? 403 : result.error === "closed" ? 409 : 404;
+      const status = result.error === "forbidden" || result.error === "same-reviewer" ? 403 : result.error === "closed" ? 409 : 404;
       return NextResponse.json({ error: result.error }, { status });
     }
     logRouteCall({ route: "POST /api/moderation/appeals/[id]/decide", status: 200, latencyMs: Date.now() - started, requestId, outcome: "ok" });

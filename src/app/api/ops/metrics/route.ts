@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getOpsSummary } from "@/lib/ops-metrics";
-import { isDatabaseConfigured, supabaseCount } from "@/lib/db/supabase";
+import { isDatabaseConfigured, supabaseCount, supabaseRest } from "@/lib/db/supabase";
 
 export const runtime = "nodejs";
 
 /**
  * Aggregate operational metrics: request counts, errors, latency, token
- * totals, and moderation queue depth. No private text, notes, or identities.
+ * totals, moderation queue depth + oldest queued age, and the
+ * signup→join→post funnel. No private text, notes, or identities.
  * Protected by a shared secret (x-ops-secret header).
  */
 export async function GET(request: Request) {
@@ -16,6 +17,8 @@ export async function GET(request: Request) {
   }
   const summary = getOpsSummary();
   let queue: Record<string, number> | null = null;
+  let funnel: Record<string, number> | null = null;
+  let oldestQueuedAt: string | null = null;
   if (isDatabaseConfigured()) {
     try {
       const [queued, processing, triaged, dead, openReports] = await Promise.all([
@@ -26,9 +29,23 @@ export async function GET(request: Request) {
         supabaseCount("reports", "?status=eq.open"),
       ]);
       queue = { queued, processing, triaged, dead, openReports };
+      const oldest = await supabaseRest<Array<{ created_at: string }>>("moderation_events", {
+        query: "?status=eq.queued&order=created_at.asc&select=created_at&limit=1",
+      });
+      oldestQueuedAt = oldest[0]?.created_at ?? null;
     } catch {
       queue = null;
     }
+    try {
+      const [accounts, memberships, posts] = await Promise.all([
+        supabaseCount("profiles", "?select=id"),
+        supabaseCount("memberships", "?status=eq.active"),
+        supabaseCount("posts", "?select=id"),
+      ]);
+      funnel = { accounts, memberships, posts };
+    } catch {
+      funnel = null;
+    }
   }
-  return NextResponse.json({ ...summary, queue });
+  return NextResponse.json({ ...summary, queue, funnel, oldestQueuedAt });
 }

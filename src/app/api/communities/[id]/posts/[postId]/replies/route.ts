@@ -41,6 +41,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const result = await createReply(user.id, id, postId, record.body, record.consentVersion);
     if ("error" in result) {
+      if (result.error === "crisis") return NextResponse.json({ crisis: true });
+      if (result.error === "archived") return NextResponse.json({ error: "archived" }, { status: 403 });
       const status = result.error === "stale-consent" ? 409 : result.error === "blocked" ? 403 : result.error === "not-found" ? 404 : 403;
       return NextResponse.json({ error: result.error }, { status });
     }
