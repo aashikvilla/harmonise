@@ -248,6 +248,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [chatPending, setChatPending] = useState(false);
   const [privacyNoteDismissed, setPrivacyNoteDismissed] = useState(false);
   const [chatError, setChatError] = useState("");
+  const [modelLive, setModelLive] = useState(false);
   const [suggestedThemes, setSuggestedThemes] = useState<ThemeId[]>([]);
   const [suggestedNeed, setSuggestedNeed] = useState<{ summary: string; type: SupportNeed }>({ summary: "", type: "not-sure" });
   const [composer, setComposer] = useState(initialPath === "arjun" ? "I don't know... things at home feel weird lately." : "");
@@ -298,6 +299,22 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     if (chatTurns.length === 0) return;
     chatEndRef.current?.scrollIntoView({ block: "nearest" });
   }, [chatTurns.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/ready", { cache: "no-store" });
+        const body = (await response.json().catch(() => null)) as { model?: { configured?: unknown } } | null;
+        if (!cancelled) setModelLive(body?.model?.configured === true);
+      } catch {
+        if (!cancelled) setModelLive(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => () => {
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -676,8 +693,8 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         <SessionPanel activeSessionId={activeSessionId} onResume={resumeSession} onNewSession={beginNewServerSession} onSessionDeleted={handleSessionDeleted} />
         <div className="chat-provenance">Meta AI · Muse Spark · Review each response and suggested theme</div>
         <div className="chat-log" aria-live="polite" aria-relevant="additions text">
-        {chatTurns.length === 0 && <article className="conversation-turn turn-guide"><span>Harmonise · fictional assistant</span><p>We can take this slowly. Is this mainly about something happening with someone, or how you’ve been feeling? You can also just tell me a little more.</p></article>}
-        {chatTurns.map((turn) => <article className={`conversation-turn ${turn.role === "you" ? "turn-arjun" : "turn-guide"}`} key={turn.id}><span>{turn.role === "you" ? "Arjun · {day}".replace("{day}", arjunVisits.find((visit) => visit.id === activeVisitId)?.day ?? "You") : turn.id.startsWith("meta-") ? "Harmonise · Meta AI" : "Harmonise · fictional transcript"}</span><p>{turn.text}</p></article>)}
+        {chatTurns.length === 0 && <article className="conversation-turn turn-guide"><span>{modelLive ? "Harmonise · Meta AI" : "Harmonise · fictional assistant"}</span><p>We can take this slowly. Is this mainly about something happening with someone, or how you’ve been feeling? You can also just tell me a little more.</p></article>}
+        {chatTurns.map((turn) => <article className={`conversation-turn ${turn.role === "you" ? "turn-arjun" : "turn-guide"}`} key={turn.id}><span>{turn.role === "you" ? (state.isFeaturedJourney ? `Arjun · ${arjunVisits.find((visit) => visit.id === activeVisitId)?.day ?? "Day 1"}` : "You") : turn.id.startsWith("meta-") || turn.id.startsWith("srv-") ? "Harmonise · Meta AI" : "Harmonise · fictional transcript"}</span><p>{turn.text}</p></article>)}
           <div ref={chatEndRef}/>
         </div>
         {chatPending && <div className="small-note typing-row" role="status"><span className="typing-dots" aria-hidden="true"><span /><span /><span /></span>Muse Spark is preparing a response…</div>}
@@ -688,7 +705,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           <div className="inline-chat-choices"><button type="button" disabled={chatPending} onClick={() => setUnderstandingConfirmed(true)}>Yes, that’s closer</button><button type="button" disabled={chatPending} onClick={() => { setUnderstandingConfirmed(false); setCorrectionRequested(true); }}>Not quite</button><button type="button" disabled={chatPending} onClick={() => { setCorrectionRequested(true); setComposer("I don't want someone to tell me to stay or leave."); }}>Edit in my words</button></div>
           {correctionRequested && <p className="correction-request-status" role="status">Not quite. Tell me what I missed in your own words.</p>}
           {correctedUnderstanding && <section className="causal-understanding" aria-label="Updated editable understanding">
-            <div className="causal-comparison"><div><span className="context-eyebrow">WHAT ARJUN SAID</span><p>{chatTurns.filter((turn) => turn.role === "you").at(-2)?.text ?? "His first words are above."}</p></div><span className="comparison-arrow" aria-hidden="true">→</span><div><label className="context-eyebrow" htmlFor="corrected-understanding">WHAT HE CONFIRMED · EDITABLE</label><textarea id="corrected-understanding" rows={3} value={correctedUnderstanding} onChange={(event) => setCorrectedUnderstanding(event.target.value)}/></div></div>
+            <div className="causal-comparison"><div><span className="context-eyebrow">WHAT YOU SAID</span><p>{chatTurns.filter((turn) => turn.role === "you").at(-2)?.text ?? "Your first words are above."}</p></div><span className="comparison-arrow" aria-hidden="true">→</span><div><label className="context-eyebrow" htmlFor="corrected-understanding">WHAT YOU CONFIRMED · EDITABLE</label><textarea id="corrected-understanding" rows={3} value={correctedUnderstanding} onChange={(event) => setCorrectedUnderstanding(event.target.value)}/></div></div>
             <p className="preview-provenance"><strong>Muse Spark’s suggestion is editable. It affects community recommendations only after you confirm it.</strong></p>
           </section>}
           {understandingConfirmed && <>
@@ -1036,7 +1053,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
   return <main className="harmonise-app">
     <a className="skip-link" href="#main-content">Skip to content</a>
-    <header className="app-header"><div className="header-inner"><Brand/><div className="header-status">Fictional community · Meta AI chat when configured</div><div className="header-actions"><button className="text-button" onClick={restartJourney}>Restart</button><Link className="leave-link" href="/">Home</Link></div></div></header>
+    <header className="app-header"><div className="header-inner"><Brand/><div className="header-status">Sample community · {modelLive ? "Live Meta AI chat" : "Meta AI chat when configured"}</div><div className="header-actions"><button className="text-button" onClick={restartJourney}>Restart</button><Link className="leave-link" href="/">Home</Link></div></div></header>
     {state.screen !== "entry" && <nav className="primary-nav" aria-label="Main navigation">{navItems.map((item) => <button key={item.screen} className={state.screen === item.screen || (item.screen === "discovery" && ["community", "experience", "question", "reply", "reflection"].includes(state.screen)) || (item.screen === "help" && ["professional", "moderation"].includes(state.screen)) ? "nav-item active" : "nav-item"} aria-current={state.screen === item.screen ? "page" : undefined} onClick={() => navigate(item.screen)}>{item.label}</button>)}</nav>}
     <section id="main-content" className="app-main" aria-labelledby="page-title">
       <div className={`page-topline ${state.screen === "entry" ? "entry-topline" : ""}`}><div><span className="page-kicker">{state.screen === "entry" ? "ARJUN · A FICTIONAL STORY" : "HARMONISE"}</span><h1 id="page-title" className={state.screen === "entry" ? "entry-headline" : undefined} ref={headingRef} tabIndex={-1}>{appHeading(state)}</h1></div>{state.screen !== "entry" && state.screen !== "conversation" && <button className="text-button back-action" onClick={() => stateDispatch({ type: "BACK" })}>← Back</button>}</div>

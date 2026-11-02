@@ -70,7 +70,7 @@ test("a user correction updates the editable Muse Spark reflection", async ({ pa
   await page.getByRole("button", { name: "Edit in my words" }).click();
   await page.getByRole("textbox", { name: "Your message" }).fill("I can talk with my partner. It's my parents. I want time to decide what I want.");
   await page.getByRole("button", { name: "Send" }).click();
-  const updated = page.getByRole("textbox", { name: "WHAT HE CONFIRMED · EDITABLE" });
+  const updated = page.getByRole("textbox", { name: "WHAT YOU CONFIRMED · EDITABLE" });
   await expect(updated).toHaveValue("You want time to decide what you want, without someone choosing stay or leave for you.");
   await expect(page.locator(".causal-understanding").getByText(/Muse Spark’s suggestion is editable/i)).toBeVisible();
   await updated.fill("I want to decide at my own pace.");
@@ -85,7 +85,7 @@ test("Arjun can choose a concrete private takeaway immediately after confirming 
   await page.getByRole("button", { name: "Edit in my words" }).click();
   await page.getByRole("textbox", { name: "Your message" }).fill("I can talk with my partner. It's my parents. I want time to decide what I want.");
   await page.getByRole("button", { name: "Send" }).click();
-  await page.getByRole("textbox", { name: "WHAT HE CONFIRMED · EDITABLE" }).fill("I can ask for time before deciding.");
+  await page.getByRole("textbox", { name: "WHAT YOU CONFIRMED · EDITABLE" }).fill("I can ask for time before deciding.");
   await page.getByRole("button", { name: "Yes, that’s closer" }).click();
   const choice = page.getByRole("region", { name: "Arjun's optional private takeaway" });
   await expect(choice).toContainText("I can ask for time before deciding.");

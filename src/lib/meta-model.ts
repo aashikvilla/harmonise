@@ -48,6 +48,10 @@ export type MetaResult = {
   model: string;
 };
 
+export function isModelConfigured() {
+  return (process.env.MODEL_API_KEY ?? "").trim().length > 0;
+}
+
 export function configuredTextModel() {
   return process.env.META_TEXT_MODEL?.trim() || DEFAULT_TEXT_MODEL;
 }
