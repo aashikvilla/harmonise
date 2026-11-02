@@ -1,8 +1,8 @@
 # Past Mistakes and Preventive Rules
 
-## 2026-11-02 — A triage screen is not a live moderation system
+## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
-The app's community posts and moderator screen are fixture-driven. Wiring a model to one reported sample post does not create a background agent, event feed, authorized staff workflow, or live monitoring. Describe the current feature as user-triggered triage only. Build the event queue, staff access, audit trail, policy, and human escalation before claiming that a community is monitored.
+The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A worker endpoint without a scheduled caller and named moderators does not provide continuous monitoring or timely human response. Keep the limitation visible until the worker schedule and staffed escalation are operating.
 
 ## 2026-11-02 — “Private in the browser” does not mean “not sent to a provider”
 

@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–8 implemented on `develop`. Pending before `main`: keyed eval runs, device-matrix and manual AT passes, live-DB verification, pilot owner names, and human review sign-offs.
+**Status:** Phases 0–8 are implemented on `develop`; GitHub `verify` and `e2e` passed. The keyed Meta evaluation passed 17/17, and Supabase migrations 0001/0002 are applied. Production pilot remains gated on manual accessibility/device checks, named owners, human sign-offs, a deletion drill, and release operations.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -20,9 +20,9 @@ This plan takes Harmonise from a visitor arriving on the homepage through privat
 - [x] Verify the final production build, lint, typecheck, and 60 desktop/mobile browser journeys after the integration changes.
 - [x] Surface Meta token-usage and request-latency metadata safely so live evaluation spend can be reported.
 
-**Current boundaries:** session state is not a durable account; communities and peers are fixtures; the triage screen submits one fictional reported post; there is no event stream or background monitor; voice is input-only; no real post, peer message, or human review is delivered.
+**Current boundaries:** `/app` and `/connect` retain the fictional demonstration journey. `/communities`, `/moderation`, authenticated sessions, and community APIs use Supabase. A moderation event queue and worker endpoint exist, but no scheduled worker or staffed reviewer rota is configured. Voice is input-only. Seeded communities do not imply active peers or human replies.
 
-**Local verification:** chat, adviser, triage, and voice transcription returned HTTP 200 in synthetic local smoke calls. Muse Spark uses minimal reasoning and the current `max_completion_tokens` parameter; moderation has a 700-token output cap. The production build, lint, typecheck, and all 60 mocked browser journeys passed. Token usage and credit spend were not surfaced by the current adapter and remain an explicit Phase 1 task.
+**Verification:** the prior local synthetic smoke returned HTTP 200 for chat, adviser, triage, and voice. The latest GitHub run on `develop` passed both `verify` and deterministic `e2e`; keyed evals are recorded as 17/17. Read-only Supabase inspection confirmed project health and migrations 0001/0002. A live authorization journey using dedicated test-user credentials still needs a separately verified run. Meta usage/latency telemetry exists in the new routes, but CI budget and human review gates still apply.
 
 ## Model assignment
 

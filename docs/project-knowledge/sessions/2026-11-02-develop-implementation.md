@@ -90,3 +90,26 @@ test-user JWTs), pilot owner names, human review sign-offs, deletion drill.
   4 skipped** (mobile AI skips by design).
 - Usage this session: ~53 provider calls, ~25k text tokens + 5 voice/worker
   calls (no token headers). No spend in unkeyed runs.
+
+## Merge and deployment audit
+
+- The latest `develop` CI run `41483184739` completed successfully: `verify` and
+  deterministic `e2e` passed; `live-smoke` was skipped because it is manual.
+- Read-only Supabase inspection confirmed project `harmonise` is healthy and
+  migrations `0001` and `0002` are applied. The authorization/security E2E still
+  needs a clearly recorded live run with dedicated test-user credentials.
+- Security advisors reported `moderation_events` has RLS enabled with no direct
+  policies (default-deny; app worker uses server-side service role) and leaked
+  password protection is disabled. Performance advisories include missing
+  foreign-key indexes and repeated RLS auth checks; track these before scale.
+- Production readiness is still blocked by the runbook: named on-duty moderator,
+  verified support path, human privacy/authorization/threat-model sign-offs,
+  deletion drill, rollback rehearsal, and spend alerts are outstanding. The
+  moderation worker also has no scheduled caller; Upstash variables are absent.
+- GitHub Pages is configured at `https://aashikvilla.github.io/harmonise/`, but
+  Pages is static and cannot host this Next.js API backend. The Vercel connector
+  has no projects/teams and the local CLI has no credentials; a preview host
+  still needs user-authorized Vercel CLI sign-in. No production traffic changed.
+- Removed accidentally committed `supabase/.temp` and Playwright `test-results`
+  artifacts; `.gitignore` now excludes them. Restricted the manual Meta smoke
+  to `main` before putting `MODEL_API_KEY` in CI secrets.
