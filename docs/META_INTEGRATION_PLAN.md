@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phase 0 implemented and locally verified; the remaining phases are tracked below.
+**Status:** Phases 0–1 implemented on `develop` (first keyed eval run pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -18,7 +18,7 @@ This plan takes Harmonise from a visitor arriving on the homepage through privat
 - [x] A reproducible browser-flow test stub is prepared so routine UI tests do not spend Meta credits.
 - [x] Verify the configured API key and all four Meta routes using synthetic text/audio; no key or private user content was logged.
 - [x] Verify the final production build, lint, typecheck, and 60 desktop/mobile browser journeys after the integration changes.
-- [ ] Surface Meta token-usage and request-latency metadata safely so live evaluation spend can be reported.
+- [x] Surface Meta token-usage and request-latency metadata safely so live evaluation spend can be reported.
 
 **Current boundaries:** session state is not a durable account; communities and peers are fixtures; the triage screen submits one fictional reported post; there is no event stream or background monitor; voice is input-only; no real post, peer message, or human review is delivered.
 
@@ -62,21 +62,21 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Can run in parallel with Phases 2 and 3. Owner:** model-quality agent. **Exit:** the model behavior and failure paths have evidence, not only a successful HTTP response.
 
-- [ ] Define a small, synthetic, versioned evaluation set.
-  - [ ] Cover family pressure, work stress, relocation, uncertainty, quiet reading, user correction, and “not enough context.”
-  - [ ] Add adversarial prompts asking for diagnosis, legal verdicts, coercive relationship advice, or disclosure of private context.
-  - [ ] Check theme suggestions against the allowed theme enum and require an empty set when uncertain.
-  - [ ] Record expected properties and human-rated outcomes; do not encode one preferred life decision as the “correct” answer.
-- [ ] Measure request quality and cost.
-  - [ ] Capture Meta usage-token counts and latency in test output without recording prompts or completions.
-  - [ ] Establish p50/p95 latency, failure-rate, and per-flow token budgets from observed runs.
-  - [ ] Set a run cap and stop before the remaining hackathon credit falls below the agreed reserve.
-- [ ] Harden failures and abuse boundaries.
-  - [ ] Test timeouts, provider 429/5xx, malformed JSON, invalid model IDs, oversized bodies, and missing key behavior.
-  - [ ] Replace process-memory rate limiting with deployment-appropriate shared limits before a public pilot.
-  - [ ] Ensure logs contain route, status, latency, and request ID only; never log API keys, audio, or private narrative text.
-  - [ ] Keep crisis handling honest: deterministic screening and visible resources do not mean the service is monitored.
-- [ ] Add model-backed checks as a separately invoked, explicitly budgeted command; keep ordinary E2E runs stubbed.
+- [x] Define a small, synthetic, versioned evaluation set (`evals/meta-eval/v1/cases.json`).
+  - [x] Cover family pressure, work stress, relocation, uncertainty, quiet reading, user correction, and “not enough context.”
+  - [x] Add adversarial prompts asking for diagnosis, legal verdicts, coercive relationship advice, or disclosure of private context.
+  - [x] Check theme suggestions against the allowed theme enum and require an empty set when uncertain.
+  - [x] Record expected properties and human-rated outcomes; do not encode one preferred life decision as the “correct” answer.
+- [x] Measure request quality and cost.
+  - [x] Capture Meta usage-token counts and latency in test output without recording prompts or completions.
+  - [ ] Establish p50/p95 latency, failure-rate, and per-flow token budgets from observed runs. (Runner reports them; first keyed run still pending.)
+  - [x] Set a run cap and stop before the remaining hackathon credit falls below the agreed reserve.
+- [x] Harden failures and abuse boundaries.
+  - [x] Test timeouts, provider 429/5xx, malformed JSON, invalid model IDs, oversized bodies, and missing key behavior.
+  - [x] Replace process-memory rate limiting with deployment-appropriate shared limits before a public pilot.
+  - [x] Ensure logs contain route, status, latency, and request ID only; never log API keys, audio, or private narrative text.
+  - [x] Keep crisis handling honest: deterministic screening and visible resources do not mean the service is monitored.
+- [x] Add model-backed checks as a separately invoked, explicitly budgeted command; keep ordinary E2E runs stubbed.
 
 ## Phase 2 — Data, identity, consent, and privacy design
 

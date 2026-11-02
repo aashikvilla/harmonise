@@ -40,3 +40,6 @@ next-env.d.ts
 # Python runtime cache files are generated locally and are not project artifacts.
 __pycache__/
 *.py[cod]
+
+# Live-model eval runs contain transcripts for human rating and stay local.
+evals/meta-eval/v1/runs/
