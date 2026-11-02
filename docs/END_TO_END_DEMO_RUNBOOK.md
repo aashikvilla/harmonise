@@ -14,7 +14,7 @@ This runbook is the manual guide for reviewing the current hackathon journey. It
 
 - [ ] Open the deployed app (or the local app at `http://localhost:3000`) and confirm the home page renders.
 - [x] Confirm the production Vercel project has `MODEL_API_KEY` and `META_TEXT_MODEL` configured. The key stays server-side.
-- [x] Confirm Supabase migrations `0001`, `0002`, `20261102183254`, and `20261102183300` are applied. The community progress migration adds the contribution summary and optional verified-role table; the lifecycle migration adds launch review, helper provisioning, and launch status.
+- [x] Confirm Supabase migrations `0001`, `0002`, `20261102183254`, `20261102183300`, and `20261102185148` are applied. They add contribution progress/optional roles, community launch review/helper provisioning, and the built-in community topic backfill.
 - [x] Confirm the production server has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. Never expose the service-role key to browser code.
 - [ ] For the live proposal approval segment, configure `COMMUNITY_REVIEWER_USER_IDS` with the UUID of a real signed-in reviewer. The production role-verification flag is currently false; only turn it on for a deliberate role-verification demo.
 - [ ] Have a real reviewer available who can honestly confirm the proposed space has human moderation coverage. The checkbox records an attestation; it does not schedule or staff future coverage.
@@ -74,6 +74,8 @@ If the circle match is absent, clarify the support need with one of these prompt
    - **Rebuilding after separation** — separation, divorce, breakup, co-parenting, identity change, and starting over.
    - **Separation: practical clarity** — peer discussion to prepare questions before speaking with a qualified legal professional.
    - **Finding steady ground** — uncertainty, grief, loneliness, family pressure, anxiety, and disrupted routines.
+
+   The live records also now have the support topics used by the matching and helper context.
 
 3. [ ] Open a community. Verify that a visitor who is not an active member cannot read its member feed or post.
 4. [ ] If using a dedicated test account, join the test community using a non-identifying alias. Confirm the feed, past conversation, reply field, and report controls behave as expected.

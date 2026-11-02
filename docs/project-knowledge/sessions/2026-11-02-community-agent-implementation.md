@@ -23,9 +23,9 @@
 - No unit tests were added or run.
 - `git diff --check` passed before final documentation updates; rerun before commit.
 
-## Not applied / remaining
+## Remaining after implementation
 
-- Migrations `0003` and `0004` have not been applied to Supabase; `seed.sql` now explicitly marks the three built-in communities approved and adds their helper topics.
+- The community progress/lifecycle migrations and built-in topic backfill were applied to Supabase on 2026-11-03 as remote versions `20261102183254`, `20261102183300`, and `20261102185148`. `seed.sql` marks the three built-in communities approved and supplies their helper topics for clean resets.
 - Set `COMMUNITY_REVIEWER_USER_IDS` before any proposal can be approved. Reviewer attestation is not a staffing schedule or proof of ongoing availability.
 - The moderation worker still has no scheduled invocation or named coverage. Helper behavior is advisory when queued events are processed, not continuous monitoring.
 - Full visitor → chat → match → join → history/reply → human response journey, role application/credential evidence flow, worker operations, and human review are still open in `PRODUCT_END_TO_END_JOURNEY_PLAN.md`.
