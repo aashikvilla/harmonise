@@ -15,7 +15,7 @@ Open <http://localhost:3000/> for the Motion Revival homepage. Browse `/app` or 
 
 The demo screens support private conversations, a user-correctable understanding, fictional story discovery, local demo participation, reflections, and support information. Live communities support authenticated membership, posts, replies, reports, human-reviewed moderation, and private per-community AI guidance. The scope migrations are deployed to Supabase. The interface adapts to desktop and mobile and respects reduced-motion preferences.
 
-Fictional people and prepared content in `/app` and `/connect` are identified in the interface; those demos do not become live community posts. Live community posts and moderation records use Supabase. The setup copilot, member guide, voice transcription, chat, adviser, and triage each disclose their Meta transfer at the point of use. Model output never makes a moderation decision. Community moderation is not continuous until a worker is scheduled and human coverage is staffed.
+Fictional people and prepared content in `/app` and `/connect` are identified in the interface; those demos do not become live community posts. Live community posts and moderation records use Supabase. The setup copilot, member guide, voice transcription, chat, adviser, and triage each disclose their Meta transfer at the point of use. Model output never makes a moderation decision. On Vercel Hobby, the worker runs once daily and handles one queued event per run; this is not continuous moderation, and human coverage is not staffed.
 
 ## Meta Model API
 

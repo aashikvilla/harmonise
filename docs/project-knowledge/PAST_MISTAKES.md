@@ -13,6 +13,13 @@ The Supabase MCP may assign the migration version from its apply time even when
 the submitted name contains the checked-in timestamp. Rename the local migration
 prefix to the returned remote version immediately, then compare both lists again.
 
+## 2026-11-03 — Vercel Hobby cron schedules must be daily
+
+An every-five-minute worker schedule passed source review but caused Vercel
+preview deployments to fail on Hobby. Check plan cadence limits when adding
+cron entries; Hobby allows once-daily runs with up to 59 minutes of timing
+variation, so a daily worker is not continuous coverage.
+
 ## 2026-11-03 — A requested integration branch can lag the accepted product baseline
 
 `develop` did not yet contain community-lifecycle code already merged to `main`,
@@ -23,7 +30,7 @@ baseline; then recreate or rebase clean feature worktrees before editing.
 
 ## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
-The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A worker endpoint without a scheduled caller and named moderators does not provide continuous monitoring or timely human response. Keep the limitation visible until the worker schedule and staffed escalation are operating.
+The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A once-daily worker and no named moderators do not provide continuous monitoring or timely human response. Keep the limitation visible until backlog recovery and staffed escalation are operating.
 
 ## 2026-11-02 — “Private in the browser” does not mean “not sent to a provider”
 

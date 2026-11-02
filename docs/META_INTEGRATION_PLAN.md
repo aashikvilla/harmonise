@@ -20,7 +20,7 @@ This plan takes Harmonise from a visitor arriving on the homepage through privat
 - [x] Verify the final production build, lint, typecheck, and 60 desktop/mobile browser journeys after the integration changes.
 - [x] Surface Meta token-usage and request-latency metadata safely so live evaluation spend can be reported.
 
-**Current boundaries:** `/app` and `/connect` retain the fictional demonstration journey. `/communities`, `/moderation`, authenticated sessions, and community APIs use Supabase. A moderation event queue and worker endpoint exist, but no scheduled worker or staffed reviewer rota is configured. Voice is input-only. Seeded communities do not imply active peers or human replies.
+**Current boundaries:** `/app` and `/connect` retain the fictional demonstration journey. `/communities`, `/moderation`, authenticated sessions, and community APIs use Supabase. The moderation event queue is processed once daily on Vercel Hobby (one event per run); a staffed reviewer rota is not configured. Voice is input-only. Seeded communities do not imply active peers or human replies.
 
 **Verification:** the prior local synthetic smoke returned HTTP 200 for chat, adviser, triage, and voice. The latest GitHub run on `develop` passed both `verify` and deterministic `e2e`; keyed evals are recorded as 17/17. Read-only Supabase inspection confirmed project health and migrations 0001/0002. A live authorization journey using dedicated test-user credentials still needs a separately verified run. Meta usage/latency telemetry exists in the new routes, but CI budget and human review gates still apply.
 

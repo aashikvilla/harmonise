@@ -26,7 +26,7 @@ Give each community an AI guide that understands that community's approved purpo
 - Muse Spark 1.3 performs structured advisory triage for queued live-community reports and flags.
 - The helper does not currently answer member questions, welcome people, or publish posts.
 - New proposals are private and `pending_review`; launch approval requires an allowlisted human reviewer and human-coverage attestation.
-- The moderation worker has no scheduled caller and no named on-duty reviewer is configured. The plan must not suggest that an AI helper provides live monitoring or human response coverage.
+- The moderation worker runs once daily on Vercel Hobby and processes one event per call; no named on-duty reviewer is configured. The plan must not suggest that an AI helper provides live monitoring or human response coverage.
 
 These are current boundaries from `docs/project-knowledge/ARCHITECTURE.md` and the existing community-lifecycle decision in `docs/project-knowledge/DECISIONS.md`.
 

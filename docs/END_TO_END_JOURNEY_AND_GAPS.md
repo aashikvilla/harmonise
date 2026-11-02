@@ -45,8 +45,7 @@ Direct answers to the open product questions:
 - **Is there a moderator agent in each community?** Every existing/proposed
   community now has a scoped AI helper configuration. It adds community purpose
   and topics to advisory triage and is attributed in the human review queue.
-  It does not post, welcome, answer, or enforce. The worker still has no
-  scheduled caller, so this is not continuous monitoring.
+  It does not enforce. Separate facilitator logic can answer Ask posts older than 24 hours when no human has replied. Vercel Hobby invokes the queue worker once daily, so this is not continuous monitoring or staffed response coverage.
 - **Does the agent create communities?** Members can suggest a private
   community; the server automatically creates a pending record, host
   membership, and helper. An allowlisted human must confirm coverage before
@@ -79,8 +78,8 @@ Direct answers to the open product questions:
   in Playwright on desktop and mobile using isolated API fixtures (2/2 passed).
 - [x] Apply the community progress/lifecycle migrations to the Supabase project and verify the
   same flow against the live backend.
-- [ ] Configure `COMMUNITY_REVIEWER_USER_IDS`, named human coverage, and the
-  moderation worker schedule before calling proposals monitored or launching
+- [ ] Configure `COMMUNITY_REVIEWER_USER_IDS` and named human coverage; monitor
+  the daily worker backlog before calling proposals monitored or launching
   a public community.
 - [ ] Complete the original visitor → private chat/voice → story/match → live
   join → history/reply → human response flow; the current browser test does
@@ -586,7 +585,8 @@ usage data.
 alias-preserving), featured strip in chat recommendation + atop matched
 circle, excerpt/link/"shared with permission"/one-tap unfeature.
 Matching v1 (auto theme-overlap surfacing) still open � featuring is
-curated, not automatic. Needs migration 0005 live.
+curated, not automatic. The engagement migration is applied; confirm the
+featured UI and revocation flow after the main deployment.
 
 **Moderation ops (3.8):** queue auto-refresh (30s, no ping yet), per-case
 waiting-time badge with 24h-target escalation color, same-reviewer appeal
@@ -597,9 +597,9 @@ exportable). Full thread-context case view still open.
 expiry copy; session rename; export receipt (count + date); deletion
 receipt panel. "Your chats" rename + per-item 90-day note still open.
 
-**Ops (6, 8):** Vercel cron drains `/process` every 5 min; daily 9am cron
-runs `/facilitate` (oldest unanswered ask >24h, Guide-AI labelled,
-advisory only); `/ops` dashboard (secret-gated) with signup?join?post
+**Ops (6, 8):** Vercel Hobby cron invokes `/process` once daily (one queue
+event per invocation); daily 9am cron runs `/facilitate` (oldest unanswered
+ask >24h, Guide-AI labelled); `/ops` dashboard (secret-gated) with signup?join?post
 funnel, queue depth + oldest-age backlog alert, token spend, slowest
 routes. Suite hygiene + staffing + decision-quality loop still open.
 
@@ -607,13 +607,13 @@ routes. Suite hygiene + staffing + decision-quality loop still open.
 guidance), owner rejected view with note + browse redirect, moderator
 archive (read-only, members can still read) / revive with confirm, never
 silent deletion. Norms ship as the seeded welcome block on every circle.
-Needs migrations 0005 (archived status) + 0006 (review_note) live.
+Migrations `20261102204240` (engagement) and `20261102204243` (review note) are applied live.
 
 **Standing (7.4):** `/profile` � circles, alias, level, posts/replies/thanks,
 in-app notifications (7-day window, unread count), published ladder
 criteria, volunteer + verified-supporter request flow with duty/term/
 scope disclosure, moderator promotion queue with mandatory rationale.
-Accepted answers + endorsements still open. Thanks reactions need 0005.
+Accepted answers + endorsements still open. Thanks reactions are enabled by the applied engagement migration.
 
 **Connect (3.7):** reskinned into the homepage system (milk/plum/coral,
 harmonize. wordmark + loop symbol), one-tap demo entry added (manual
@@ -624,9 +624,6 @@ People-matching (7.5) and the retire-vs-keep call stay with the human.
 reply-time promise wording, moderation staffing/hours, connect fate,
 sample permanence, verified-identity operator, retention rules.
 
-**Blocked on access:** applying migrations 0005
-(`20261102235900_community_engagement.sql`) + 0006
-(`20261103000000_community_review_note.sql`) needs the Supabase DB
-password (`supabase link`). Code degrades gracefully until then; live
-verify of reactions/featuring/promotions/archive/facilitator posting
-follows the push.
+**Live schema:** engagement and reviewer-note migrations are applied. The
+feature branch is not yet deployed; live write-flow verification still needs a
+deployed build and dedicated consenting test accounts/community.

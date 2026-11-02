@@ -150,6 +150,6 @@ Voice uses Meta Muse Voice Transcribe for speech input. Stop and do not submit i
 - `/connect` is a fictional, browser-session prototype. The adviser model call can be real, but its circle joins and sample conversation are not persisted.
 - `/communities` and `/moderation` are backed by Supabase and real Auth sessions.
 - Community approval records the reviewer’s coverage attestation; it does not schedule a moderator or guarantee response time.
-- The moderation processing route needs an operator or scheduled worker. Do not claim continuous automated monitoring until that schedule and on-call coverage exist.
+- On Vercel Hobby, the moderation worker runs once daily and processes one event per run. It is not continuous monitoring; named on-call coverage is not configured.
 - Other people may reply, but there is no guarantee that a community member or moderator will respond.
 - Muse output and circle matches vary. The app is supportive peer navigation, not emergency, legal, or clinical advice.

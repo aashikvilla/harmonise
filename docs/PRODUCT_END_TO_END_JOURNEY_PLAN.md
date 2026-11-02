@@ -49,7 +49,7 @@ Evidence: `/app` routes through [product-route.tsx](../src/components/product-ro
 - [ ] Complete a live authorized-user browser run from `/app` chat through Supabase identity, private-session resume, live community join, post/reply, report, moderator decision, and user-visible outcome. Existing deterministic E2E does not prove that cross-surface journey.
 - [ ] Verify deployed Auth email-code delivery, sender configuration, rate limits, and account recovery with non-staff test accounts.
 - [ ] Name moderators, define their coverage windows and response expectations, and verify escalation contact paths before any “human moderators” availability claim.
-- [ ] Configure and monitor the moderation worker schedule. The protected worker currently handles one queued event per call and has no configured scheduled caller in project knowledge.
+- [ ] Monitor the daily Vercel Hobby moderation worker. It handles one queued event per call and is not continuous; add backlog recovery/alerting and named coverage before a public pilot.
 - [ ] Replace optional process-local rate limits with a shared store before a multi-instance/public pilot.
 - [ ] Finish a manual mobile, keyboard, screen-reader, contrast, reduced-motion, and microphone-permission review on the unified journey.
 
@@ -216,7 +216,7 @@ This is a source-based audit of existing screens, not a claim that every route w
 
 ### 3.12 Moderator review (`/moderation`)
 
-**Today:** Reviewer login/assignment checks, reports, advisory flags, queue, AI suggestions, human decisions and appeals exist. The page combines several kinds of work in one screen. Human staffing and scheduled worker invocation are still missing; reviewer API failure can resemble an empty state in some paths.
+**Today:** Reviewer login/assignment checks, reports, advisory flags, queue, AI suggestions, human decisions and appeals exist. The page combines several kinds of work in one screen. A daily Vercel Hobby cron processes one queued event per invocation, but human staffing and continuous coverage are missing; reviewer API failure can resemble an empty state in some paths.
 
 - [ ] Make queue load/error/empty/retry states impossible to confuse; failed metrics or flags must not quietly look like zero activity.
 - [ ] Add priority, age/SLA, community, case status, and clear next action. Provide a case detail view with relevant context and an audit trail.
