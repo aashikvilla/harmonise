@@ -21,6 +21,7 @@ import { arjunVisits, type VisitTurn } from "@/lib/arjun-visits";
 import { historicalThread, type HistoricalDay } from "@/lib/historical-thread";
 import SessionPanel, { type ResumePayload } from "@/components/account/session-panel";
 import { saveConversation, setSyncSession } from "@/lib/session-sync";
+import { COMMUNITY_THEMES, THEME_LABELS } from "@/lib/community-topics";
 
 const navItems = [
   { label: "My Space", screen: "conversation" as const },
@@ -166,6 +167,60 @@ function appHeading(state: HarmoniseState) {
   return headings[state.screen];
 }
 
+type LiveCommunity = { id: string; name: string; description: string; memberCount: number; postCount: number };
+
+function CircleRecommendation({ themes }: { themes: string[] }) {
+  const [communities, setCommunities] = useState<LiveCommunity[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/communities", { credentials: "include" });
+        const body = (await response.json().catch(() => null)) as { communities?: LiveCommunity[] } | null;
+        if (!cancelled && response.ok && Array.isArray(body?.communities)) setCommunities(body.communities);
+        else if (!cancelled) setCommunities([]);
+      } catch {
+        if (!cancelled) setCommunities([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  if (communities === null || communities.length === 0) return null;
+  const ranked = communities
+    .map((community) => ({
+      community,
+      overlap: (COMMUNITY_THEMES[community.id] ?? []).filter((theme) => themes.includes(theme)),
+    }))
+    .filter((entry) => entry.overlap.length > 0)
+    .sort((a, b) => b.overlap.length - a.overlap.length)
+    .slice(0, 2);
+  if (ranked.length === 0) return null;
+  return (
+    <section className="circle-recommendation" aria-label="A circle that may fit">
+      <span className="context-eyebrow">A CIRCLE THAT MAY FIT</span>
+      {ranked.map(({ community, overlap }) => (
+        <article key={community.id} className="circle-recommendation-card">
+          <h3>{community.name}</h3>
+          <p>
+            Matched because: {overlap.map((theme) => THEME_LABELS[theme] ?? theme).join(" · ")}.{" "}
+            {community.memberCount} members · {community.postCount} posts.
+          </p>
+          <div className="inline-actions">
+            <Link className="button button-primary" href={`/communities/${community.id}`}>
+              Preview this circle
+            </Link>
+          </div>
+        </article>
+      ))}
+      <Link className="text-button" href={`/communities?themes=${themes.join(",")}`}>
+        Compare all circles with your themes
+      </Link>
+    </section>
+  );
+}
+
 export default function HarmoniseExperience({ initialPath }: { initialPath?: Exclude<EntryPath, null> | "arjun" | "help" }) {
   const [state, dispatch] = useReducer(harmoniseReducer, initialPath, stateForEntry);
   const [joinedGroups, setJoinedGroups] = useState<string[]>([]);
@@ -191,6 +246,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [visitHistory, setVisitHistory] = useState<Record<string, VisitTurn[]>>(() => Object.fromEntries(arjunVisits.map((visit) => [visit.id, visit.turns])));
   const [chatTurns, setChatTurns] = useState<{ id: string; role: "you" | "harmonise"; text: string }[]>([]);
   const [chatPending, setChatPending] = useState(false);
+  const [privacyNoteDismissed, setPrivacyNoteDismissed] = useState(false);
   const [chatError, setChatError] = useState("");
   const [suggestedThemes, setSuggestedThemes] = useState<ThemeId[]>([]);
   const [suggestedNeed, setSuggestedNeed] = useState<{ summary: string; type: SupportNeed }>({ summary: "", type: "not-sure" });
@@ -203,6 +259,10 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [transcriptDraft, setTranscriptDraft] = useState("");
   const [recordingAudio, setRecordingAudio] = useState<Blob | null>(null);
   const [transcribing, setTranscribing] = useState(false);
+  const [recordingElapsed, setRecordingElapsed] = useState(0);
+  const recordingAutoRef = useRef(false);
+  const recordingElapsedRef = useRef<number | null>(null);
+  const recordingStartedAtRef = useRef(0);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [triageLoading, setTriageLoading] = useState(false);
   const [triageResult, setTriageResult] = useState<{ concern: string; severity: string; rationale: string; recommendedAction: string } | null>(null);
@@ -448,6 +508,8 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           mediaStreamRef.current = null;
           recorderRef.current = null;
           if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
+          if (recordingElapsedRef.current !== null) window.clearInterval(recordingElapsedRef.current);
+          recordingElapsedRef.current = null;
           recordingTimerRef.current = null;
           if (cancelledRecordingRef.current) return;
           try {
@@ -464,6 +526,11 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
               return;
             }
             setRecordingAudio(wav);
+            if (recordingAutoRef.current) {
+              recordingAutoRef.current = false;
+              void transcribeAndUse(wav);
+              return;
+            }
             setRecordingState("review");
           } catch {
             setRecordingState("idle");
@@ -472,6 +539,12 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         };
         recorderRef.current = recorder;
         recorder.start();
+        recordingStartedAtRef.current = Date.now();
+        setRecordingElapsed(0);
+        if (recordingElapsedRef.current !== null) window.clearInterval(recordingElapsedRef.current);
+        recordingElapsedRef.current = window.setInterval(() => {
+          setRecordingElapsed(Math.floor((Date.now() - recordingStartedAtRef.current) / 1000));
+        }, 500);
         setRecordingState("recording");
         recordingTimerRef.current = window.setTimeout(() => {
           if (recorder.state === "recording") {
@@ -484,6 +557,49 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       }
     }
 
+    async function transcribeAndUse(wav: Blob) {
+      setRecordingError("");
+      setTranscribing(true);
+      try {
+        const form = new FormData();
+        form.append("audio", wav, "recording.wav");
+        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form, signal: AbortSignal.timeout(60_000) });
+        const payload: unknown = await response.json().catch(() => null);
+        const transcript = payload && typeof payload === "object" ? (payload as Record<string, unknown>).transcript : null;
+        if (!response.ok || typeof transcript !== "string" || !transcript.trim()) {
+          setRecordingAudio(wav);
+          setRecordingState("review");
+          setRecordingError("Auto-transcription didn’t catch that. Review the recording or type your words.");
+          return;
+        }
+        setComposer(transcript.trim());
+        setRecordingAudio(null);
+        setRecordingState("idle");
+        document.getElementById("chat-input")?.focus();
+      } catch {
+        setRecordingAudio(wav);
+        setRecordingState("review");
+        setRecordingError("Auto-transcription didn’t catch that. Review the recording or type your words.");
+      } finally {
+        setTranscribing(false);
+      }
+    }
+
+    function toggleMicRecording() {
+      if (recordingState === "recording") {
+        const recorder = recorderRef.current;
+        if (!recorder || recorder.state !== "recording") return;
+        recordingAutoRef.current = true;
+        setRecordingState("processing");
+        recorder.stop();
+        return;
+      }
+      if (recordingState === "idle") {
+        recordingAutoRef.current = true;
+        void startRecording();
+      }
+    }
+
     function stopRecording() {
       const recorder = recorderRef.current;
       if (!recorder || recorder.state !== "recording") return;
@@ -493,6 +609,9 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
     function cancelRecording() {
       cancelledRecordingRef.current = true;
+      recordingAutoRef.current = false;
+      if (recordingElapsedRef.current !== null) window.clearInterval(recordingElapsedRef.current);
+      recordingElapsedRef.current = null;
       if (recorderRef.current?.state === "recording") recorderRef.current.stop();
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
@@ -547,7 +666,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
 
     return <>
       <p className="lede">{spaceTopic === "family" ? "Talk it through privately, or explore at your own pace." : `A separate ${spaceTopic} conversation. Earlier family context is not included.`}</p>
-      <p className="small-note">Your chat is not posted to a community. When you send a message, it is sent to Meta for a Muse Spark response. This prototype keeps the conversation in this browser session.</p>
+      {!privacyNoteDismissed && <p className="small-note privacy-note">Your chat is not posted to a community. Sending uses Meta for a Muse Spark reply. <button type="button" className="text-button" onClick={() => setPrivacyNoteDismissed(true)} aria-label="Dismiss privacy note">Got it</button></p>}
       {state.isFeaturedJourney && <section className="visit-switcher" aria-label="Arjun's saved visits">
         <div className="visit-switcher-heading"><div><span className="context-eyebrow">ARJUN · FICTIONAL STORY HISTORY</span><strong>Return visits</strong></div><span>{arjunVisits.reduce((total, visit) => total + visit.turns.filter((turn) => turn.role === "you").length, 0)} written exchanges</span></div>
         <div className="visit-buttons">{arjunVisits.map((visit) => <button key={visit.id} type="button" className={activeVisitId === visit.id ? "visit-button selected" : "visit-button"} aria-pressed={activeVisitId === visit.id} onClick={() => openVisit(visit.id)}><strong>{visit.day}</strong><span>{visit.title}</span></button>)}</div>
@@ -561,8 +680,8 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         {chatTurns.map((turn) => <article className={`conversation-turn ${turn.role === "you" ? "turn-arjun" : "turn-guide"}`} key={turn.id}><span>{turn.role === "you" ? "Arjun · {day}".replace("{day}", arjunVisits.find((visit) => visit.id === activeVisitId)?.day ?? "You") : turn.id.startsWith("meta-") ? "Harmonise · Meta AI" : "Harmonise · fictional transcript"}</span><p>{turn.text}</p></article>)}
           <div ref={chatEndRef}/>
         </div>
-        {chatPending && <div className="small-note" role="status">Muse Spark is preparing a response…</div>}
-        {chatError && <Notice>{chatError}</Notice>}
+        {chatPending && <div className="small-note typing-row" role="status"><span className="typing-dots" aria-hidden="true"><span /><span /><span /></span>Muse Spark is preparing a response…</div>}
+        {chatError && <div className="chat-error-row"><Notice>{chatError}</Notice><SecondaryButton onClick={() => void sendChat()}>Retry</SecondaryButton></div>}
         {chatTurns.filter((turn) => turn.role === "you").length === 1 && <div className="inline-chat-choices" aria-label="Optional response"><span>Only if it helps:</span>{["Something with someone", "How I’ve felt", "Not sure"].map((choice) => <button key={choice} type="button" disabled={chatPending} onClick={() => { void sendChat(choice); }}>{choice}</button>)}</div>}
         {chatTurns.filter((turn) => turn.role === "you").length >= 1 && <section className="inline-understanding" aria-labelledby="understanding-inline-title">
           <div><span className="context-eyebrow">A THOUGHT TO CHECK · AI SUGGESTION</span><h2 id="understanding-inline-title">Have I got this right?</h2><p><strong>What you said:</strong> “{chatTurns.filter((turn) => turn.role === "you").at(-1)?.text}”</p><p><strong>Might matter:</strong> {suggestedThemes.length ? suggestedThemes.map(textForTheme).join(" · ") : "No theme suggested yet. You can keep talking or explore without a match."}</p><p><strong>What you want now:</strong> {understandingConfirmed ? `${suggestedNeed.summary || "Explore without personal context"} · confirmed by you` : "Not confirmed yet"}</p></div>
@@ -582,18 +701,28 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
             <div className="inline-chat-choices"><button type="button" onClick={exploreExperiences}>Hear experiences</button><button type="button" onClick={() => setComposer("")}>Keep talking</button></div>
           </>}
         </section>}
+        {understandingConfirmed && suggestedThemes.length > 0 && <CircleRecommendation themes={suggestedThemes} />}
         {recordingState === "recording" && <div className="voice-review" role="status"><strong>Recording · up to 2 minutes</strong><span>Audio stays in this browser until you choose “Transcribe with Meta”.</span><div className="inline-actions"><SecondaryButton onClick={stopRecording}>Stop and review</SecondaryButton><button className="text-button" onClick={cancelRecording}>Cancel recording</button></div></div>}
         {recordingState === "processing" && <div className="voice-review" role="status"><strong>Preparing your recording…</strong><span>Audio is being converted in this browser. It has not been sent to Meta yet.</span></div>}
         {recordingState === "review" && <div className="voice-review"><p className="sr-only" role="status">{transcribing ? "Transcribing your recording with Meta Voice." : transcriptDraft ? "Transcript ready. Review and edit it before sending." : "Recording ready for review. Nothing has been sent to Meta yet."}</p><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea ref={transcriptAreaRef} id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><p className="preview-provenance">Transcript from Meta Voice Transcribe · editable here · audio is deleted when you cancel or leave · nothing is sent to chat until you press Send.</p><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); document.getElementById("chat-input")?.focus(); }}>Use this in my message</PrimaryButton></div></>}</div>}
         {recordingError && <Notice>{recordingError}</Notice>}
+        {chatTurns.length === 0 && !composer && (
+          <div className="starter-chips" role="group" aria-label="Ways to begin">
+            {["Work feels overwhelming", "Family pressure", "Not sure — just listen"].map((starter) => (
+              <button key={starter} type="button" className="starter-chip" disabled={chatPending} onClick={() => setComposer(starter === "Not sure — just listen" ? "I'm not sure where to start. Can you just listen for a bit?" : starter)}>
+                {starter}
+              </button>
+            ))}
+          </div>
+        )}
         <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); sendChat(); }}>
           <label className="sr-only" htmlFor="chat-input">Your message</label>
           <textarea id="chat-input" rows={2} value={composer} onChange={(event) => setComposer(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendChat(); } }} placeholder="Write a message…" />
-          <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div><SecondaryButton onClick={startRecording} disabled={chatPending || recordingState === "recording" || recordingState === "processing"}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim() || chatPending}>{chatPending ? "Thinking…" : "Send"}</PrimaryButton></div></div>
+          <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div><button type="button" className={`mic-button${recordingState === "recording" ? " mic-live" : ""}`} disabled={chatPending || transcribing || recordingState === "processing"} onClick={toggleMicRecording} aria-label={recordingState === "recording" ? `Stop recording (${Math.floor(recordingElapsed / 60)}:${String(recordingElapsed % 60).padStart(2, "0")})` : "Record a voice message"}>{recordingState === "recording" ? `${Math.floor(recordingElapsed / 60)}:${String(recordingElapsed % 60).padStart(2, "0")}` : "●"}</button><SecondaryButton onClick={startRecording} disabled={chatPending || recordingState === "recording" || recordingState === "processing"}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim() || chatPending}>{chatPending ? "Thinking…" : "Send"}</PrimaryButton></div></div>
         </form>
       </section>
       <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); setActiveSessionId(null); setSyncSession(null); }}>Start a fresh conversation</button></div>
-      <div className="space-start-links"><button className="text-button" onClick={() => setComposer("I'm not sure where to start.")}>Not sure where to start</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore communities</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>Find a person to talk to</button></div>
+      {null}
     </>;
   }
 

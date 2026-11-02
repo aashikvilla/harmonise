@@ -12,7 +12,7 @@ import { isUuid, selectSingle, supabaseCount, supabaseRest } from "@/lib/db/supa
 import { ensureProfile } from "@/lib/db/sessions";
 import { enqueueModerationEvent } from "@/lib/db/moderation";
 
-export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number };
+export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number; recentPostCount: number; joined: boolean };
 export type PublicCommunity = Omit<CommunityWithCounts, "created_by" | "reviewed_by" | "reviewed_at" | "coverage_confirmed_at">;
 export type PostWithAuthor = PostRow & { author_alias: string };
 export type ReplyWithAuthor = PostReplyRow & { author_alias: string };
@@ -47,13 +47,22 @@ export async function listCommunities(userId?: string): Promise<CommunityWithCou
       })
     : [];
   const rows = [...publicRows, ...ownedPending];
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const joinedIds = new Set<string>();
+  if (userId) {
+    const mine = await supabaseRest<MembershipRow[]>("memberships", {
+      query: `?user_id=eq.${userId}&status=eq.active&select=community_id`,
+    });
+    for (const row of mine) joinedIds.add(row.community_id);
+  }
   return Promise.all(
     rows.map(async (community) => {
-      const [memberCount, postCount] = await Promise.all([
+      const [memberCount, postCount, recentPostCount] = await Promise.all([
         supabaseCount("memberships", `?community_id=eq.${community.id}&status=eq.active`),
         supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible`),
+        supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible&created_at=gte.${weekAgo}`),
       ]);
-      return { ...community, memberCount, postCount };
+      return { ...community, memberCount, postCount, recentPostCount, joined: joinedIds.has(community.id) };
     }),
   );
 }
@@ -66,7 +75,7 @@ export async function getCommunityWithCounts(id: string): Promise<CommunityWithC
     supabaseCount("memberships", `?community_id=eq.${id}&status=eq.active`),
     supabaseCount("posts", `?community_id=eq.${id}&status=eq.visible`),
   ]);
-  return { ...community, memberCount, postCount };
+  return { ...community, memberCount, postCount, recentPostCount: 0, joined: false };
 }
 
 export async function createPendingCommunity(input: {
