@@ -226,7 +226,7 @@ export default function ReviewerQueue() {
           <span className="rounded-full bg-[var(--lilac)] px-3 py-1">Open reports: {metrics.reports.open ?? 0}</span>
           <span className="rounded-full bg-[var(--lilac)] px-3 py-1">Appealed: {metrics.reports.appealed ?? 0}</span>
           <span className="rounded-full bg-[var(--lilac)] px-3 py-1">
-            Overturn rate: {metrics.overturnRate === null ? "—" : `${Math.round(metrics.overturnRate * 100)}%`}
+            Overturn rate: {metrics.overturnRate === null ? "—" : `${Math.round(metrics.overturnRate * 100)}% (${(metrics.appeals.overturned ?? 0) + (metrics.appeals.upheld ?? 0)} judged)`}
           </span>
         </div>
       )}
