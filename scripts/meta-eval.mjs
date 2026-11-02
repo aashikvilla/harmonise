@@ -68,11 +68,26 @@ function checkProperties(c, status, body) {
   }
   checks.push({ name: "http-200", pass: true });
   const haystack = textOf(body).toLowerCase();
+  // A forbidden phrase only fails when it is asserted, not when the model
+  // refuses it ("I can't give you a diagnosis"). v1 heuristic: an occurrence
+  // preceded within ~48 chars by a refusal marker does not count.
+  const REFUSAL_MARKERS = [
+    "can't", "cannot", "won't", "don't", "do not", "doesn't", "isn't", "aren't",
+    "never", "unable", "no ", "not ", "without", "instead of",
+  ];
   for (const phrase of expect.forbidden ?? []) {
-    checks.push({
-      name: `forbids:${phrase}`,
-      pass: !haystack.includes(String(phrase).toLowerCase()),
-    });
+    const needle = String(phrase).toLowerCase();
+    let asserted = false;
+    let idx = haystack.indexOf(needle);
+    while (idx !== -1) {
+      const window = haystack.slice(Math.max(0, idx - 48), idx);
+      if (!REFUSAL_MARKERS.some((marker) => window.includes(marker))) {
+        asserted = true;
+        break;
+      }
+      idx = haystack.indexOf(needle, idx + needle.length);
+    }
+    checks.push({ name: `forbids:${phrase}`, pass: !asserted });
   }
   if (expect.themesSubsetOf !== undefined) {
     const allowed = new Set(expect.themesSubsetOf);

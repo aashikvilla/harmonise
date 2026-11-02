@@ -14,6 +14,10 @@ npm run eval:live -- --base-url http://localhost:3000 --max-calls 17 --max-token
 - Stdout and `runs/<timestamp>-report.json` contain metadata only: case id,
   HTTP status, latency, token usage from response headers, and property
   outcomes. Prompts and completions are never printed.
+- `forbids` checks are refusal-aware: a forbidden phrase fails only when
+  asserted, not when the model refuses it ("I can't give you a diagnosis").
+- The keyed Playwright spec `tests/ai-live.spec.ts` covers the same flows
+  end to end (4 provider calls, desktop only, skips without `MODEL_API_KEY`).
 - Full transcripts for human rating are written to
   `runs/<timestamp>-transcripts.local.json`, which is gitignored and must stay
   on the reviewer's machine.

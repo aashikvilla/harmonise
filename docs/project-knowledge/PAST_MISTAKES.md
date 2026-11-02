@@ -29,3 +29,10 @@ failing 1–2 tests per run while passing in isolation. Keep journeys that share
 users or rows in ONE spec file (serial per file), isolate parallel projects
 with per-project users/aliases, normalize membership at each journey's start,
 and give live-backend files a longer `test.setTimeout`.
+
+## 2026-11-02 — E2E runs leave worker-queue backlog; the worker is FIFO
+
+Every suite run enqueues moderation events nobody drains, so a manual worker
+call triages the oldest stale event instead of the fresh probe (113-deep
+backlog observed). Clear synthetic backlog before worker verification, and
+remember advisory post events (report_id null) sort alongside report events.

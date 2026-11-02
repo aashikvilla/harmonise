@@ -69,7 +69,7 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
   - [x] Record expected properties and human-rated outcomes; do not encode one preferred life decision as the “correct” answer.
 - [x] Measure request quality and cost.
   - [x] Capture Meta usage-token counts and latency in test output without recording prompts or completions.
-  - [ ] Establish p50/p95 latency, failure-rate, and per-flow token budgets from observed runs. (Runner reports them; first keyed run still pending.)
+  - [x] Establish p50/p95 latency, failure-rate, and per-flow token budgets from observed runs. (Keyed run 2026-11-02: 17/17 pass, p50 2361ms, p95 4846ms, ~10k tokens/17 calls; chat ~525-750, advice ~670-890, triage ~415-640 tokens/call.)
   - [x] Set a run cap and stop before the remaining hackathon credit falls below the agreed reserve.
 - [x] Harden failures and abuse boundaries.
   - [x] Test timeouts, provider 429/5xx, malformed JSON, invalid model IDs, oversized bodies, and missing key behavior.
@@ -206,7 +206,7 @@ Direct concurrent pushes to `main` are excluded because agents can race, overwri
 - [x] Scope matches the phase; no unrelated changes or hidden secrets. (Diff scanned: no `sbp_`/`sk-`/service-role material; `.env.local` ignored.)
 - [x] `npm run lint`, `npm run typecheck`, and `npm run build` pass. (All green on `develop`, 2026-11-02.)
 - [x] Relevant mocked browser E2E passes without spending provider credits. (Full `npm run test:e2e`: 78/78 on desktop + mobile against live Supabase; no model credits spent.)
-- [ ] Live model checks use synthetic text/audio only, record usage metadata only, and remain under the phase budget.
+- [x] Live model checks use synthetic text/audio only, record usage metadata only, and remain under the phase budget. (Eval 17/17 + keyed `tests/ai-live.spec.ts` 4/4; usage reported in session journal; transcripts local-only.)
 - [x] Human-review, consent, privacy, crisis, empty, loading, error, and retry states are checked where relevant. (Covered by live journeys: consent-version rejection, second-user isolation, moderation/appeal flow, signed-out guards, plus truthful-state UI specs.)
 - [x] Plan and session/decision notes are updated with evidence and any discovered risk. (Session journal updated; CSS layering + E2E serialization lessons recorded.)
 

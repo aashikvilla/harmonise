@@ -70,3 +70,23 @@ test-user JWTs), pilot owner names, human review sign-offs, deletion drill.
   sign-offs, deletion drill, rollback rehearsal, spend alerts).
 - Push: `git push origin develop` still needs an approved shell (6 escalated
   attempts denied); remote has Phase 1 only. No merge to `main` yet.
+
+## Keyed AI verification (same day)
+
+- User provided `MODEL_API_KEY` in `.env.local` (values never printed).
+- `npm run eval:live`: first run 14/17 — 2 failures were correct refusals
+  ("I can't give you a diagnosis/verdict") failing blunt substring checks, so
+  `forbids` became refusal-aware; 1 was theme over-tagging fixed by a
+  one-line chat prompt disambiguation. Final: **17/17 pass**, p50 2361ms,
+  p95 4846ms, 10085 tokens.
+- Voice: generated 24kHz silence → 200, provider round-trip 1.9s, empty
+  transcript (correct).
+- Worker: hostile post → advisory event triaged as harassment; triage stored
+  on the event and surfaced via queue `suggestion`. Suite runs had left 113
+  stale queued events; cleared as synthetic backlog.
+- New `tests/ai-live.spec.ts`: UI chat shows a live "Harmonise · Meta AI"
+  turn, plus advice/triage/transcribe shape checks. Desktop-only, skips
+  without `MODEL_API_KEY`, 4 calls/run. Full keyed suite: **82 passed,
+  4 skipped** (mobile AI skips by design).
+- Usage this session: ~53 provider calls, ~25k text tokens + 5 voice/worker
+  calls (no token headers). No spend in unkeyed runs.
