@@ -41,6 +41,7 @@ export default function CommunityProposalForm() {
   const [assistError, setAssistError] = useState("");
   const [assistDraft, setAssistDraft] = useState<SetupAssistResponse | null>(null);
   const [scopeReviewConfirmed, setScopeReviewConfirmed] = useState(false);
+  const [scopeEditError, setScopeEditError] = useState("");
 
   async function checkSession() {
     const config = await fetch("/api/auth/config", { credentials: "include" }).then((response) => response.json()).catch(() => null) as { databaseEnabled?: unknown } | null;
@@ -61,6 +62,7 @@ export default function CommunityProposalForm() {
   async function draftWithMeta() {
     setAssistState("loading");
     setAssistError("");
+    setScopeEditError("");
     setScopeReviewConfirmed(false);
     try {
       const response = await fetch("/api/communities/propose/assist", {
@@ -95,11 +97,62 @@ export default function CommunityProposalForm() {
     }
   }
 
-  function applyDraft() {
-    if (!assistDraft?.draft) return;
-    setDescription(assistDraft.draft.description);
-    setTopics(assistDraft.draft.includedTopics.join(", "));
+  function updateScopeDraft(update: (draft: SetupDraft) => SetupDraft) {
+    setAssistDraft((current) => current?.draft ? { ...current, draft: update(current.draft) } : current);
     setScopeReviewConfirmed(false);
+    setScopeEditError("");
+  }
+
+  function updateScopeDescription(value: string) {
+    setDescription(value);
+    updateScopeDraft((draft) => ({ ...draft, description: value }));
+  }
+
+  function updateScopeIncludedTopics(value: string) {
+    setTopics(value);
+    updateScopeDraft((draft) => ({ ...draft, includedTopics: value.split(",").map((topic) => topic.trim()) }));
+  }
+
+  function reviewedScopeDraft() {
+    if (!assistDraft?.draft) return null;
+    const draft = assistDraft.draft;
+    const includedTopics = draft.includedTopics.map((item) => item.trim()).filter(Boolean);
+    const adjacentTopics = draft.adjacentTopics.map((item) => item.trim()).filter(Boolean);
+    const outOfScopeTopics = draft.outOfScope.map((item) => item.trim()).filter(Boolean);
+    const norms = draft.norms.map((item) => item.trim()).filter(Boolean);
+    const starterPrompts = draft.starterPrompts.map((item) => item.trim()).filter(Boolean);
+    const validItems = (items: string[], min: number, max: number, maxLength: number) =>
+      items.length >= min && items.length <= max && items.every((item) => item.length <= maxLength);
+    if (!validItems(includedTopics, 1, 8, 36)
+      || !validItems(adjacentTopics, 0, 6, 60)
+      || !validItems(outOfScopeTopics, 0, 6, 100)
+      || !validItems(norms, 3, 6, 160)
+      || draft.welcomeMessage.trim().length < 1
+      || draft.welcomeMessage.trim().length > 400
+      || !validItems(starterPrompts, 2, 4, 160)) return null;
+    return {
+      includedTopics,
+      adjacentTopics,
+      outOfScopeTopics,
+      norms,
+      welcomeMessage: draft.welcomeMessage.trim(),
+      starterPrompts,
+    };
+  }
+
+  function confirmScopeReview(checked: boolean) {
+    if (!checked) {
+      setScopeReviewConfirmed(false);
+      setScopeEditError("");
+      return;
+    }
+    if (!reviewedScopeDraft()) {
+      setScopeReviewConfirmed(false);
+      setScopeEditError("Check that the scope has 1–8 included topics, 3–6 norms, 2–4 starter prompts, and no item exceeds its length limit.");
+      return;
+    }
+    setScopeEditError("");
+    setScopeReviewConfirmed(true);
   }
 
   function invalidateDraft() {
@@ -111,6 +164,12 @@ export default function CommunityProposalForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const scopeDraft = scopeReviewConfirmed ? reviewedScopeDraft() : null;
+    if (scopeReviewConfirmed && !scopeDraft) {
+      setScopeReviewConfirmed(false);
+      setScopeEditError("Check that the scope has 1–8 included topics, 3–6 norms, 2–4 starter prompts, and no item exceeds its length limit.");
+      return;
+    }
     setState("submitting");
     setError("");
     try {
@@ -122,16 +181,7 @@ export default function CommunityProposalForm() {
           name: name.trim(),
           description: description.trim(),
           topics: topics.split(",").map((topic) => topic.trim()).filter(Boolean),
-          ...(scopeReviewConfirmed && assistDraft?.draft ? {
-            scopeDraft: {
-              includedTopics: assistDraft.draft.includedTopics,
-              adjacentTopics: assistDraft.draft.adjacentTopics,
-              outOfScopeTopics: assistDraft.draft.outOfScope,
-              norms: assistDraft.draft.norms,
-              welcomeMessage: assistDraft.draft.welcomeMessage,
-              starterPrompts: assistDraft.draft.starterPrompts,
-            },
-          } : {}),
+          ...(scopeDraft ? { scopeDraft } : {}),
         }),
       });
       const body = await response.json().catch(() => null) as Proposal & { error?: string } | null;
@@ -190,7 +240,7 @@ export default function CommunityProposalForm() {
             </div>
             <div>
               <label className="mb-1 block text-sm font-semibold" htmlFor="proposal-topics">Topics <span className="font-normal text-[var(--muted)]">(optional, comma separated)</span></label>
-              <input id="proposal-topics" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" maxLength={180} value={topics} onChange={(event) => { setTopics(event.target.value); invalidateDraft(); }} placeholder="Starting over, finding support" />
+              <input id="proposal-topics" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" maxLength={320} value={topics} onChange={(event) => { setTopics(event.target.value); invalidateDraft(); }} placeholder="Starting over, finding support" />
             </div>
             <div className="rounded-xl border border-[var(--line)] bg-[var(--lilac)] p-4">
               <p className="text-sm leading-relaxed">If you choose “Draft with Meta,” the community name, purpose, topics, and approved community descriptions/topics are sent to Meta to prepare suggestions. Private chat and member posts are not included.</p>
@@ -206,16 +256,36 @@ export default function CommunityProposalForm() {
                   <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">AI-generated · editable draft</p>
                   <h2 id="community-draft-title" className="mt-1 text-xl font-semibold">Community scope suggestions</h2>
                 </div>
-                <button type="button" className="button button-secondary" onClick={applyDraft}>Use description and topics</button>
               </div>
               <div className="mt-4 space-y-4 text-sm">
-                <p><strong>Suggested purpose:</strong> {assistDraft.draft.description}</p>
-                <div><strong>Included topics</strong><p className="mt-1">{assistDraft.draft.includedTopics.join(" · ")}</p></div>
-                {assistDraft.draft.adjacentTopics.length > 0 && <div><strong>Could be adjacent</strong><p className="mt-1">{assistDraft.draft.adjacentTopics.join(" · ")}</p></div>}
-                {assistDraft.draft.outOfScope.length > 0 && <div><strong>May be outside this community</strong><p className="mt-1">{assistDraft.draft.outOfScope.join(" · ")}</p></div>}
-                <div><strong>Possible community norms</strong><ul className="mt-1 list-disc space-y-1 pl-5">{assistDraft.draft.norms.map((norm) => <li key={norm}>{norm}</li>)}</ul></div>
-                <div><strong>Welcome message</strong><p className="mt-1">{assistDraft.draft.welcomeMessage}</p></div>
-                <div><strong>Starter prompts</strong><ul className="mt-1 list-disc space-y-1 pl-5">{assistDraft.draft.starterPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}</ul></div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-description">Purpose and description</label>
+                  <textarea id="scope-description" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={3} maxLength={500} value={assistDraft.draft.description} onChange={(event) => updateScopeDescription(event.target.value)} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-included-topics">Included topics <span className="font-normal text-[var(--muted)]">(comma separated)</span></label>
+                  <textarea id="scope-included-topics" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={2} value={assistDraft.draft.includedTopics.join(", ")} onChange={(event) => updateScopeIncludedTopics(event.target.value)} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-adjacent-topics">Adjacent topics <span className="font-normal text-[var(--muted)]">(one per line)</span></label>
+                  <textarea id="scope-adjacent-topics" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={3} value={assistDraft.draft.adjacentTopics.join("\n")} onChange={(event) => updateScopeDraft((draft) => ({ ...draft, adjacentTopics: event.target.value.split("\n") }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-out-of-scope">Outside this community <span className="font-normal text-[var(--muted)]">(one per line)</span></label>
+                  <textarea id="scope-out-of-scope" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={3} value={assistDraft.draft.outOfScope.join("\n")} onChange={(event) => updateScopeDraft((draft) => ({ ...draft, outOfScope: event.target.value.split("\n") }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-norms">Possible community norms <span className="font-normal text-[var(--muted)]">(one per line)</span></label>
+                  <textarea id="scope-norms" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={4} value={assistDraft.draft.norms.join("\n")} onChange={(event) => updateScopeDraft((draft) => ({ ...draft, norms: event.target.value.split("\n") }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-welcome">Welcome message</label>
+                  <textarea id="scope-welcome" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={3} maxLength={400} value={assistDraft.draft.welcomeMessage} onChange={(event) => updateScopeDraft((draft) => ({ ...draft, welcomeMessage: event.target.value }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block font-semibold" htmlFor="scope-starter-prompts">Starter prompts <span className="font-normal text-[var(--muted)]">(one per line)</span></label>
+                  <textarea id="scope-starter-prompts" className="w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3" rows={4} value={assistDraft.draft.starterPrompts.join("\n")} onChange={(event) => updateScopeDraft((draft) => ({ ...draft, starterPrompts: event.target.value.split("\n") }))} />
+                </div>
                 <div className="rounded-xl bg-[var(--peach)] p-3">
                   <strong>{assistDraft.draft.communityFit.kind === "fits-existing" ? "This may fit an existing community" : assistDraft.draft.communityFit.kind === "distinct-community" ? "This may be a distinct community" : "A person should compare the scopes"}</strong>
                   <p className="mt-1">{assistDraft.draft.communityFit.explanation}</p>
@@ -224,9 +294,10 @@ export default function CommunityProposalForm() {
               </div>
               <p className="mt-4 border-t border-[var(--line)] pt-3 text-xs leading-relaxed text-[var(--muted)]">These are suggestions, not approval or final policy. If you include them, the scope package is submitted for human review with your proposal. The community stays private until a person reviews its boundaries and confirms coverage.</p>
               <label className="mt-4 flex min-h-11 items-start gap-3 border-t border-[var(--line)] pt-3 text-sm leading-relaxed">
-                <input className="mt-1 h-4 w-4 shrink-0 accent-[var(--coral)]" type="checkbox" checked={scopeReviewConfirmed} onChange={(event) => setScopeReviewConfirmed(event.target.checked)} />
-                <span>I reviewed these scope suggestions and want to include them with my proposal for human review.</span>
+                <input className="mt-1 h-4 w-4 shrink-0 accent-[var(--coral)]" type="checkbox" checked={scopeReviewConfirmed} onChange={(event) => confirmScopeReview(event.target.checked)} />
+                <span>I reviewed these scope suggestions and want to include the current edited version with my proposal for human review.</span>
               </label>
+              {scopeEditError && <p className="mt-2 text-sm" role="alert">{scopeEditError}</p>}
             </section>}
             {error && <p className="rounded-xl bg-[var(--peach)] p-3 text-sm" role="alert">{error}</p>}
             <button className="button button-primary" disabled={state === "submitting"} type="submit">{state === "submitting" ? "Sending for review…" : "Suggest this community"}</button>
