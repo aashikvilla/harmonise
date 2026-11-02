@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AuthCard from "@/components/account/auth-card";
 import { CommunityHelperCard } from "@/components/community/community-helper-card";
+import { CommunityGuide } from "@/components/community/community-guide";
 import { CommunityProgressCard } from "@/components/community/community-progress-card";
 import { CONSENT_VERSION } from "@/lib/consent";
 
@@ -850,6 +851,9 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
       {activeMember && community.launch_status !== "rejected" && community.launch_status !== "archived" && (
         <div className="grid gap-4">
           <CommunityHelperCard communityId={communityId} />
+          {community.launch_status !== "pending_review" && (
+            <CommunityGuide communityId={communityId} communityName={community.name} />
+          )}
           {community.launch_status !== "pending_review" && <CommunityProgressCard communityId={communityId} />}
         </div>
       )}

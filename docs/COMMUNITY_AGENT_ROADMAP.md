@@ -1,8 +1,18 @@
 # Community Agents: Product and Delivery Roadmap
 
-**Status:** Proposed plan; no product policy or production behavior changed.  
+**Status:** Scope-stewardship code is integrated on `develop`, and the live Supabase migrations are applied. Browser verification of live write flows remains pending.  
 **Updated:** 2026-11-03  
 **Related:** [Meta model and journey audit](./META_MODELS_AND_JOURNEY_AUDIT.md), [end-to-end journey and gaps](./END_TO_END_JOURNEY_AND_GAPS.md), [data privacy design](./DATA_PRIVACY_DESIGN.md).
+
+## Implementation state
+
+- Added the proposal setup copilot, editable host-reviewed scope draft, and atomic storage with pending community creation.
+- Added an active-member-only private AI guide grounded in the approved scope package and public community details.
+- Added moderator-selected excerpt scope recommendations, versioned approval/rollback, and explicit split acceptance that creates a private pending proposal without memberships or notifications.
+- Muse Spark remains the default. Muse Wonder is available only through the server-side setup-model switch for controlled non-production evaluation; no Wonder comparison has been run yet.
+- Automatic delegated scope changes are disabled. No timeout approves a scope change or launches a community.
+- The two scope migrations are applied to the live Supabase project in order. Existing community scope stewardship requires an active moderator; split proposals still need the existing allowlisted launch reviewer and coverage confirmation before launch.
+- Typecheck, lint, and production build passed per feature branch. No automated or browser tests were run in this implementation pass.
 
 ## Product goal
 

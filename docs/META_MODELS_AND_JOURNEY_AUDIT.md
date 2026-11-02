@@ -27,7 +27,7 @@ The most recent keyed evaluation recorded in `docs/META_INTEGRATION_PLAN.md` was
 
 ## Other Meta model lines and API surfaces
 
-Meta's current catalog also documents Muse Wonder, Muse Image, SAM 3.1, Muse Spark Open, and Muse Glimmer. It documents Responses, Messages, Files, Models, image-generation/edit, and realtime transcription surfaces. The repo currently uses none of those lines/surfaces. Muse Spark 1.2/1.1 are also not configured. `GET /v1/models` is available to check which API-hosted models are enabled for the project's team; it has not been called in this audit, so account-specific access is unverified.
+Meta's current catalog also documents Muse Wonder, Muse Image, SAM 3.1, Muse Spark Open, and Muse Glimmer. It documents Responses, Messages, Files, Models, image-generation/edit, and realtime transcription surfaces. The repo does not use those API surfaces at runtime. Muse Wonder is now an optional, server-only setup-model selection for non-production synthetic evaluation, but Spark remains the default and no Wonder comparison has been run. Muse Spark 1.2/1.1 are not configured. `GET /v1/models` is available to check which API-hosted models are enabled for the project's team; it has not been called in this audit, so account-specific access is unverified.
 
 | Capability | Harmonise fit today |
 |---|---|
@@ -46,6 +46,13 @@ Standard mode remains the appropriate choice for real narratives; do not switch 
 2. Prototype **live-community ranking** using synthetic user-confirmed themes and approved public metadata only. Keep the deterministic list and fallback; compare ranking quality, reason accuracy, latency, and token use.
 3. Decide whether the product wants an AI community responder. This changes the helper's role and user expectations, so agree on source grounding, consent, human oversight, and operational ownership before building it.
 4. Reconsider realtime voice only if people need it after the current recording flow is tested on target devices and languages.
+
+## Implementation update — 2026-11-03
+
+- The proposal flow now offers an opt-in Meta setup copilot. It compares the proposal with approved public community metadata and returns an editable scope package; the host must review it before including it in the pending proposal.
+- Active members can ask a private community guide. It sends the question and approved scope/public details to Meta and does not read community posts, replies, or private chat.
+- Moderators can request scope recommendations from one selected excerpt. The excerpt is disclosed before submission and is not stored. A moderator can apply an existing-community update or create a private pending split proposal; no timeout or model output launches a community.
+- Scope features require migrations `20261102195744` and `20261102195748`; both are applied to the live Supabase project in order. Automated expansion delegation remains disabled.
 
 Do not add Muse Image, SAM, web search grounding, or Muse Wonder merely to increase model count. Add a model/API only when it improves a specific user outcome and its data transfer and failure behavior are explicit.
 

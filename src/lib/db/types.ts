@@ -64,8 +64,57 @@ export type CommunityAgentRow = {
   community_id: string;
   display_name: string;
   status: "active" | "inactive";
-  community_context: { name?: string; description?: string; topics?: string[] };
+  community_context: { name?: string; description?: string; topics?: string[]; scope?: CommunityScopePackage };
+  scope_package: CommunityScopePackage;
+  scope_version: number;
+  scope_updated_by: string | null;
+  scope_updated_at: string;
+  scope_source: "legacy" | "host-reviewed-proposal" | "moderator-approved-change" | "moderator-rollback";
   created_at: string;
+};
+
+export type CommunityScopePackage = {
+  includedTopics: string[];
+  adjacentTopics: string[];
+  outOfScopeTopics: string[];
+  norms: string[];
+  welcomeMessage: string;
+  starterPrompts: string[];
+};
+
+export type CommunityScopeRecommendation = {
+  proposedDescription: string;
+  proposedTopics: string[];
+  proposedScopePackage: CommunityScopePackage;
+  newCommunityName: string;
+  newCommunityDescription: string;
+  newCommunityTopics: string[];
+  newCommunityScopePackage: CommunityScopePackage;
+};
+
+export type CommunityScopeChangeRow = {
+  id: string;
+  community_id: string;
+  proposed_by: string | null;
+  reviewed_by: string | null;
+  recommendation_kind: "clarify" | "expand" | "split";
+  risk: "low" | "moderate" | "high";
+  status: "pending" | "approved" | "rejected" | "superseded";
+  base_scope_version: number;
+  prior_scope: { name: string; description: string; topics: string[]; scopePackage: CommunityScopePackage; scopeVersion: number };
+  source_excerpt_length: number;
+  recommendation: CommunityScopeRecommendation;
+  rationale: string;
+  model: string;
+  provider_latency_ms: number | null;
+  reviewer_rationale: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  applied_at: string | null;
+  rolled_back_by: string | null;
+  rolled_back_at: string | null;
+  rollback_rationale: string | null;
+  split_community_id: string | null;
 };
 
 export type MembershipRow = {

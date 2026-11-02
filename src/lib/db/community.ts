@@ -6,6 +6,9 @@ import { getCommunityProgressSummary } from "@/lib/community-progress";
 import type {
   CommunityRow,
   CommunityAgentRow,
+  CommunityScopePackage,
+  CommunityScopeChangeRow,
+  CommunityScopeRecommendation,
   ConsentRecordRow,
   MembershipRow,
   PostReactionRow,
@@ -104,16 +107,26 @@ export async function createPendingCommunity(input: {
   description: string;
   topics: string[];
   ownerId: string;
+  scopePackage?: CommunityScopePackage;
 }): Promise<CommunityRow> {
-  const rows = await supabaseRest<CommunityRow[]>("rpc/create_pending_community", {
+  const rows = await supabaseRest<CommunityRow[]>(input.scopePackage ? "rpc/create_pending_community_with_scope" : "rpc/create_pending_community", {
     method: "POST",
-    body: {
-      p_id: input.id,
-      p_name: input.name,
-      p_description: input.description,
-      p_topics: input.topics,
-      p_owner_id: input.ownerId,
-    },
+    body: input.scopePackage
+      ? {
+          p_id: input.id,
+          p_name: input.name,
+          p_description: input.description,
+          p_topics: input.topics,
+          p_owner_id: input.ownerId,
+          p_scope_package: input.scopePackage,
+        }
+      : {
+          p_id: input.id,
+          p_name: input.name,
+          p_description: input.description,
+          p_topics: input.topics,
+          p_owner_id: input.ownerId,
+        },
   });
   const created = selectSingle(rows);
   if (!created) throw new Error("community not created");
@@ -122,7 +135,109 @@ export async function createPendingCommunity(input: {
 
 export async function getCommunityAgent(communityId: string): Promise<CommunityAgentRow | null> {
   const rows = await supabaseRest<CommunityAgentRow[]>("community_moderator_agents", {
-    query: `?community_id=eq.${encodeURIComponent(communityId)}&select=id,community_id,display_name,status,community_context,created_at&limit=1`,
+    query: `?community_id=eq.${encodeURIComponent(communityId)}&select=id,community_id,display_name,status,community_context,scope_package,scope_version,scope_updated_by,scope_updated_at,scope_source,created_at&limit=1`,
+  });
+  return selectSingle(rows);
+}
+
+export async function createCommunityScopeChange(input: {
+  communityId: string;
+  proposedBy: string;
+  recommendationKind: CommunityScopeChangeRow["recommendation_kind"];
+  risk: CommunityScopeChangeRow["risk"];
+  baseScopeVersion: number;
+  priorScope: CommunityScopeChangeRow["prior_scope"];
+  sourceExcerptLength: number;
+  recommendation: CommunityScopeRecommendation;
+  rationale: string;
+  model: string;
+  providerLatencyMs: number;
+}) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("community_scope_changes", {
+    method: "POST",
+    body: {
+      community_id: input.communityId,
+      proposed_by: input.proposedBy,
+      recommendation_kind: input.recommendationKind,
+      risk: input.risk,
+      base_scope_version: input.baseScopeVersion,
+      prior_scope: input.priorScope,
+      source_excerpt_length: input.sourceExcerptLength,
+      recommendation: input.recommendation,
+      rationale: input.rationale,
+      model: input.model,
+      provider_latency_ms: input.providerLatencyMs,
+    },
+    prefer: "return=representation",
+  });
+  return selectSingle(rows);
+}
+
+export async function listCommunityScopeChanges(communityId: string) {
+  return supabaseRest<CommunityScopeChangeRow[]>("community_scope_changes", {
+    query: `?community_id=eq.${encodeURIComponent(communityId)}&select=*&order=created_at.desc&limit=25`,
+  });
+}
+
+export async function getCommunityScopeChange(communityId: string, changeId: string) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("community_scope_changes", {
+    query: `?id=eq.${encodeURIComponent(changeId)}&community_id=eq.${encodeURIComponent(communityId)}&select=*&limit=1`,
+  });
+  return selectSingle(rows);
+}
+
+export async function reviewCommunityScopeChange(input: {
+  changeId: string;
+  communityId: string;
+  reviewerId: string;
+  decision: "approved" | "rejected";
+  rationale: string;
+}) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("rpc/review_community_scope_change", {
+    method: "POST",
+    body: {
+      p_change_id: input.changeId,
+      p_community_id: input.communityId,
+      p_reviewer_id: input.reviewerId,
+      p_decision: input.decision,
+      p_rationale: input.rationale,
+    },
+  });
+  return selectSingle(rows);
+}
+
+export async function approveCommunityScopeSplit(input: {
+  changeId: string;
+  communityId: string;
+  reviewerId: string;
+  rationale: string;
+}) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("rpc/approve_community_scope_split", {
+    method: "POST",
+    body: {
+      p_change_id: input.changeId,
+      p_community_id: input.communityId,
+      p_reviewer_id: input.reviewerId,
+      p_rationale: input.rationale,
+    },
+  });
+  return selectSingle(rows);
+}
+
+export async function rollbackCommunityScopeChange(input: {
+  changeId: string;
+  communityId: string;
+  reviewerId: string;
+  rationale: string;
+}) {
+  const rows = await supabaseRest<CommunityScopeChangeRow[]>("rpc/rollback_community_scope_change", {
+    method: "POST",
+    body: {
+      p_change_id: input.changeId,
+      p_community_id: input.communityId,
+      p_reviewer_id: input.reviewerId,
+      p_rationale: input.rationale,
+    },
   });
   return selectSingle(rows);
 }
