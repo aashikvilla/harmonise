@@ -45,6 +45,13 @@ async function sendJson<T>(path: string, method: string, data?: unknown): Promis
   }
 }
 
+type LiveFlag = {
+  eventId: string;
+  excerpt: string;
+  suggestion: { concern: string; severity: string; rationale: string; uncertainty: string };
+  createdAt: string;
+};
+
 const DECISION_LABELS: Record<string, string> = {
   "no-action": "No action",
   "request-revision": "Request revision",
@@ -58,6 +65,7 @@ export default function ReviewerQueue() {
   const [communityId, setCommunityId] = useState("");
   const [queue, setQueue] = useState<QueueItem[] | null>(null);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [flags, setFlags] = useState<LiveFlag[]>([]);
   const [rationales, setRationales] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -84,13 +92,15 @@ export default function ReviewerQueue() {
   const loadQueue = useCallback(async () => {
     if (!communityId) return;
     setQueue(null);
-    const [feed, stats] = await Promise.all([
+    const [feed, stats, flagFeed] = await Promise.all([
       getJson<{ queue?: QueueItem[] }>(`/api/moderation/queue?community=${communityId}`),
       getJson<{ metrics?: Metrics }>(`/api/moderation/metrics?community=${communityId}`),
+      getJson<{ flags?: LiveFlag[] }>(`/api/moderation/flags?community=${communityId}`),
     ]);
     if (feed.status === 200 && Array.isArray(feed.body?.queue)) setQueue(feed.body.queue);
     else setQueue([]);
     if (stats.status === 200 && stats.body?.metrics) setMetrics(stats.body.metrics);
+    setFlags(flagFeed.status === 200 && Array.isArray(flagFeed.body?.flags) ? flagFeed.body.flags : []);
   }, [communityId]);
 
   useEffect(() => {
@@ -200,6 +210,22 @@ export default function ReviewerQueue() {
         <p role="status" className="rounded-lg bg-[var(--sage)] p-3 text-sm">
           {notice}
         </p>
+      )}
+
+      {flags.length > 0 && (
+        <div className="grid gap-3">
+          <h3 className="text-lg font-semibold">New-post flags (advisory — no report filed)</h3>
+          {flags.map((flag) => (
+            <div key={flag.eventId} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4 text-sm">
+              <p>
+                <strong>{flag.suggestion.severity}</strong> · {flag.suggestion.concern} · uncertainty{" "}
+                {flag.suggestion.uncertainty} · {new Date(flag.createdAt).toLocaleString()}
+              </p>
+              <p className="mt-1 whitespace-pre-wrap text-[var(--muted)]">{flag.excerpt}</p>
+              <p className="mt-1">{flag.suggestion.rationale}</p>
+            </div>
+          ))}
+        </div>
       )}
 
       {queue === null ? (

@@ -165,6 +165,7 @@ function PostCard({
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [armingBlock, setArmingBlock] = useState(false);
 
   async function loadReplies() {
     const result = await getJson<{ replies?: Reply[] }>(`/api/communities/${community.id}/posts/${post.id}/replies`);
@@ -206,6 +207,22 @@ function PostCard({
     }
   }
 
+  async function blockAuthor() {
+    if (!armingBlock) {
+      setArmingBlock(true);
+      return;
+    }
+    setBusy(true);
+    const result = await sendJson(`/api/communities/${community.id}/blocks`, "POST", { alias: post.author_alias });
+    setBusy(false);
+    setArmingBlock(false);
+    if (result.status === 200) {
+      onChanged();
+    } else {
+      setNote("That member could not be blocked. Try again.");
+    }
+  }
+
   async function deletePost() {
     setBusy(true);
     const result = await sendJson(`/api/communities/${community.id}/posts/${post.id}`, "DELETE");
@@ -240,6 +257,11 @@ function PostCard({
         {membership && !reporting && (
           <button type="button" onClick={() => setReporting(true)} className="rounded-full px-4 py-2 text-sm underline">
             Report to moderators
+          </button>
+        )}
+        {membership && !ownPost && (
+          <button type="button" disabled={busy} onClick={() => void blockAuthor()} className="rounded-full px-4 py-2 text-sm underline">
+            {armingBlock ? `Block ${post.author_alias}? Tap again to confirm.` : "Block author"}
           </button>
         )}
         {ownPost && (
@@ -321,6 +343,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
   const [moderator, setModerator] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [alias, setAlias] = useState("");
+  const [blocked, setBlocked] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
@@ -347,6 +370,8 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
     if (authed) {
       const mine = await getJson<{ membership?: Membership | null }>(`/api/communities/${communityId}/membership`);
       setMembership(mine.body?.membership ?? null);
+      const blockedList = await getJson<{ blocked?: string[] }>(`/api/communities/${communityId}/blocks`);
+      setBlocked(Array.isArray(blockedList.body?.blocked) ? blockedList.body.blocked : []);
     }
     const feed = await getJson<{ posts?: Post[]; moderator?: boolean }>(`/api/communities/${communityId}/posts`);
     if (feed.status === 200 && Array.isArray(feed.body?.posts)) {
@@ -380,6 +405,17 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
       setNotice("This account cannot join this community.");
     } else {
       setNotice("Joining did not work. Try again.");
+    }
+  }
+
+  async function unblock(aliasToRemove: string) {
+    setBusy(true);
+    const result = await sendJson(`/api/communities/${communityId}/blocks?alias=${encodeURIComponent(aliasToRemove)}`, "DELETE");
+    setBusy(false);
+    if (result.status === 200) {
+      await loadAll();
+    } else {
+      setNotice("Unblocking did not work. Try again.");
     }
   }
 
@@ -510,6 +546,25 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
           <button type="button" disabled={busy} onClick={() => void leave()} className="underline">
             Leave this community
           </button>
+        </div>
+      )}
+
+      {activeMember && blocked.length > 0 && (
+        <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4 text-sm">
+          <h3 className="font-semibold">Blocked in this community</h3>
+          <p className="mt-1 text-[var(--muted)]">
+            You do not see posts or replies from these aliases. Blocking never notifies them and never replaces reporting.
+          </p>
+          <ul className="mt-2 grid gap-2">
+            {blocked.map((blockedAlias) => (
+              <li key={blockedAlias} className="flex items-center justify-between gap-3">
+                <strong>{blockedAlias}</strong>
+                <button type="button" disabled={busy} onClick={() => void unblock(blockedAlias)} className="underline">
+                  Unblock
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

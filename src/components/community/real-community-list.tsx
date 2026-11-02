@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { overlappingThemes, THEME_LABELS } from "@/lib/community-topics";
 
 type Community = {
   id: string;
@@ -23,9 +24,17 @@ async function getJson<T>(path: string): Promise<{ status: number; body: T | nul
 export default function RealCommunityList() {
   const [state, setState] = useState<"loading" | "unavailable" | "error" | "ready">("loading");
   const [communities, setCommunities] = useState<Community[]>([]);
+  const [confirmedThemes, setConfirmedThemes] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
+    setConfirmedThemes(
+      new URLSearchParams(window.location.search)
+        .get("themes")
+        ?.split(",")
+        .map((theme) => theme.trim())
+        .filter(Boolean) ?? [],
+    );
     (async () => {
       const config = await getJson<{ databaseEnabled?: unknown }>("/api/auth/config");
       if (cancelled) return;
@@ -105,6 +114,17 @@ export default function RealCommunityList() {
           </div>
           <h2 className="mt-3 text-xl font-semibold">{community.name}</h2>
           <p className="mt-1 text-[var(--muted)]">{community.description || "No description yet."}</p>
+          {confirmedThemes.length > 0 &&
+            (() => {
+              const overlap = overlappingThemes(community.id, confirmedThemes);
+              return overlap.length > 0 ? (
+                <p className="mt-2 text-sm">
+                  Related to themes you confirmed: {overlap.map((theme) => THEME_LABELS[theme] ?? theme).join(", ")}.
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-[var(--muted)]">Not related to your confirmed themes — shown for browsing.</p>
+              );
+            })()}
           <a
             href={`/communities/${community.id}`}
             className="mt-4 inline-block rounded-full bg-[var(--ink)] px-5 py-2.5 text-white"

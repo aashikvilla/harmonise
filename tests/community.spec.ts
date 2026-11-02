@@ -78,3 +78,45 @@ test("join, post with consent, reply, report, leave, and delete", async ({ page 
   expect(left.status()).toBe(200);
   expect((await page.request.get(`/api/communities/${COMMUNITY}/posts`, { headers: authB })).status()).toBe(403);
 });
+
+test("blocking hides a member's posts only for the blocker", async ({ page }) => {
+  test.skip(!process.env.TEST_USER_A_JWT || !process.env.TEST_USER_B_JWT, "Needs TEST_USER_A_JWT and TEST_USER_B_JWT.");
+  const authA = { Authorization: `Bearer ${process.env.TEST_USER_A_JWT}` };
+  const authB = { Authorization: `Bearer ${process.env.TEST_USER_B_JWT}` };
+
+  const info = await page.request.get(`/api/communities/${COMMUNITY}`);
+  test.skip(info.status() !== 200, "Needs the seeded steady-ground community.");
+
+  await page.request.post(`/api/communities/${COMMUNITY}/join`, { data: { alias: "BlockA" }, headers: authA });
+  await page.request.post(`/api/communities/${COMMUNITY}/join`, { data: { alias: "BlockB" }, headers: authB });
+
+  const created = await page.request.post(`/api/communities/${COMMUNITY}/posts`, {
+    data: { body: "A post that user B will block.", consentVersion: CONSENT_VERSION },
+    headers: authA,
+  });
+  expect(created.status()).toBe(200);
+  const postId = ((await created.json()) as { post: { id: string } }).post.id;
+
+  expect(
+    (await page.request.post(`/api/communities/${COMMUNITY}/blocks`, { data: { alias: "BlockB" }, headers: authB })).status(),
+  ).toBe(403);
+  expect(
+    (await page.request.post(`/api/communities/${COMMUNITY}/blocks`, { data: { alias: "Nobody Here" }, headers: authB })).status(),
+  ).toBe(404);
+
+  const blocked = await page.request.post(`/api/communities/${COMMUNITY}/blocks`, { data: { alias: "BlockA" }, headers: authB });
+  expect(blocked.status()).toBe(200);
+  const hidden = await page.request.get(`/api/communities/${COMMUNITY}/posts`, { headers: authB });
+  expect(((await hidden.json()) as { posts: { id: string }[] }).posts.map((post) => post.id)).not.toContain(postId);
+  const stillThere = await page.request.get(`/api/communities/${COMMUNITY}/posts`, { headers: authA });
+  expect(((await stillThere.json()) as { posts: { id: string }[] }).posts.map((post) => post.id)).toContain(postId);
+
+  const unblocked = await page.request.delete(`/api/communities/${COMMUNITY}/blocks?alias=${encodeURIComponent("BlockA")}`, {
+    headers: authB,
+  });
+  expect(unblocked.status()).toBe(200);
+  const visible = await page.request.get(`/api/communities/${COMMUNITY}/posts`, { headers: authB });
+  expect(((await visible.json()) as { posts: { id: string }[] }).posts.map((post) => post.id)).toContain(postId);
+
+  expect((await page.request.delete(`/api/communities/${COMMUNITY}/posts/${postId}`, { headers: authA })).status()).toBe(200);
+});

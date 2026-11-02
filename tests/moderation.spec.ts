@@ -22,6 +22,17 @@ test("moderation APIs deny anonymous callers and unapproved workers", async ({ p
   expect((await page.request.post("/api/moderation/decide", { data: {} })).status()).toBe(401);
   expect((await page.request.post("/api/moderation/appeal", { data: {} })).status()).toBe(401);
   expect((await page.request.post("/api/moderation/process")).status()).toBe(403);
+  expect((await page.request.get(`/api/moderation/flags?community=${COMMUNITY}`)).status()).toBe(401);
+});
+
+test("new-post flags are moderator-only", async ({ page }) => {
+  test.skip(!process.env.TEST_USER_A_JWT || !process.env.TEST_MODERATOR_JWT, "Needs TEST_USER_A_JWT and TEST_MODERATOR_JWT.");
+  const authA = { Authorization: `Bearer ${process.env.TEST_USER_A_JWT}` };
+  const authM = { Authorization: `Bearer ${process.env.TEST_MODERATOR_JWT}` };
+  expect((await page.request.get(`/api/moderation/flags?community=${COMMUNITY}`, { headers: authA })).status()).toBe(403);
+  const flags = await page.request.get(`/api/moderation/flags?community=${COMMUNITY}`, { headers: authM });
+  expect(flags.status()).toBe(200);
+  expect(Array.isArray(((await flags.json()) as { flags: unknown[] }).flags)).toBe(true);
 });
 
 test("report, human decision, appeal, and second review", async ({ page }) => {

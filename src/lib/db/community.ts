@@ -119,13 +119,14 @@ async function aliasesFor(membershipIds: string[]) {
   return new Map(rows.map((row) => [row.id, row.alias]));
 }
 
-export async function listPosts(communityId: string, moderator: boolean): Promise<PostWithAuthor[]> {
+export async function listPosts(communityId: string, moderator: boolean, excludeMembershipIds: string[] = []): Promise<PostWithAuthor[]> {
   const statusFilter = moderator ? "" : "&status=eq.visible";
   const rows = await supabaseRest<PostRow[]>("posts", {
     query: `?community_id=eq.${communityId}${statusFilter}&order=created_at.desc&select=*&limit=50`,
   });
-  const aliases = await aliasesFor([...new Set(rows.map((row) => row.author_membership_id))]);
-  return rows.map((row) => ({ ...row, author_alias: aliases.get(row.author_membership_id) ?? "Former member" }));
+  const visible = excludeMembershipIds.length > 0 ? rows.filter((row) => !excludeMembershipIds.includes(row.author_membership_id)) : rows;
+  const aliases = await aliasesFor([...new Set(visible.map((row) => row.author_membership_id))]);
+  return visible.map((row) => ({ ...row, author_alias: aliases.get(row.author_membership_id) ?? "Former member" }));
 }
 
 export type CreatePostResult = { post: PostWithAuthor } | { error: "not-found" | "forbidden" | "blocked" | "stale-consent" };
@@ -158,6 +159,18 @@ export async function createPost(userId: string, communityId: string, body: stri
   });
   const post = selectSingle(postRows);
   if (!post) throw new Error("post not created");
+  try {
+    await enqueueModerationEvent({
+      communityId,
+      reportId: null,
+      type: "live-flag",
+      targetPostId: post.id,
+      targetReplyId: null,
+      excerpt: text,
+    });
+  } catch {
+    /* A queue failure must never lose the post itself. */
+  }
   return { post: { ...post, author_alias: membership.alias } };
 }
 
@@ -188,14 +201,75 @@ export async function setReplyStatus(replyId: string, status: "visible" | "held"
   return true;
 }
 
-export async function listReplies(postId: string, moderator: boolean): Promise<ReplyWithAuthor[]> {
+export async function listReplies(postId: string, moderator: boolean, excludeMembershipIds: string[] = []): Promise<ReplyWithAuthor[]> {
   if (!isUuid(postId)) return [];
   const statusFilter = moderator ? "" : "&status=eq.visible";
   const rows = await supabaseRest<PostReplyRow[]>("post_replies", {
     query: `?post_id=eq.${postId}${statusFilter}&order=created_at.asc&select=*&limit=100`,
   });
-  const aliases = await aliasesFor([...new Set(rows.map((row) => row.author_membership_id))]);
-  return rows.map((row) => ({ ...row, author_alias: aliases.get(row.author_membership_id) ?? "Former member" }));
+  const visible = excludeMembershipIds.length > 0 ? rows.filter((row) => !excludeMembershipIds.includes(row.author_membership_id)) : rows;
+  const aliases = await aliasesFor([...new Set(visible.map((row) => row.author_membership_id))]);
+  return visible.map((row) => ({ ...row, author_alias: aliases.get(row.author_membership_id) ?? "Former member" }));
+}
+
+export type MemberBlockRow = {
+  blocker_membership_id: string;
+  blocked_membership_id: string;
+  community_id: string;
+  created_at: string;
+};
+
+export async function blockedMembershipIds(userId: string, communityId: string): Promise<string[]> {
+  const membership = await getMembership(userId, communityId);
+  if (!membership) return [];
+  const rows = await supabaseRest<MemberBlockRow[]>("member_blocks", {
+    query: `?blocker_membership_id=eq.${membership.id}&select=blocked_membership_id`,
+  });
+  return rows.map((row) => row.blocked_membership_id);
+}
+
+export async function listBlockedAliases(userId: string, communityId: string): Promise<string[]> {
+  const ids = await blockedMembershipIds(userId, communityId);
+  if (ids.length === 0) return [];
+  const rows = await supabaseRest<MembershipRow[]>("memberships", { query: `?id=in.(${ids.join(",")})&select=alias` });
+  return rows.map((row) => row.alias);
+}
+
+export type BlockResult = { ok: true } | { error: "not-found" | "forbidden" | "no-such-member" | "cannot-block-self" };
+
+export async function blockMember(userId: string, communityId: string, alias: string): Promise<BlockResult> {
+  const membership = await getMembership(userId, communityId);
+  if (!membership) return { error: "not-found" };
+  if (membership.status !== "active") return { error: "forbidden" };
+  const target = selectSingle(
+    await supabaseRest<MembershipRow[]>("memberships", {
+      query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id,alias`,
+    }),
+  );
+  if (!target) return { error: "no-such-member" };
+  if (target.id === membership.id) return { error: "cannot-block-self" };
+  await supabaseRest("member_blocks", {
+    method: "POST",
+    body: { blocker_membership_id: membership.id, blocked_membership_id: target.id, community_id: communityId },
+    prefer: "resolution=ignore-duplicates",
+  });
+  return { ok: true };
+}
+
+export async function unblockMember(userId: string, communityId: string, alias: string): Promise<BlockResult> {
+  const membership = await getMembership(userId, communityId);
+  if (!membership) return { error: "not-found" };
+  const target = selectSingle(
+    await supabaseRest<MembershipRow[]>("memberships", {
+      query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id,alias`,
+    }),
+  );
+  if (!target) return { error: "no-such-member" };
+  await supabaseRest("member_blocks", {
+    method: "DELETE",
+    query: `?blocker_membership_id=eq.${membership.id}&blocked_membership_id=eq.${target.id}`,
+  });
+  return { ok: true };
 }
 
 export type CreateReplyResult = { reply: ReplyWithAuthor } | { error: "not-found" | "forbidden" | "blocked" | "stale-consent" };

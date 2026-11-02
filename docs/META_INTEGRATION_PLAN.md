@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–6 implemented on `develop` (keyed eval runs, device-matrix, and live-DB passes pending); the remaining phases are tracked below.
+**Status:** Phases 0–7 implemented on `develop` (keyed eval runs, device-matrix, live-DB, and manual AT passes pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -153,16 +153,16 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Depends on Phases 3–6. Owner:** integration lead. **Exit:** one real, consented end-to-end scenario passes from first visit to an actual human-reviewed outcome.
 
-- [ ] Landing page explains the service, Meta data transfer points, limitations, and available alternatives.
-- [ ] Visitor enters chat, receives a Muse Spark response, and sees a clearly tentative understanding.
-- [ ] User corrects or rejects themes; only confirmed themes influence discovery.
-- [ ] Discovery uses real, approved community data and explains relevance without invented scores or participants.
-- [ ] Quiet reading remains available without membership or posting.
-- [ ] Join and posting show the exact alias, audience, and text; no private narrative is silently copied.
-- [ ] User submits one approved post or question; moderation triage routes it to an authorized human.
-- [ ] Human reply appears only after a real person writes it; the product never fabricates peer activity.
-- [ ] User can report, block, leave, delete their private content, and understand what cannot be erased from third-party systems.
-- [ ] Test the full journey on desktop and mobile with keyboard and assistive-technology checks.
+- [x] Landing page explains the service, Meta data transfer points, limitations, and available alternatives. (Help-screen explainer + live-community links; pixel-sensitive homepage left untouched.)
+- [x] Visitor enters chat, receives a Muse Spark response, and sees a clearly tentative understanding.
+- [x] User corrects or rejects themes; only confirmed themes influence discovery.
+- [x] Discovery uses real, approved community data and explains relevance without invented scores or participants. (Live directory + confirmed-theme overlap notes.)
+- [x] Quiet reading remains available without membership or posting.
+- [x] Join and posting show the exact alias, audience, and text; no private narrative is silently copied.
+- [x] User submits one approved post or question; moderation triage routes it to an authorized human. (Every post enqueues an advisory live-flag; reports enqueue review events.)
+- [x] Human reply appears only after a real person writes it; the product never fabricates peer activity.
+- [x] User can report, block, leave, delete their private content, and understand what cannot be erased from third-party systems.
+- [ ] Test the full journey on desktop and mobile with keyboard and assistive-technology checks. (New surfaces use semantic, responsive markup; manual AT pass pending.)
 
 ## Phase 8 — Operational readiness and controlled pilot
 

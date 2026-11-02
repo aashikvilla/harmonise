@@ -68,7 +68,11 @@ export async function enqueueModerationEvent(input: {
   targetReplyId?: string | null;
   excerpt: string;
 }) {
-  const idempotencyKey = input.reportId ? `report:${input.reportId}` : `live:${input.targetPostId ?? input.targetReplyId}:${Date.now()}`;
+  const idempotencyKey = input.reportId
+    ? `report:${input.reportId}`
+    : input.targetPostId
+      ? `live-post:${input.targetPostId}`
+      : `live:${input.targetReplyId}:${Date.now()}`;
   const rows = await supabaseRest<ModerationEventRow[]>("moderation_events", {
     method: "POST",
     body: {
@@ -223,6 +227,42 @@ export async function getQueue(communityId: string): Promise<QueueItem[]> {
       return { report, target, reporter_alias: aliases.get(report.reporter_membership_id) ?? "Former member", suggestion, decisions, appeals };
     }),
   );
+}
+
+export type LiveFlag = {
+  eventId: string;
+  targetPostId: string | null;
+  excerpt: string;
+  suggestion: QueueTriage & { policy_version: string };
+  createdAt: string;
+};
+
+/** Recent triaged new-post flags worth a human glance (review/urgent only). */
+export async function getLiveFlags(communityId: string): Promise<LiveFlag[]> {
+  const events = await supabaseRest<ModerationEventRow[]>("moderation_events", {
+    query: `?community_id=eq.${communityId}&event_type=eq.live-flag&status=eq.triaged&order=created_at.desc&select=*&limit=20`,
+  });
+  const flags: LiveFlag[] = [];
+  for (const event of events) {
+    const payload = event.payload as Record<string, unknown>;
+    const triage = payload.triage as Record<string, unknown> | undefined;
+    if (!triage || (triage.severity !== "review" && triage.severity !== "urgent")) continue;
+    if (typeof triage.concern !== "string" || typeof triage.rationale !== "string") continue;
+    flags.push({
+      eventId: event.id,
+      targetPostId: typeof payload.target_post_id === "string" ? (payload.target_post_id as string) : null,
+      excerpt: typeof payload.excerpt === "string" ? (payload.excerpt as string) : "",
+      suggestion: {
+        concern: triage.concern,
+        severity: triage.severity as QueueTriage["severity"],
+        rationale: triage.rationale,
+        uncertainty: (typeof triage.uncertainty === "string" ? triage.uncertainty : "high") as QueueTriage["uncertainty"],
+        policy_version: typeof payload.policy_version === "string" ? (payload.policy_version as string) : POLICY_VERSION,
+      },
+      createdAt: event.created_at,
+    });
+  }
+  return flags;
 }
 
 export const DECISIONS = ["no-action", "request-revision", "remove", "escalate"] as const;

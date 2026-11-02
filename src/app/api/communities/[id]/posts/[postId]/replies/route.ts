@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { bodyTooLarge, parseJsonBody } from "@/lib/api-guard";
 import { checkRateLimit } from "@/lib/meta-model";
 import { dbFailureStatus, getAuthUser, isDatabaseConfigured, isUuid } from "@/lib/db/supabase";
-import { checkPostsAccess, createReply, listReplies, validCommunityId } from "@/lib/db/community";
+import { blockedMembershipIds, checkPostsAccess, createReply, listReplies, validCommunityId } from "@/lib/db/community";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       const status = access.reason === "not-found" ? 404 : access.reason === "signed-out" ? 401 : 403;
       return NextResponse.json({ error: access.reason }, { status });
     }
-    const replies = await listReplies(postId, access.moderator);
+    const excluded = user ? await blockedMembershipIds(user.id, id) : [];
+    const replies = await listReplies(postId, access.moderator, excluded);
     return NextResponse.json({ replies });
   } catch (error) {
     return NextResponse.json({ error: "unavailable" }, { status: dbFailureStatus(error) });

@@ -46,6 +46,8 @@ export default function SessionPanel({
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   const loadSessions = useCallback(async () => {
     const list = await api<{ sessions?: SessionSummary[] }>("/api/sessions");
@@ -84,6 +86,28 @@ export default function SessionPanel({
   }, [checkSession]);
 
   if (!ready || !dbEnabled) return null;
+
+  async function deleteAccount() {
+    if (deleteConfirm !== "delete my data") {
+      setError("Type “delete my data” to confirm account deletion.");
+      return;
+    }
+    setBusy(true);
+    const result = await api("/api/account/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: "delete my data" }),
+    });
+    setBusy(false);
+    if (result.status === 200) {
+      markSignedOut();
+      setSignedIn(false);
+      setSessions([]);
+      onNewSession();
+    } else {
+      setError("Account deletion did not complete. Try again.");
+    }
+  }
 
   async function signOut() {
     await api("/api/auth/signout", { method: "POST" });
@@ -195,7 +219,23 @@ export default function SessionPanel({
         </button>
         <button type="button" className="text-button" onClick={() => void exportData()}>Export my data</button>
         <button type="button" className="text-button" onClick={() => void signOut()}>Sign out</button>
+        <button type="button" className="text-button" onClick={() => setShowDelete((value) => !value)}>Delete my account…</button>
       </div>
+      {showDelete && (
+        <div className="notice">
+          <p>
+            <strong>Delete your account and all Harmonise data?</strong> This removes your profile, private sessions,
+            memberships, posts, and consents. Anything already sent to Meta cannot be erased by Harmonise.
+          </p>
+          <label className="field-label" htmlFor="delete-confirm">Type “delete my data” to confirm</label>
+          <input id="delete-confirm" value={deleteConfirm} onChange={(event) => setDeleteConfirm(event.target.value)} />
+          <div className="inline-actions">
+            <button type="button" className="button button-primary" disabled={busy} onClick={() => void deleteAccount()}>
+              Delete everything
+            </button>
+          </div>
+        </div>
+      )}
       <p className="small-note">
         <a href="/communities">Browse real communities</a> with this same account.
       </p>
