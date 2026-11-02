@@ -1,6 +1,6 @@
 # Harmonise Meta Integration: End-to-End Delivery Plan
 
-**Status:** Phases 0–1 implemented on `develop` (first keyed eval run pending); the remaining phases are tracked below.
+**Status:** Phases 0–2 implemented on `develop` (first keyed eval run pending); the remaining phases are tracked below.
 **Updated:** 2026-11-02
 **Primary model:** Muse Spark 1.3 Standard for text tasks.
 **Voice model:** Muse Voice Transcribe 1.0 for reviewed speech-to-text.
@@ -82,19 +82,19 @@ After Phase 0, **Phases 1, 2, and 3 can proceed independently** if each agent st
 
 **Can run in parallel with Phases 1 and 3. Owner:** privacy/backend design agent. **Exit:** a reviewed data-flow and threat model is approved before durable storage is implemented.
 
-- [ ] Map every field and boundary.
-  - [ ] Identify private chat, audio, transcript, tentative themes, user-confirmed themes, alias, post, report, and moderation decision.
-  - [ ] Mark which fields go to Meta, which are stored by Harmonise, which are visible to peers, and which are never shared.
-  - [ ] Document provider retention, deletion, training mode, and data residency from current official terms.
-- [ ] Decide the smallest identity model for a pilot.
-  - [ ] Compare anonymous session, pseudonymous account, and verified account requirements.
-  - [ ] Define user access, export, deletion, session expiry, and shared-device behavior.
-  - [ ] Specify authentication, authorization, server-side role checks, and database row-access policies.
-- [ ] Produce a data schema and migration plan.
-  - [ ] Separate private conversation records from community-facing content.
-  - [ ] Store exact consent version, audience, text approved, timestamp, and revocation state for each share action.
-  - [ ] Define encryption, retention windows, backups, deletion propagation, and audit retention.
-- [ ] Review the user-facing notices before sending real stories or audio to any provider.
+- [x] Map every field and boundary (`docs/DATA_PRIVACY_DESIGN.md`).
+  - [x] Identify private chat, audio, transcript, tentative themes, user-confirmed themes, alias, post, report, and moderation decision.
+  - [x] Mark which fields go to Meta, which are stored by Harmonise, which are visible to peers, and which are never shared.
+  - [x] Document provider retention, deletion, training mode, and data residency from current official terms.
+- [x] Decide the smallest identity model for a pilot (pseudonymous Supabase Auth account; anonymous kept for pre-signup chat only).
+  - [x] Compare anonymous session, pseudonymous account, and verified account requirements.
+  - [x] Define user access, export, deletion, session expiry, and shared-device behavior.
+  - [x] Specify authentication, authorization, server-side role checks, and database row-access policies.
+- [x] Produce a data schema and migration plan (`supabase/migrations/0001_harmonise_core.sql`, `supabase/seed.sql`).
+  - [x] Separate private conversation records from community-facing content.
+  - [x] Store exact consent version, audience, text approved, timestamp, and revocation state for each share action.
+  - [x] Define encryption, retention windows, backups, deletion propagation, and audit retention.
+- [x] Review the user-facing notices before sending real stories or audio to any provider.
 
 ## Phase 3 — Voice quality and accessibility
 
