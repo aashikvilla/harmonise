@@ -29,4 +29,4 @@
 - Set `COMMUNITY_REVIEWER_USER_IDS` before any proposal can be approved. Reviewer attestation is not a staffing schedule or proof of ongoing availability.
 - The moderation worker still has no scheduled invocation or named coverage. Helper behavior is advisory when queued events are processed, not continuous monitoring.
 - Full visitor → chat → match → join → history/reply → human response journey, role application/credential evidence flow, worker operations, and human review are still open in `PRODUCT_END_TO_END_JOURNEY_PLAN.md`.
-- Agent phase commits integrated locally: `a53de30` contribution levels and `c6538a7` community lifecycle/helper. Push waits until final verification and integrator commit.
+- Agent phase commits integrated: `a53de30` contribution levels, `c6538a7` community lifecycle/helper, and `a8275a0` UI/docs/browser journey. Pushed to `origin/codex/community-agent-creation` after verification. No merge to `main` or deployment was performed.
