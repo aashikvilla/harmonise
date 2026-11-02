@@ -3,6 +3,7 @@
 export type SessionStatus = "active" | "expired" | "deleted";
 export type MessageRole = "user" | "assistant";
 export type CommunityVisibility = "public" | "member";
+export type CommunityLaunchStatus = "pending_review" | "approved" | "rejected";
 export type MembershipRole = "member" | "moderator";
 export type MembershipStatus = "active" | "left" | "blocked";
 export type ConsentAction = "post" | "reply" | "question";
@@ -48,6 +49,21 @@ export type CommunityRow = {
   name: string;
   description: string;
   visibility: CommunityVisibility;
+  topics: string[];
+  launch_status: CommunityLaunchStatus;
+  created_by: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  coverage_confirmed_at: string | null;
+  created_at: string;
+};
+
+export type CommunityAgentRow = {
+  id: string;
+  community_id: string;
+  display_name: string;
+  status: "active" | "inactive";
+  community_context: { name?: string; description?: string; topics?: string[] };
   created_at: string;
 };
 

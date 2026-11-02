@@ -32,3 +32,10 @@
 - **Reason:** Activity volume is not evidence of trust, expertise, or skill. Deriving counts avoids persistent profile scores and excluding held/removed content, short text, and duplicate bodies limits trivial inflation without automated text judgment.
 - **Implementation:** A SQL aggregate counts eligible rows; the authenticated API only returns the caller's aggregate for an active membership. Verification changes require an active community moderator, are unavailable while the flag is off, and cannot self-verify.
 - **Revisit when:** Cohort feedback requires different labels or thresholds, or privacy review calls for a retention window or explicit timezone policy.
+
+## 2026-11-02 — Gate new communities on human coverage and bind advisory helpers per community
+
+- **Decision:** Existing communities remain approved; new communities begin in `pending_review`. A service-role-only transaction creates the community and owner membership, while a database trigger provisions one scoped AI helper row. A reviewer allowlist and explicit coverage confirmation are required to approve launch; approval assigns that reviewer as a human moderator.
+- **Reason:** Community creation must not imply public access or staffed moderation. Helper identity and per-community context must remain auditable without granting the model enforcement powers.
+- **Implementation:** Migration `0004_community_lifecycle.sql` adds lifecycle metadata, default-deny helper storage, provisioning trigger, and RPCs; API routes validate ownership and reviewer authorization; triage records the helper ID/display name alongside advisory output.
+- **Revisit when:** The pilot has a staffed moderation schedule and launch review workflow backed by an operational source of coverage assignments.
