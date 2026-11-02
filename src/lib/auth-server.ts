@@ -27,7 +27,10 @@ export async function supabaseAuth<T>(path: string, init: { method?: string; bod
     error.status = response.status;
     throw error;
   }
-  return (await response.json()) as T;
+  if (response.status === 204) return {} as T;
+  const text = await response.text();
+  if (!text) return {} as T;
+  return JSON.parse(text) as T;
 }
 
 export function setAuthCookies(response: NextResponse, accessToken: string, refreshToken: string) {

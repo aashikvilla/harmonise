@@ -49,7 +49,9 @@ export async function supabaseRest<T>(table: string, options: RestOptions = {}):
     throw new SupabaseError(response.status >= 500 ? 502 : response.status, code);
   }
   if (response.status === 204) return [] as unknown as T;
-  return (await response.json()) as T;
+  const text = await response.text();
+  if (!text) return [] as unknown as T;
+  return JSON.parse(text) as T;
 }
 
 export function selectSingle<T>(rows: T[]): T | null {
