@@ -386,7 +386,9 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
   }, [communityId]);
 
   useEffect(() => {
-    void loadAll();
+    void (async () => {
+      await loadAll();
+    })();
   }, [loadAll]);
 
   async function join() {

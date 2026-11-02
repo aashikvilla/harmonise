@@ -241,34 +241,36 @@ export async function blockMember(userId: string, communityId: string, alias: st
   const membership = await getMembership(userId, communityId);
   if (!membership) return { error: "not-found" };
   if (membership.status !== "active") return { error: "forbidden" };
-  const target = selectSingle(
-    await supabaseRest<MembershipRow[]>("memberships", {
-      query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id,alias`,
-    }),
-  );
-  if (!target) return { error: "no-such-member" };
-  if (target.id === membership.id) return { error: "cannot-block-self" };
-  await supabaseRest("member_blocks", {
-    method: "POST",
-    body: { blocker_membership_id: membership.id, blocked_membership_id: target.id, community_id: communityId },
-    prefer: "resolution=ignore-duplicates",
+  if (membership.alias === alias) return { error: "cannot-block-self" };
+  const targets = await supabaseRest<MembershipRow[]>("memberships", {
+    query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id`,
   });
+  const others = targets.filter((target) => target.id !== membership.id);
+  if (others.length === 0) return { error: "no-such-member" };
+  for (const target of others) {
+    await supabaseRest("member_blocks", {
+      method: "POST",
+      body: { blocker_membership_id: membership.id, blocked_membership_id: target.id, community_id: communityId },
+      prefer: "resolution=ignore-duplicates",
+    });
+  }
   return { ok: true };
 }
 
 export async function unblockMember(userId: string, communityId: string, alias: string): Promise<BlockResult> {
   const membership = await getMembership(userId, communityId);
   if (!membership) return { error: "not-found" };
-  const target = selectSingle(
-    await supabaseRest<MembershipRow[]>("memberships", {
-      query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id,alias`,
-    }),
-  );
-  if (!target) return { error: "no-such-member" };
-  await supabaseRest("member_blocks", {
-    method: "DELETE",
-    query: `?blocker_membership_id=eq.${membership.id}&blocked_membership_id=eq.${target.id}`,
+  const targets = await supabaseRest<MembershipRow[]>("memberships", {
+    query: `?community_id=eq.${communityId}&alias=eq.${encodeURIComponent(alias)}&select=id`,
   });
+  const others = targets.filter((target) => target.id !== membership.id);
+  if (others.length === 0) return { error: "no-such-member" };
+  for (const target of others) {
+    await supabaseRest("member_blocks", {
+      method: "DELETE",
+      query: `?blocker_membership_id=eq.${membership.id}&blocked_membership_id=eq.${target.id}`,
+    });
+  }
   return { ok: true };
 }
 

@@ -203,12 +203,12 @@ Direct concurrent pushes to `main` are excluded because agents can race, overwri
 
 ### Merge gate for every phase
 
-- [ ] Scope matches the phase; no unrelated changes or hidden secrets.
-- [ ] `npm run lint`, `npm run typecheck`, and `npm run build` pass.
-- [ ] Relevant mocked browser E2E passes without spending provider credits.
+- [x] Scope matches the phase; no unrelated changes or hidden secrets. (Diff scanned: no `sbp_`/`sk-`/service-role material; `.env.local` ignored.)
+- [x] `npm run lint`, `npm run typecheck`, and `npm run build` pass. (All green on `develop`, 2026-11-02.)
+- [x] Relevant mocked browser E2E passes without spending provider credits. (Full `npm run test:e2e`: 78/78 on desktop + mobile against live Supabase; no model credits spent.)
 - [ ] Live model checks use synthetic text/audio only, record usage metadata only, and remain under the phase budget.
-- [ ] Human-review, consent, privacy, crisis, empty, loading, error, and retry states are checked where relevant.
-- [ ] Plan and session/decision notes are updated with evidence and any discovered risk.
+- [x] Human-review, consent, privacy, crisis, empty, loading, error, and retry states are checked where relevant. (Covered by live journeys: consent-version rejection, second-user isolation, moderation/appeal flow, signed-out guards, plus truthful-state UI specs.)
+- [x] Plan and session/decision notes are updated with evidence and any discovered risk. (Session journal updated; CSS layering + E2E serialization lessons recorded.)
 
 ## Budget and evidence rules
 

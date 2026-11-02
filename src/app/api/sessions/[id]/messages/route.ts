@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { bodyTooLarge, parseJsonBody } from "@/lib/api-guard";
-import { checkRateLimit } from "@/lib/meta-model";
+import { checkUserRateLimit } from "@/lib/meta-model";
 import { dbFailureStatus, getAuthUser, isDatabaseConfigured, isUuid } from "@/lib/db/supabase";
 import { appendMessage } from "@/lib/db/sessions";
 
@@ -10,9 +10,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
   if (!isDatabaseConfigured()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
   if (!isUuid(id)) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  if (await checkRateLimit(request, "session-messages", 60)) return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   const user = await getAuthUser(request);
   if (!user) return NextResponse.json({ error: "signed-out" }, { status: 401 });
+  if (await checkUserRateLimit(user.id, "session-messages", 60)) return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   if (bodyTooLarge(request, 12_000)) return NextResponse.json({ error: "invalid" }, { status: 413 });
   const parsed = await parseJsonBody(request);
   const record = (parsed.ok && typeof parsed.value === "object" && parsed.value !== null ? parsed.value : {}) as Record<string, unknown>;

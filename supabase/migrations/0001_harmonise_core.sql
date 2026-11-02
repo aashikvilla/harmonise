@@ -190,7 +190,7 @@ create policy "understanding_owner_all" on public.session_understanding for all
 create policy "communities_public_read" on public.communities for select
   using (visibility = 'public' or exists (
     select 1 from public.memberships m
-    where m.community_id = id and m.user_id = auth.uid() and m.status = 'active'
+    where m.community_id = communities.id and m.user_id = auth.uid() and m.status = 'active'
   ));
 
 -- Memberships: users manage their own row; moderators read their community.

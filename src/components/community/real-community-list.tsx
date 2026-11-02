@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { overlappingThemes, THEME_LABELS } from "@/lib/community-topics";
 
 type Community = {
@@ -24,17 +25,14 @@ async function getJson<T>(path: string): Promise<{ status: number; body: T | nul
 export default function RealCommunityList() {
   const [state, setState] = useState<"loading" | "unavailable" | "error" | "ready">("loading");
   const [communities, setCommunities] = useState<Community[]>([]);
-  const [confirmedThemes, setConfirmedThemes] = useState<string[]>([]);
+  const [confirmedThemes] = useState<string[]>(() =>
+    typeof window === "undefined"
+      ? []
+      : (new URLSearchParams(window.location.search).get("themes")?.split(",").map((theme) => theme.trim()).filter(Boolean) ?? []),
+  );
 
   useEffect(() => {
     let cancelled = false;
-    setConfirmedThemes(
-      new URLSearchParams(window.location.search)
-        .get("themes")
-        ?.split(",")
-        .map((theme) => theme.trim())
-        .filter(Boolean) ?? [],
-    );
     (async () => {
       const config = await getJson<{ databaseEnabled?: unknown }>("/api/auth/config");
       if (cancelled) return;
@@ -125,12 +123,12 @@ export default function RealCommunityList() {
                 <p className="mt-2 text-sm text-[var(--muted)]">Not related to your confirmed themes — shown for browsing.</p>
               );
             })()}
-          <a
+          <Link
             href={`/communities/${community.id}`}
             className="mt-4 inline-block rounded-full bg-[var(--ink)] px-5 py-2.5 text-white"
           >
             View community
-          </a>
+          </Link>
         </li>
       ))}
     </ul>

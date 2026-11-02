@@ -45,3 +45,28 @@ plus an empty-response-body hardening fix with this journal.
 
 Keyed eval runs, device-matrix + manual AT passes, live-DB verification (Supabase +
 test-user JWTs), pilot owner names, human review sign-offs, deletion drill.
+
+## Live verification + stabilization (same day, still on `develop`)
+
+- Supabase cloud project `harmonise` (`qgrnbjwyueuewfdlcudd`, Aashik org,
+  ap-south-1) created via CLI; migrations 0001 + 0002 applied; 3 communities
+  seeded. `.env.local` points at it (keys never printed or committed).
+- Fixes from live testing: per-user rate limits on authenticated routes
+  (`checkUserRateLimit`), moderator-only seeder joins, per-project test users +
+  alias tags, leave-before-join normalization, block self-check by alias with
+  multi-row handling, `communities.id` RLS fix.
+- Flaky parallel journeys consolidated into `tests/live-journeys.spec.ts`
+  (serial per file; parallel across desktop/mobile projects) with a 120s file
+  timeout for the live backend.
+- Browser pass found a real bug: unlayered `a`/`button` resets in
+  `src/app/globals.css` beat Tailwind's layered `text-white`, rendering 11
+  dark-pill labels invisible ink-on-ink. Fix: resets + form element defaults
+  moved into `@layer base`; verified white-on-ink in Chromium + screenshot.
+- Final: `npm run lint`, `npm run typecheck`, `npm run build` clean;
+  `npm run test:e2e` 78/78 passed (desktop + mobile, live Supabase, no model
+  credits). Screenshots of home/talk/communities/moderation captured.
+- Still open: `MODEL_API_KEY` never provided (live chat/advice/triage/voice +
+  `eval:live` unverified); manual AT pass; pilot gates (owners, hours, support,
+  sign-offs, deletion drill, rollback rehearsal, spend alerts).
+- Push: `git push origin develop` still needs an approved shell (6 escalated
+  attempts denied); remote has Phase 1 only. No merge to `main` yet.

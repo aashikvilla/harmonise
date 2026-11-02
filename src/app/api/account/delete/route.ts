@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logRouteCall, newRequestId, parseJsonBody } from "@/lib/api-guard";
-import { checkRateLimit } from "@/lib/meta-model";
+import { checkUserRateLimit } from "@/lib/meta-model";
 import { dbFailureStatus, getAuthUser, isDatabaseConfigured } from "@/lib/db/supabase";
 import { deleteAccount } from "@/lib/db/sessions";
 import { clearAuthCookies } from "@/lib/auth-server";
@@ -12,9 +12,9 @@ export async function POST(request: Request) {
   const requestId = newRequestId();
   const started = Date.now();
   if (!isDatabaseConfigured()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
-  if (await checkRateLimit(request, "account-delete", 3)) return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   const user = await getAuthUser(request);
   if (!user) return NextResponse.json({ error: "signed-out" }, { status: 401 });
+  if (await checkUserRateLimit(user.id, "account-delete", 3)) return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   const parsed = await parseJsonBody(request);
   const record = (parsed.ok && typeof parsed.value === "object" && parsed.value !== null ? parsed.value : {}) as Record<string, unknown>;
   if (record.confirm !== "delete my data") {

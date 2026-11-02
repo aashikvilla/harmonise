@@ -179,6 +179,11 @@ export async function checkRateLimit(request: Request, scope: string, maxRequest
   return activeRateLimitStore.checkAndRecord(clientKey(request, scope), maxRequests, windowMs);
 }
 
+/** Per-account limiting for authenticated routes (no NAT collateral, no cross-user interference). */
+export async function checkUserRateLimit(userId: string, scope: string, maxRequests: number, windowMs = 60_000) {
+  return activeRateLimitStore.checkAndRecord(`user:${scope}:${userId}`, maxRequests, windowMs);
+}
+
 const legacyMemoryStore = createMemoryRateLimitStore();
 
 /** Synchronous single-instance limiter. Prefer {@link checkRateLimit} in routes. */

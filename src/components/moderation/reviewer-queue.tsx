@@ -104,11 +104,15 @@ export default function ReviewerQueue() {
   }, [communityId]);
 
   useEffect(() => {
-    void loadAssignments();
+    void (async () => {
+      await loadAssignments();
+    })();
   }, [loadAssignments]);
 
   useEffect(() => {
-    void loadQueue();
+    void (async () => {
+      await loadQueue();
+    })();
   }, [loadQueue]);
 
   async function decide(reportId: string, decision: string) {
@@ -148,7 +152,7 @@ export default function ReviewerQueue() {
   if (status === "unavailable") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">Moderation isn't connected yet</h2>
+        <h2 className="text-xl font-semibold">Moderation isn&apos;t connected yet</h2>
         <p className="mt-2 text-[var(--muted)]">The review queue appears once the database is connected and you hold a moderator role.</p>
       </div>
     );

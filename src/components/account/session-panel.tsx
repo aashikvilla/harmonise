@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import AuthCard from "@/components/account/auth-card";
 import { markSignedOut, setSyncSession } from "@/lib/session-sync";
 
@@ -237,7 +238,7 @@ export default function SessionPanel({
         </div>
       )}
       <p className="small-note">
-        <a href="/communities">Browse real communities</a> with this same account.
+        <Link href="/communities">Browse real communities</Link> with this same account.
       </p>
     </section>
   );
