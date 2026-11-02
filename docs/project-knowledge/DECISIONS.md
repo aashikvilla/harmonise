@@ -25,3 +25,10 @@
 - **Decision:** Parallel coding agents work in isolated branches/worktrees; one integrator merges and pushes each accepted phase to `main`, then starts the next phase from updated `main`.
 - **Reason:** Multiple agents pushing directly to `main` can race and integrate incompatible changes without a shared merge gate.
 - **Revisit when:** CI, branch protection, and an explicitly approved merge queue provide equivalent serialized guarantees.
+
+## 2026-11-02 — Keep community activity levels separate from verified roles
+
+- **Decision:** Derive community-scoped activity levels from currently visible member-authored posts and replies of at least 20 trimmed characters. Count normalized identical text once across posts and replies, with distinct UTC active-day thresholds. Keep human-verified role labels in a separate moderator-reviewed table, behind the server-only `COMMUNITY_ROLE_VERIFICATION_ENABLED` flag.
+- **Reason:** Activity volume is not evidence of trust, expertise, or skill. Deriving counts avoids persistent profile scores and excluding held/removed content, short text, and duplicate bodies limits trivial inflation without automated text judgment.
+- **Implementation:** A SQL aggregate counts eligible rows; the authenticated API only returns the caller's aggregate for an active membership. Verification changes require an active community moderator, are unavailable while the flag is off, and cannot self-verify.
+- **Revisit when:** Cohort feedback requires different labels or thresholds, or privacy review calls for a retention window or explicit timezone policy.
