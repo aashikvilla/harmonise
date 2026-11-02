@@ -26,5 +26,5 @@
 ## Release status
 
 - Pushed the validated feature branch to `origin/journey/end-to-end-2026-11-03`; latest preview deployment for `a24d840` is READY. Its readiness endpoint reports database credentials are not configured for this preview environment.
-- Production `main` still pointed at `75dade0` at the time of this journal entry; fast-forward it after review and confirm its Vercel production deployment before calling the cron fix released.
+- Fast-forwarded `main` to `daf0a95`. Vercel production deployment `dpl_92JWZ4nvqv19Mxs2oDw5tWZoMQNq` is READY on that commit; the homepage returns HTTP 200 and `/api/ready` returns HTTP 200 with database and model configured and the database reachable. The Hobby-compatible daily cron config is now included in the successful production deployment.
 - The daily worker still processes one queue item per run and does not provide continuous human moderation coverage.
