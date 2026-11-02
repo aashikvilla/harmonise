@@ -60,10 +60,10 @@ export function CommunityGuide({ communityId, communityName }: Props) {
         <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold">Private reply</span>
       </div>
       <p className="mt-2 text-sm text-[var(--muted)]">
-        Ask about {communityName}’s purpose or topics. The guide uses only this community’s approved description and topic list; it does not read member posts or your private chats.
+        Ask about {communityName}’s purpose, included or adjacent topics, or community norms. The guide uses this community’s approved scope package and public details; it does not read member posts or your private chats.
       </p>
       <p className="mt-2 text-sm text-[var(--muted)]">
-        When you ask, your question and this community’s scope are sent to Meta AI for a response. Avoid names or details that identify you. The guide is not a human moderator or professional service, and no one is alerted by your question.
+        When you ask, your question, approved scope package, and public community details are sent to Meta AI for a response. Avoid names or details that identify you. The guide is not a human moderator or professional service, and no one is alerted by your question.
       </p>
       <form onSubmit={(event) => void ask(event)} className="mt-4 grid gap-3">
         <label htmlFor={`guide-question-${communityId}`} className="text-sm font-semibold">What would you like to know?</label>
@@ -75,7 +75,7 @@ export function CommunityGuide({ communityId, communityName }: Props) {
           rows={3}
           disabled={state === "loading"}
           className="w-full resize-y rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3 text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--teal-dark)] disabled:opacity-70"
-          placeholder="For example: what kinds of conversations fit here?"
+          placeholder="For example: what kinds of conversations fit here, and what is outside the scope?"
           aria-describedby={`guide-help-${communityId}`}
         />
         <div id={`guide-help-${communityId}`} className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--muted)]">
@@ -96,7 +96,7 @@ export function CommunityGuide({ communityId, communityName }: Props) {
       {state === "ready" && (
         <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4" aria-live="polite">
           <p className="whitespace-pre-wrap text-sm leading-relaxed">{answer}</p>
-          {decision === "answer" && <p className="mt-3 text-xs text-[var(--muted)]">Based only on this community’s approved description and topics.</p>}
+          {decision === "answer" && <p className="mt-3 text-xs text-[var(--muted)]">Based only on this community’s approved scope and public details.</p>}
           {decision === "urgent" && (
             <p className="mt-3 text-xs text-[var(--muted)]">
               This guide did not send your question to Meta. Find a verified local helpline at{" "}
