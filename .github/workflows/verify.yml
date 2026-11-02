@@ -2,14 +2,22 @@ name: Verify Harmonise build
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
+  pull_request:
   workflow_dispatch:
+    inputs:
+      live_smoke:
+        description: "Run the budgeted synthetic live-provider smoke (spends Meta credits)"
+        required: false
+        default: "no"
+        type: choice
+        options: ["no", "yes-5-calls"]
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-harmonise
+  group: verify-harmonise-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -33,3 +41,49 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run deterministic browser E2E (fully stubbed, no provider calls)
+        run: npm run test:e2e
+        env:
+          CI: "true"
+
+  live-smoke:
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.live_smoke == 'yes-5-calls'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Start server
+        run: npm run build && (npm run start -- --hostname 127.0.0.1 --port 3000 &>/tmp/harmonise-start.log & echo $! >/tmp/harmonise-server.pid)
+        env:
+          MODEL_API_KEY: ${{ secrets.MODEL_API_KEY }}
+      - name: Wait for readiness
+        run: npx wait-on http://127.0.0.1:3000/api/ready --timeout 120000
+      - name: Budgeted synthetic smoke (5 calls, metadata only)
+        run: npm run eval:live -- --base-url http://127.0.0.1:3000 --max-calls 5 --max-tokens 5000
+      - name: Stop server
+        if: always()
+        run: kill $(cat /tmp/harmonise-server.pid) || true

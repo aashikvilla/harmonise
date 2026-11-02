@@ -17,8 +17,8 @@
 ## 2026-11-02 — Keep moderation human-led
 
 - **Decision:** Model output may classify and prioritize reported content, but cannot enforce a moderation action.
-- **Reason:** There is no live community backend, staffed review queue, or validated automated enforcement policy. A model result alone cannot safely hide or remove content.
-- **Revisit when:** A real community, authorized reviewer process, appeals, evaluation data, and an approved policy exist. Human decisions remain required even then unless separately approved.
+- **Reason:** A live database, queue, reviewer UI, and appeal path now exist, but there is no staffed moderator rota and automated enforcement is not validated. A model result alone cannot safely hide or remove content.
+- **Revisit when:** Human staffing and support sign-offs, production authorization checks, appeals, representative evaluation data, and an approved policy are in place. Human decisions remain required unless separately approved.
 
 ## 2026-11-02 — Serialize releases to `main`
 

@@ -19,6 +19,8 @@ import {
 import { hasFamilyContext } from "@/lib/conversation";
 import { arjunVisits, type VisitTurn } from "@/lib/arjun-visits";
 import { historicalThread, type HistoricalDay } from "@/lib/historical-thread";
+import SessionPanel, { type ResumePayload } from "@/components/account/session-panel";
+import { saveConversation, setSyncSession } from "@/lib/session-sync";
 
 const navItems = [
   { label: "My Space", screen: "conversation" as const },
@@ -201,6 +203,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const [transcriptDraft, setTranscriptDraft] = useState("");
   const [recordingAudio, setRecordingAudio] = useState<Blob | null>(null);
   const [transcribing, setTranscribing] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [triageLoading, setTriageLoading] = useState(false);
   const [triageResult, setTriageResult] = useState<{ concern: string; severity: string; rationale: string; recommendedAction: string } | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -209,6 +212,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
   const recordingTimerRef = useRef<number | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const transcriptAreaRef = useRef<HTMLTextAreaElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousScreenRef = useRef(state.screen);
   const community = activeCommunity(state);
@@ -239,6 +243,19 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
     if (recordingTimerRef.current !== null) window.clearTimeout(recordingTimerRef.current);
   }, []);
+  useEffect(() => {
+    if (transcriptDraft) transcriptAreaRef.current?.focus();
+  }, [transcriptDraft]);
+  // Navigation must drop in-memory audio and drafts; intentional reset, not derived state.
+
+  useEffect(() => {
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    recorderRef.current = null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- navigation reset, not derived state
+    setRecordingAudio(null); setTranscriptDraft(""); setRecordingState("idle");
+  }, [state.screen]);
 
   function navigate(screen: (typeof navItems)[number]["screen"]) {
     if (screen === "conversation") stateDispatch({ type: "OPEN_CONVERSATION" });
@@ -348,6 +365,13 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         setTopicChats((chats) => ({ ...chats, [spaceTopic]: next }));
         setSuggestedThemes(result.suggestedThemes.filter((theme): theme is ThemeId => typeof theme === "string" && Object.hasOwn(themeLabels, theme)));
         setSuggestedNeed({ summary: result.needSummary, type: result.supportNeed as SupportNeed });
+        void saveConversation(next.map((turn) => ({ role: turn.role, text: turn.text })), {
+          suggestedThemes: result.suggestedThemes.filter((theme): theme is ThemeId => typeof theme === "string" && Object.hasOwn(themeLabels, theme)),
+          confirmedThemes: [],
+          supportNeed: result.supportNeed,
+          needSummary: result.needSummary,
+          correctionRequested,
+        });
         setCorrectedUnderstanding(result.needSummary);
         setCorrectionRequested(false);
         if (state.isFeaturedJourney) {
@@ -363,6 +387,38 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       }
     }
 
+    function resumeSession(payload: ResumePayload) {
+      const turns = payload.turns.map((turn, index) => ({ id: `srv-${payload.sessionId}-${index}`, role: turn.role, text: turn.text }));
+      setChatTurns(turns);
+      setTopicChats((chats) => ({ ...chats, [spaceTopic]: turns }));
+      setComposer("");
+      setChatError("");
+      const supportedNeeds = ["human-perspective", "quiet-reading", "shared-activity", "not-sure"];
+      setSuggestedThemes((payload.understanding?.suggested ?? []).filter((theme): theme is ThemeId => Object.hasOwn(themeLabels, theme)));
+      setSuggestedNeed({ summary: payload.understanding?.summary ?? "", type: (supportedNeeds.includes(payload.understanding?.need ?? "") ? payload.understanding?.need : "not-sure") as SupportNeed });
+      setCorrectedUnderstanding(payload.understanding?.summary ?? "");
+      setUnderstandingConfirmed((payload.understanding?.confirmed.length ?? 0) > 0);
+      setCorrectionRequested(false);
+      setActiveSessionId(payload.sessionId);
+    }
+
+    function beginNewServerSession() {
+      setChatTurns([]);
+      setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] }));
+      setComposer("");
+      setChatError("");
+      setSuggestedThemes([]);
+      setSuggestedNeed({ summary: "", type: "not-sure" });
+      setCorrectedUnderstanding("");
+      setUnderstandingConfirmed(false);
+      setCorrectionRequested(false);
+      setActiveSessionId(null);
+    }
+
+    function handleSessionDeleted(id: string) {
+      if (id === activeSessionId) beginNewServerSession();
+    }
+
     async function startRecording() {
       setRecordingError("");
       setRecordingAudio(null);
@@ -375,7 +431,14 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaStreamRef.current = stream;
-        const recorder = new MediaRecorder(stream);
+        const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) => {
+          try {
+            return typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(candidate);
+          } catch {
+            return false;
+          }
+        });
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
         recordingChunksRef.current = [];
         recorder.ondataavailable = (event) => {
           if (event.data.size > 0) recordingChunksRef.current.push(event.data);
@@ -389,9 +452,17 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           if (cancelledRecordingRef.current) return;
           try {
             const recording = new Blob(recordingChunksRef.current, { type: recorder.mimeType || "audio/webm" });
-            if (!recording.size) throw new Error("empty recording");
+            if (!recording.size) {
+              setRecordingState("idle");
+              setRecordingError("No audio was captured. Check your microphone, then try again or type your message.");
+              return;
+            }
             const wav = await encodeMonoPcmWav(recording);
-            if (wav.size > 8 * 1024 * 1024) throw new Error("recording too large");
+            if (wav.size > 8 * 1024 * 1024) {
+              setRecordingState("idle");
+              setRecordingError("That recording is longer than the 2-minute limit. Try a shorter recording or type your message.");
+              return;
+            }
             setRecordingAudio(wav);
             setRecordingState("review");
           } catch {
@@ -440,15 +511,27 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       try {
         const form = new FormData();
         form.append("audio", recordingAudio, "recording.wav");
-        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form });
+        const response = await fetch("/api/voice/transcribe", { method: "POST", body: form, signal: AbortSignal.timeout(60_000) });
         const payload: unknown = await response.json().catch(() => null);
         const transcript = payload && typeof payload === "object" ? (payload as Record<string, unknown>).transcript : null;
+        if (response.status === 413) {
+          setRecordingError("That recording is too large to transcribe. Try a shorter recording or type your words.");
+          return;
+        }
+        if (response.status === 429 || response.status === 503) {
+          setRecordingError("Meta Voice is busy right now. Your recording is kept for review; try again in a moment or type your words.");
+          return;
+        }
         if (!response.ok || typeof transcript !== "string" || !transcript.trim()) {
           setRecordingError("Meta Voice couldn’t transcribe this recording. You can try again or type your words.");
           return;
         }
         setTranscriptDraft(transcript.trim());
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.name === "TimeoutError") {
+          setRecordingError("Transcription timed out. Your recording is kept for review; try again or type your words.");
+          return;
+        }
         setRecordingError("Meta Voice couldn’t be reached. You can try again or type your words.");
       } finally {
         setTranscribing(false);
@@ -471,6 +554,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         <p className="small-note">{arjunVisits.find((visit) => visit.id === activeVisitId)?.intention}. Choose any visit; history stays in this browser tab. Restart clears it.</p>
       </section>}
       <section className="panel conversation-panel organic-chat" aria-label="Conversation">
+        <SessionPanel activeSessionId={activeSessionId} onResume={resumeSession} onNewSession={beginNewServerSession} onSessionDeleted={handleSessionDeleted} />
         <div className="chat-provenance">Meta AI · Muse Spark · Review each response and suggested theme</div>
         <div className="chat-log" aria-live="polite" aria-relevant="additions text">
         {chatTurns.length === 0 && <article className="conversation-turn turn-guide"><span>Harmonise · fictional assistant</span><p>We can take this slowly. Is this mainly about something happening with someone, or how you’ve been feeling? You can also just tell me a little more.</p></article>}
@@ -500,7 +584,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
         </section>}
         {recordingState === "recording" && <div className="voice-review" role="status"><strong>Recording · up to 2 minutes</strong><span>Audio stays in this browser until you choose “Transcribe with Meta”.</span><div className="inline-actions"><SecondaryButton onClick={stopRecording}>Stop and review</SecondaryButton><button className="text-button" onClick={cancelRecording}>Cancel recording</button></div></div>}
         {recordingState === "processing" && <div className="voice-review" role="status"><strong>Preparing your recording…</strong><span>Audio is being converted in this browser. It has not been sent to Meta yet.</span></div>}
-        {recordingState === "review" && <div className="voice-review"><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); }}>Use this in my message</PrimaryButton></div></>}</div>}
+        {recordingState === "review" && <div className="voice-review"><p className="sr-only" role="status">{transcribing ? "Transcribing your recording with Meta Voice." : transcriptDraft ? "Transcript ready. Review and edit it before sending." : "Recording ready for review. Nothing has been sent to Meta yet."}</p><strong>Review before sending</strong><p>When you choose “Transcribe with Meta”, this recording is sent to Meta Voice Transcribe. Review and edit the transcript, then send it as a chat message.</p><div className="inline-actions"><PrimaryButton onClick={() => { void transcribeRecording(); }} disabled={!recordingAudio || transcribing}>{transcribing ? "Transcribing…" : "Transcribe with Meta"}</PrimaryButton><SecondaryButton onClick={cancelRecording}>Cancel</SecondaryButton></div>{transcriptDraft && <><label className="field-label" htmlFor="voice-transcript">Review and edit the transcript</label><textarea ref={transcriptAreaRef} id="voice-transcript" rows={3} value={transcriptDraft} onChange={(event) => setTranscriptDraft(event.target.value)}/><p className="preview-provenance">Transcript from Meta Voice Transcribe · editable here · audio is deleted when you cancel or leave · nothing is sent to chat until you press Send.</p><div className="inline-actions"><PrimaryButton onClick={() => { setComposer(transcriptDraft); setRecordingState("idle"); setRecordingAudio(null); setTranscriptDraft(""); document.getElementById("chat-input")?.focus(); }}>Use this in my message</PrimaryButton></div></>}</div>}
         {recordingError && <Notice>{recordingError}</Notice>}
         <form className="chat-composer" onSubmit={(event) => { event.preventDefault(); sendChat(); }}>
           <label className="sr-only" htmlFor="chat-input">Your message</label>
@@ -508,7 +592,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           <div className="composer-actions"><span>Enter to send · Shift+Enter for a new line</span><div><SecondaryButton onClick={startRecording} disabled={chatPending || recordingState === "recording" || recordingState === "processing"}>Use voice</SecondaryButton><PrimaryButton type="submit" disabled={!composer.trim() || chatPending}>{chatPending ? "Thinking…" : "Send"}</PrimaryButton></div></div>
         </form>
       </section>
-      <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); }}>Start a fresh conversation</button></div>
+      <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore quietly</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>How information is used</button><button className="text-button" onClick={() => { setChatTurns([]); setTopicChats((chats) => ({ ...chats, [spaceTopic]: [] })); setComposer(""); setUnderstandingConfirmed(false); setActiveSessionId(null); setSyncSession(null); }}>Start a fresh conversation</button></div>
       <div className="space-start-links"><button className="text-button" onClick={() => setComposer("I'm not sure where to start.")}>Not sure where to start</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_DISCOVERY" })}>Explore communities</button><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_HELP" })}>Find a person to talk to</button></div>
     </>;
   }
@@ -568,7 +652,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
           <div className="card-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_COMMUNITY", communityId: item.id })}>Explore community</SecondaryButton><button className="text-button" onClick={() => { stateDispatch({ type: "OPEN_COMMUNITY", communityId: item.id }); stateDispatch({ type: "SET_COMMUNITY_TAB", tab: "experiences" }); }}>Read experiences</button></div>
         </article>)}
       </div>}
-      <div className="discovery-footer-actions"><SecondaryButton onClick={() => stateDispatch({ type: "SET_NO_MATCH", value: true })}>None of these feels relevant</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_UNDERSTANDING" })}>Change themes</button></div>
+      <div className="discovery-footer-actions"><SecondaryButton onClick={() => stateDispatch({ type: "SET_NO_MATCH", value: true })}>None of these feels relevant</SecondaryButton><button className="text-button" onClick={() => stateDispatch({ type: "OPEN_UNDERSTANDING" })}>Change themes</button><Link className="text-button" href={state.confirmedThemes.length ? `/communities?themes=${state.confirmedThemes.join(",")}` : "/communities"}>Browse live communities</Link></div>
     </>;
   }
 
@@ -797,6 +881,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       <div className="inline-actions"><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_PROFESSIONAL" })}>Explore professional support</SecondaryButton><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_MODERATION" })}>Review a reported post</SecondaryButton><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_CONNECTIONS" })}>Connection choices</SecondaryButton></div>
       <section className="panel urgent-panel"><h2>If you may be in immediate danger</h2><p>Contact local emergency services or someone you trust. In India, emergency number 112 is listed in the supplied project guidance; confirm local availability before relying on any service information.</p><p>No messages are monitored and safety is not assessed here.</p></section>
       <p className="small-note">Leaving the page is a navigation convenience. It does not erase browser history or activity on a shared device.</p>
+      <section className="panel" aria-label="How Harmonise works"><h2>How Harmonise works</h2><p>Harmonise is a private-first peer reflection space: talk things through privately, review a tentative understanding, then decide for yourself whether to explore communities.</p><h3>What is sent to Meta, and when</h3><ul><li>Chat messages — only when you press Send, for a Muse Spark response.</li><li>Voice recordings — only when you choose Transcribe with Meta; the transcript stays editable before sending.</li><li>Adviser messages — only when you send them from the adviser screen.</li><li>Reported-post text — only when a review flow runs AI triage.</li></ul><p>Copies already sent to Meta cannot be erased by Harmonise.</p><h3>Limitations</h3><ul><li>Messages here are never monitored, and safety is never assessed in this demo space.</li><li>AI suggestions are tentative: they never decide, diagnose, or take action.</li><li>Community content in this demo story is fictional unless you are browsing live communities.</li></ul><h3>Alternatives</h3><p>If you want something else: a trusted person, local support services, a qualified professional, or a verified helpline such as <a href="https://findahelpline.com/" target="_blank" rel="noreferrer">findahelpline.com</a>.</p><p><Link href="/communities">Browse live communities</Link> · <Link href="/moderation">Moderation review (reviewers only)</Link></p></section>
     </>;
   }
 

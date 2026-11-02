@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { detectCrisis } from "@/lib/connect/catalog";
-import { isRateLimited, modelFailureStatus, requestMetaChat } from "@/lib/meta-model";
+import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeaders } from "@/lib/api-guard";
+import { checkRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatDetailed } from "@/lib/meta-model";
+import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
+import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 
 export const runtime = "nodejs";
 
@@ -56,34 +59,51 @@ function validTriage(value: unknown) {
 }
 
 export async function POST(request: Request) {
-  if (isRateLimited(request, "moderation", 30)) {
-    return NextResponse.json({ error: "rate-limited" }, { status: 429 });
+  const requestId = newRequestId();
+  const started = Date.now();
+  const finish = (
+    body: unknown,
+    status: number,
+    outcome: "ok" | "invalid" | "rate-limited" | "crisis-screened" | "unavailable" | "error",
+    meta?: { providerLatencyMs?: number; usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number }; errorKind?: string },
+  ) => {
+    logRouteCall({ route: "/api/moderation/triage", status, latencyMs: Date.now() - started, requestId, outcome, ...meta });
+    return withMetaHeaders(NextResponse.json(body, { status }), { requestId, ...meta });
+  };
+
+  if (isKillSwitchOn()) {
+    recordKillSwitchDrop();
+    return finish({ error: "unavailable" }, 503, "unavailable", { errorKind: "kill-switch" });
   }
-  if (Number(request.headers.get("content-length") ?? "0") > 5_000) {
-    return NextResponse.json({ error: "invalid" }, { status: 413 });
+  const quotaUser = await userIdForQuota(request);
+  if (quotaUser && checkUserQuota(quotaUser, "triage")) {
+    recordQuotaDrop();
+    return finish({ error: "rate-limited" }, 429, "rate-limited");
   }
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "invalid" }, { status: 400 });
+  if (await checkRateLimit(request, "moderation", 30)) {
+    return finish({ error: "rate-limited" }, 429, "rate-limited");
   }
-  const record = (typeof body === "object" && body !== null ? body : {}) as Record<string, unknown>;
-  if (typeof record.text !== "string") return NextResponse.json({ error: "invalid" }, { status: 400 });
+  if (bodyTooLarge(request, 5_000)) {
+    return finish({ error: "invalid" }, 413, "invalid");
+  }
+  const parsed = await parseJsonBody(request);
+  if (!parsed.ok) return finish({ error: "invalid" }, 400, "invalid");
+  const record = (typeof parsed.value === "object" && parsed.value !== null ? parsed.value : {}) as Record<string, unknown>;
+  if (typeof record.text !== "string") return finish({ error: "invalid" }, 400, "invalid");
   const text = record.text.trim();
-  if (!text || text.length > 3000) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  if (!text || text.length > 3000) return finish({ error: "invalid" }, 400, "invalid");
 
   if (detectCrisis(text)) {
-    return NextResponse.json({
+    return finish({
       concern: "self-harm",
       severity: "urgent",
       rationale: "The post matched a safety phrase that needs immediate human review.",
       recommendedAction: "urgent-human-review",
-    });
+    }, 200, "crisis-screened");
   }
 
   try {
-    const raw = await requestMetaChat({
+    const result = await requestMetaChatDetailed({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Triage this reported community post:\n\n${text}` },
@@ -92,9 +112,17 @@ export async function POST(request: Request) {
       temperature: 0,
       responseFormat: RESPONSE_FORMAT,
     });
-    const result = validTriage(JSON.parse(raw) as unknown);
-    return result ? NextResponse.json(result) : NextResponse.json({ error: "unavailable" }, { status: 502 });
+    let triage: ReturnType<typeof validTriage> = null;
+    try {
+      triage = validTriage(JSON.parse(result.text) as unknown);
+    } catch {
+      triage = null;
+    }
+    if (!triage) {
+      return finish({ error: "unavailable" }, 502, "unavailable", { providerLatencyMs: result.latencyMs, usage: result.usage, errorKind: "bad-response" });
+    }
+    return finish(triage, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage });
   } catch (error) {
-    return NextResponse.json({ error: "unavailable" }, { status: modelFailureStatus(error) });
+    return finish({ error: "unavailable" }, modelFailureStatus(error), "unavailable", { errorKind: modelErrorKind(error) });
   }
 }
