@@ -12,6 +12,8 @@ type Community = {
   launch_status?: "pending_review" | "approved";
   memberCount: number;
   postCount: number;
+  recentPostCount: number;
+  joined: boolean;
 };
 
 async function getJson<T>(path: string): Promise<{ status: number; body: T | null }> {
@@ -105,6 +107,10 @@ export default function RealCommunityList() {
       <p className="text-sm">Can’t find a space that fits? Suggest one for human review.</p>
       <Link href="/communities/propose" className="button button-secondary">Suggest a community</Link>
     </div>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 sm:px-5">
+      <p className="text-sm">Not sure which circle fits? Talk for 2 minutes and come back with a recommendation.</p>
+      <Link href="/app?path=talk" className="button button-secondary">Talk to match</Link>
+    </div>
     <ul className="grid gap-4 sm:grid-cols-2">
       {communities.map((community) => (
         <li key={community.id} className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-hover)]">
@@ -115,8 +121,9 @@ export default function RealCommunityList() {
             </span>
             <span className="text-[var(--muted)]">
               {community.memberCount} {community.memberCount === 1 ? "member" : "members"} · {community.postCount}{" "}
-              {community.postCount === 1 ? "post" : "posts"}
+              {community.postCount === 1 ? "post" : "posts"} · {community.recentPostCount > 0 ? `${community.recentPostCount} new this week` : "quiet right now"}
             </span>
+            {community.joined && <span className="rounded-full bg-[var(--lilac)] px-3 py-1 text-[var(--ink)]">Joined</span>}
           </div>
           <h2 className="mt-3 text-xl font-semibold">{community.name}</h2>
           <p className="mt-1 text-[var(--muted)]">{community.description || "No description yet."}</p>
