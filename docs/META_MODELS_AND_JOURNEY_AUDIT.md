@@ -52,7 +52,7 @@ Standard mode remains the appropriate choice for real narratives; do not switch 
 - The proposal flow now offers an opt-in Meta setup copilot. It compares the proposal with approved public community metadata and returns an editable scope package; the host must review it before including it in the pending proposal.
 - Active members can ask a private community guide. It sends the question and approved scope/public details to Meta and does not read community posts, replies, or private chat.
 - Moderators can request scope recommendations from one selected excerpt. The excerpt is disclosed before submission and is not stored. A moderator can apply an existing-community update or create a private pending split proposal; no timeout or model output launches a community.
-- Scope features require migrations `20261102192729` and `20261102194236`, which are checked in but not applied remotely. Automated expansion delegation remains disabled.
+- Scope features require migrations `20261102195744` and `20261102195748`; both are applied to the live Supabase project in order. Automated expansion delegation remains disabled.
 
 Do not add Muse Image, SAM, web search grounding, or Muse Wonder merely to increase model count. Add a model/API only when it improves a specific user outcome and its data transfer and failure behavior are explicit.
 

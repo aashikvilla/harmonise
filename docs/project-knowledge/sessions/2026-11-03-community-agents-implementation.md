@@ -18,7 +18,8 @@
 
 - Feature worktrees and the combined integration worktree passed `npm run typecheck`, `npm run lint`, and `npm run build`.
 - No unit, browser, or other tests were run. No Supabase migration was applied remotely, no production deployment was changed, and no live Meta model call was made for this implementation.
-- Migrations `20261102192729_community_scope_stewardship.sql` and `20261102194236_scope_split_proposals.sql` must be reviewed and applied in order before the new scope features can use the live database.
+- Migrations `20261102195744_20261102192729_community_scope_stewardship.sql` and `20261102195748_20261102194236_scope_split_proposals.sql` were applied to the live Supabase project in order. The filenames were aligned to the versions recorded by the migration service so future CLI migration checks will not replay them.
+- A post-apply privilege query confirmed the new scope-change table has RLS enabled, grants no read access to `anon` or `authenticated`, and grants service-role access; scope review, rollback, and split-approval functions execute only as `service_role`.
 - `COMMUNITY_REVIEWER_USER_IDS`, named reviewer coverage, and the moderation worker schedule remain unconfigured; these features do not imply continuous moderation.
 - Optional auto-application of scope changes is not enabled. Silence or timeout never approves a change or launches a community.
 - The setup-model switch defaults to Spark; Wonder has not yet been compared on synthetic cases. The install audit surfaced 2 critical and 17 moderate development-tooling advisories in the existing lockfile; no dependency changes were made.
