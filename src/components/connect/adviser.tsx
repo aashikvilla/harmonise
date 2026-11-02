@@ -115,9 +115,9 @@ export default function Adviser() {
   }
 
   return (
-    <section className="cx-adviser cx-card-white" aria-label="Harmonise Adviser">
+    <section className="cx-adviser cx-card-white" aria-label="harmonize adviser">
       <div className="cx-adviser-head">
-        <h2>Harmonise Adviser</h2>
+        <h2>harmonize adviser</h2>
         <p>Listens · reasons · offers a way forward</p>
       </div>
       <div className="cx-chat" aria-live="polite">

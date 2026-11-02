@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/connect/session";
 import { CoachDashboardPreview } from "@/components/connect/coaches";
+import SharedBrand from "@/components/connect/brand";
 
 const DEMO_EMAIL = "demo@harmonise.example";
 const DEMO_PASSWORD = "MuseDemo2026!";
@@ -22,22 +23,8 @@ function getServerHydrationSnapshot() {
 }
 
 function Brand() {
-  return (
-    <div className="cx-brand" aria-label="harmonize.">
-      <span className="cx-brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 40 40">
-          <path d="M8 23C8 14 15 9 23 9C31 9 34 15 29 20C23 26 12 22 12 29C12 34 22 34 28 26" />
-          <circle cx="31" cy="24" r="2.6" />
-        </svg>
-      </span>
-      <span>
-        <span className="cx-brand-name">harmonize<em>.</em></span>
-        <span className="cx-tagline" style={{ display: "block" }}>Human growth, shared.</span>
-      </span>
-    </div>
-  );
+  return <SharedBrand tagline="Human growth, shared." />;
 }
-
 function OneTapDemo() {
   const { dispatch } = useSession();
   const router = useRouter();
@@ -209,7 +196,7 @@ export default function Onboarding() {
               Share something difficult. <em>Get a way forward.</em> Choose connection.
             </h1>
             <p className="cx-lede">
-              I share something difficult. Harmonise listens. It gives me a practical way forward. I decide whether
+              I share something difficult. harmonize listens. It gives me a practical way forward. I decide whether
               I want to meet people who have lived something similar.
             </p>
             <ol className="cx-flow">

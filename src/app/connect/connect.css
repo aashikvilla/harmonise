@@ -197,7 +197,7 @@
   font: 20px var(--cx-ser);
 }
 .cx-flow li:nth-child(2) .cx-flow-num { background: var(--cx-charcoal); }
-.cx-flow li:nth-child(3) .cx-flow-num { background: #5c7a67; }
+.cx-flow li:nth-child(3) .cx-flow-num { background: #e7e1f7; color: var(--cx-charcoal); }
 .cx-flow strong { display: block; font-size: 16px; }
 .cx-flow span { color: var(--cx-muted); font-size: 14px; }
 .cx-privacy-list { margin: 22px 0 0; padding: 16px 18px; border: 1px dashed #a9a69d; border-radius: 14px; background: rgba(255,255,255,.6); }
@@ -345,7 +345,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #dff0e3, var(--cx-forest) 78%);
+  background: radial-gradient(circle at 35% 30%, var(--cx-leaf), var(--cx-forest) 78%);
   animation: cx-breathe 3.2s ease-in-out infinite;
 }
 @keyframes cx-breathe {
@@ -421,14 +421,14 @@
   padding: 20px;
   border: 1px solid #e0b3a7;
   border-radius: 14px;
-  background: linear-gradient(140deg, #f2f8f3, #fff);
+  background: linear-gradient(140deg, #fdf6f3, #fff);
   text-align: center;
 }
 .cx-consent h3 { margin: 0 0 6px; font: 500 24px/1.2 var(--cx-ser); }
 .cx-consent p { margin: 0 auto 14px; max-width: 52ch; color: var(--cx-muted); font-size: 15px; }
 .cx-matching { margin-top: 14px; padding: 22px; border-radius: 14px; background: var(--cx-charcoal); color: #fff; overflow: hidden; }
 .cx-matching p { margin: 0 0 12px; font-size: 15px; color: var(--cx-leaf); }
-.cx-match-bar { position: relative; height: 10px; border-radius: 999px; background: #4a473e; overflow: hidden; }
+.cx-match-bar { position: relative; height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .22); overflow: hidden; }
 .cx-match-bar::after {
   position: absolute;
   content: "";
@@ -539,7 +539,7 @@
 .cx-split th, .cx-split td { padding: 9px 10px; border-bottom: 1px solid var(--cx-line); text-align: left; }
 .cx-split th { color: var(--cx-muted); font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
 .cx-request-preview { margin-top: 10px; padding: 12px 14px; border-radius: 10px; background: var(--cx-mist); color: var(--cx-forest-deep); font-size: 14px; }
-.cx-pro { margin-top: 16px; border-color: #e0b3a7; background: linear-gradient(140deg, #f2f8f3, #fff); }
+.cx-pro { margin-top: 16px; border-color: #e0b3a7; background: linear-gradient(140deg, #fdf6f3, #fff); }
 .cx-pro h2 { margin: 8px 0 6px; font: 500 26px/1.2 var(--cx-ser); }
 
 /* ---------- Responsive ---------- */

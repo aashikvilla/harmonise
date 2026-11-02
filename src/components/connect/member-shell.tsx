@@ -8,13 +8,14 @@ import Circles from "@/components/connect/circles";
 import Journey from "@/components/connect/journey";
 import Coaches, { CoachDashboardPreview } from "@/components/connect/coaches";
 import UrgentModal from "@/components/connect/urgent-modal";
+import SharedBrand from "@/components/connect/brand";
 
 const TABS: { id: ConnectTab; label: string; heading: string; lede: string }[] = [
   {
     id: "find",
     label: "Find connection",
     heading: "Find connection",
-    lede: "Talk privately with the Harmonise Adviser. Guidance first — communities only if you ask.",
+    lede: "Talk privately with the harmonize adviser. Guidance first — communities only if you ask.",
   },
   {
     id: "journey",
@@ -70,10 +71,7 @@ export default function MemberShell() {
     <div className="cx-shell">
       <header className="cx-topbar">
         <div className="cx-topbar-inner">
-          <Link href="/connect" className="cx-brand" aria-label="Harmonise entrance">
-            <span className="cx-brand-mark" aria-hidden="true">H</span>
-            <span className="cx-brand-name">Harmonise<em>.</em></span>
-          </Link>
+          <SharedBrand linkToEntrance />
           <span className="cx-topbar-spacer" />
           <div className="cx-topbar-actions">
             <button type="button" className="cx-btn cx-btn-urgent" onClick={() => dispatch({ type: "urgent", open: true })}>
