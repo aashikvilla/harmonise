@@ -6,10 +6,10 @@
 
 ## Implemented
 
-- Added `0003_community_progress.sql`: service-role-only summary of visible posts/replies. Eligible text is at least 20 trimmed characters; normalized duplicate text counts once; active days use UTC. Thresholds are 3 contributions over 2 days for Contributor and 10 over 5 days for Community regular.
+- Added the community progress migration: service-role-only summary of visible posts/replies. Eligible text is at least 20 trimmed characters; normalized duplicate text counts once; active days use UTC. Thresholds are 3 contributions over 2 days for Contributor and 10 over 5 days for Community regular.
 - Added a signed-in member-only activity endpoint and private activity card. `COMMUNITY_ROLE_VERIFICATION_ENABLED` defaults to false; a separate moderator-reviewed role record/API is unavailable unless explicitly enabled.
 - Added demo-only example aliases at all levels. They are displayed only in the `/connect` prototype, never inserted as Auth accounts or real community memberships.
-- Added `0004_community_lifecycle.sql`: existing communities remain approved; user proposals create a pending community and owner membership atomically; a trigger provisions one community-specific AI helper; review approval requires an allowlisted reviewer plus explicit human-coverage attestation.
+- Added the community lifecycle migration: existing communities remain approved; user proposals create a pending community and owner membership atomically; a trigger provisions one community-specific AI helper; review approval requires an allowlisted reviewer plus explicit human-coverage attestation.
 - Pending communities cannot be joined, viewed by non-owners, or used to read/post/reply. Human reviewers receive only proposal-safe fields. The helper uses its community's purpose/topics when triaging queued content and records helper attribution; it cannot enforce moderation actions.
 - Added a responsive proposal form, private pending-status page, reviewer queue, helper disclosure, activity card, and live-community link from the prototype circles.
 - Updated the product journey plan and project knowledge to separate shipped work from remaining operations and end-to-end gaps.

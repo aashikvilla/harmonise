@@ -2,17 +2,26 @@ import { test, expect } from '@playwright/test';
 
 async function exploreDemo(page: import('@playwright/test').Page) {
   await page.goto('/connect');
-  await page.getByRole('button', { name: 'Explore without entering details' }).click();
-  await expect(page.getByRole('button', { name: 'Find connection' })).toBeVisible();
+  await page.getByLabel('I confirm I am 18 or older.').check();
+  await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
+  await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+  await expect(page).toHaveURL(/\/connect\/member$/);
+  await expect(page.getByRole('heading', { name: 'Find connection' })).toBeVisible();
 }
 
 test.describe('Harmonise connect flow', () => {
   test('landing offers entry paths and demo explores the member shell', async ({ page }) => {
     await page.goto('/connect');
-    await expect(page.getByText('Human growth, shared.').first()).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Find support' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Give support' })).toBeVisible();
-    await page.getByRole('button', { name: 'Explore without entering details' }).click();
+    await expect(page.getByRole('heading', { name: /Share something difficult.*Choose connection/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Member demo' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Coach preview' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Coach preview' }).click();
+    await expect(page.getByRole('button', { name: 'Give support' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Member demo' }).click();
+    await page.getByLabel('I confirm I am 18 or older.').check();
+    await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
+    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await expect(page).toHaveURL(/\/connect\/member$/);
     await expect(page.getByRole('button', { name: 'Find connection' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'My journey' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'My circles' })).toBeVisible();
@@ -21,14 +30,19 @@ test.describe('Harmonise connect flow', () => {
     await expect(page.getByText('Communities only appear after you choose to see them.')).toBeVisible();
   });
 
-  test('member entry requires a valid email and 18+ confirmation', async ({ page }) => {
+  test('demo entry checks the shared credentials and requires both disclosures', async ({ page }) => {
     await page.goto('/connect');
-    await page.getByLabel('Your alias').fill('Quiet Fern');
-    await page.getByRole('button', { name: 'Find support', exact: true }).click();
-    await expect(page.locator('.cx-error')).toContainText('valid email');
-    await page.getByLabel('Email').fill('fern@example.com');
-    await page.getByRole('button', { name: 'Find support', exact: true }).click();
-    await expect(page.locator('.cx-error')).toContainText('18 or older');
+    await page.getByLabel('Demo password').fill('incorrect');
+    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await expect(page.locator('.cx-error')).toContainText('Those demo credentials do not match');
+
+    await page.getByLabel('Demo password').fill('MuseDemo2026!');
+    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await expect(page.locator('.cx-error')).toContainText('confirm you are 18 or older');
+
+    await page.getByLabel('I confirm I am 18 or older.').check();
+    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await expect(page.locator('.cx-error')).toContainText('message will be sent to Meta Muse Spark');
   });
 
   test('crisis words open urgent support without advice or matching', async ({ page }) => {

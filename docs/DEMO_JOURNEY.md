@@ -1,5 +1,7 @@
 # Harmonise demo journey
 
+For the complete visitor-to-community walkthrough, live review steps, exact prompts, and verification checklist, see [END_TO_END_DEMO_RUNBOOK.md](END_TO_END_DEMO_RUNBOOK.md).
+
 This guide describes the click-through demo from the homepage to a joined sample circle. The demo login is a client-side convenience, not authentication. It creates no Supabase account, private session, live membership, or community post. The adviser request is sent to Meta Muse Spark when the model key is configured, so use fictional details only.
 
 ## Demo sign-in
@@ -64,7 +66,7 @@ The sample members, posts, counts, and circle agent are fictional. This flow doe
 
 ## Live community proposal and activity examples
 
-This is a separate authenticated flow, not part of the shared `/connect` demo account. It needs the Supabase migrations through `0004` and a real email-code account. A human reviewer account must be present in `COMMUNITY_REVIEWER_USER_IDS` to approve a proposal. Do not paste private chat text into the purpose field; write a fresh summary instead.
+This is a separate authenticated flow, not part of the shared `/connect` demo account. It needs the Supabase community progress/lifecycle migrations and a real email-code account. A human reviewer account must be present in `COMMUNITY_REVIEWER_USER_IDS` to approve a proposal. Do not paste private chat text into the purpose field; write a fresh summary instead.
 
 1. Open **Communities** and select **Suggest a community**.
 2. Sign in with the email-code flow and suggest a name, a purpose of at least 20 characters, and optional topics. The form does not import chat history.

@@ -12,7 +12,7 @@ test("homepage preserves the source illustration and reversible scroll journey",
   const frame = page.frameLocator("iframe");
   await expect(frame.locator("#hero-art svg.scene-svg")).toBeVisible();
   await expect(frame.locator("#hero-art svg path.hero-thread")).toHaveCount(1);
-  await expect(frame.getByRole("link", { name: /Start privately/i })).toHaveAttribute("href", "./app/");
+  await expect(frame.getByRole("link", { name: "Try the demo" })).toHaveAttribute("href", "/connect");
 
   const beyond = frame.locator("#beyond");
   await beyond.evaluate((element) => {
@@ -32,9 +32,9 @@ test("homepage preserves the source illustration and reversible scroll journey",
 test("homepage primary action opens the product space", async ({ page }) => {
   const frame = page.frameLocator('iframe[title="Harmonize — a space for unfinished thoughts"]');
   await page.goto("/");
-  await frame.getByRole("link", { name: /Start privately/i }).click();
-  await expect(page).toHaveURL(/\/app\/?$/);
-  await expect(page.getByRole("heading", { name: "I can’t tell my family what I want without feeling ungrateful." })).toBeVisible();
+  await frame.getByRole("link", { name: "Try the demo" }).click();
+  await expect(page).toHaveURL(/\/connect$/);
+  await expect(page.getByRole("heading", { name: /Share something difficult.*Choose connection/i })).toBeVisible();
 });
 
 test("chat days replay, pause and restart with the authored fictional examples", async ({ page }) => {

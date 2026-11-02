@@ -37,7 +37,7 @@
 
 - **Decision:** Existing communities remain approved; new communities begin in `pending_review`. A service-role-only transaction creates the community and owner membership, while a database trigger provisions one scoped AI helper row. A reviewer allowlist and explicit coverage confirmation are required to approve launch; approval assigns that reviewer as a human moderator.
 - **Reason:** Community creation must not imply public access or staffed moderation. Helper identity and per-community context must remain auditable without granting the model enforcement powers.
-- **Implementation:** Migration `0004_community_lifecycle.sql` adds lifecycle metadata, default-deny helper storage, provisioning trigger, and RPCs; API routes validate ownership and reviewer authorization; triage records the helper ID/display name alongside advisory output.
+- **Implementation:** Migration `20261102183300_community_lifecycle.sql` adds lifecycle metadata, default-deny helper storage, provisioning trigger, and RPCs; API routes validate ownership and reviewer authorization; triage records the helper ID/display name alongside advisory output.
 - **Revisit when:** The pilot has a staffed moderation schedule and launch review workflow backed by an operational source of coverage assignments.
 
 ## 2026-11-02 — Keep the shared demo login local to the prototype

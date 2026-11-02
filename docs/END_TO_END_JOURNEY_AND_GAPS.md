@@ -13,9 +13,12 @@ motion, and calm supportive tone. Everything below bends toward it.
   each group. Section 9 proposes a P0/P1/P2 cut for the first build cycle.
 - "Built" means it exists on the current integration branch and is E2E-verified. Anything else is
   a gap, even if a sibling feature looks similar.
-- The latest community browser journey uses isolated API fixtures. Migrations
-  `0003`/`0004` are not yet applied to the live Supabase project, so that test
-  does not claim live database verification.
+- Verified against the code on 2026-11-03: `[x]` = already built (with
+  evidence); `Status:` notes = partially built, remainder open.
+- The isolated-fixture browser journey does not claim live database verification.
+  Both lifecycle migrations ARE applied live (verified 2026-11-03:
+  `community_moderator_agents` + `launch_status` + contribution RPC all respond;
+  agents backfilled for the 3 seeded groups).
 
 ## 1. Current-state map (what actually exists today)
 
@@ -27,6 +30,7 @@ important fact in this document is the split in the middle row:
 | Landing | Homepage with full UX system (palette, serif/scale, motion, storytelling) | `/` |
 | Private chat | Talk/unsure/quiet/support entries, Muse Spark replies, theme + need suggestions, correction flow, saved sessions, voice record → review → transcribe | `/app` |
 | Discovery (sample) | Fictional communities with "Why it may fit" relevance, stories, quiet reading — browser-session only | `/app` tabs |
+| Sample → real handoff | Discovery footer "Browse live communities" links `/communities?themes=` with confirmed themes; real list renders overlap | `/app` → `/communities` |
 | Discovery (real) | 3 seeded Supabase communities, member/post counts, authenticated private proposal path, owner-visible pending state | `/communities`, `/communities/propose` |
 | Membership (real) | Join with alias, posts, replies, reports, blocks, leave, delete, consent records, private activity levels, community helper disclosure | `/communities/[id]` |
 | Demo gate | Separate green design system, shared demo credentials, session-only | `/connect`, `/connect/member` |
@@ -73,7 +77,7 @@ Direct answers to the open product questions:
   profiles at the activity levels without fake Auth users.
 - [x] Verify proposal → pending/helper → reviewer approval → community activity
   in Playwright on desktop and mobile using isolated API fixtures (2/2 passed).
-- [ ] Apply migrations `0003`/`0004` to the Supabase project and verify the
+- [x] Apply the community progress/lifecycle migrations to the Supabase project and verify the
   same flow against the live backend.
 - [ ] Configure `COMMUNITY_REVIEWER_USER_IDS`, named human coverage, and the
   moderation worker schedule before calling proposals monitored or launching
@@ -149,16 +153,21 @@ WHAT YOU WANT + three buttons + conditional sub-panels.
   pre-filled composer, which it already is).
 - [ ] Recording must be unmistakable: pulsing indicator, elapsed time,
   cancel affordance; handle mic-denied with a typed fallback inline.
-- [ ] Streaming or staged loading: typing indicator within 300ms of send;
+- [ ] Streaming or staged loading: animated typing indicator within 300ms of send;
   never a dead silent wait on a 2–5s model call.
+  Status: an immediate “Muse Spark is preparing a response…” status line already
+  exists (`harmonise-experience.tsx`); staged/streaming animation is the gap.
 - [ ] Cut the six footer links to one overflow ("More: how your data is
   used · start fresh · explore") — the current link farm reads as clutter.
 - [ ] Keep "Your chat is not posted" disclosure, but as a one-line dismissible
   note, not a permanent paragraph.
 - [ ] Empty state: 3 gentle starter chips ("Work is overwhelming", "Family
   pressure", "Not sure — just listen") instead of a blank composer.
-- [ ] Error state: failed send keeps the draft, offers one-tap retry, and
-  names the cause in plain words (no raw error kinds).
+  Status: one “Not sure where to start” composer preset already exists; expand
+  to three chips.
+- [ ] Error state: add an explicit one-tap retry button.
+  Status: failed sends already restore the draft to the composer with plain-words
+  copy (`sendChat`); only the dedicated retry button is missing.
 
 ### 3.3 `/app` discovery + tabs (two community systems collide here)
 
@@ -170,21 +179,27 @@ personal context applied" — while the REAL communities live at
 - [ ] Decide the product truth: sample communities are an onboarding
   illustration, real communities are the destination. Never show both as if
   they are the same thing.
-- [ ] Wire "Why it may fit" to the REAL communities: score the 3 seeded
-  circles from confirmed themes and render the same explainer cards against
-  them, with a Join CTA per card.
+- [ ] Proactive in-chat circle recommendation with deep-link to the top-matched
+  REAL community.
+  Status: theme scoring (`community-topics.ts`), `?themes=` overlap on the real
+  list, and the discovery-footer “Browse live communities” link already exist;
+  the agent never recommends unprompted and “Hear experiences” still opens the
+  sample grid.
 - [ ] After confirmation in chat, deep-link to matching: "Hear experiences"
   should open the top-matched REAL community (or its preview), not the
   sample grid.
 - [ ] Label honesty pass: every sample/fictional surface carries one
   consistent badge ("Sample — for exploring"), and it must be impossible to
   mistake a fictional transcript for a real member post.
-- [ ] My Journey tab: show the confirmed understanding + matched circles as
-  a journey timeline (talked → confirmed → joined → contributed), not a
-  transcript dump; keep transcripts collapsible per conversation.
-- [ ] Connections tab: define what a connection IS (followed journey?
-  saved reply? human contact?) or remove the tab — an undefined tab is worse
-  than no tab.
+- [ ] My Journey tab: link the timeline to real-world state (joined circles,
+  contributions).
+  Status: the session timeline itself (chapters, confirmed themes, explored
+  perspectives, takeaway, next step, usefulness) already exists (`renderJourney`);
+  it is session-only and fictional.
+- [ ] Connections tab: graduate the fictional consent-pattern demo into real
+  people-matching (see 7.5) or merge it into circles.
+  Status: the tab already demonstrates mutual-consent states (`renderConnections`);
+  nothing real is behind it.
 - [ ] Find Support tab: merge crisis/safety resources into one always-
   reachable pattern (header link + in-chat escalation) instead of a tab that
   competes with the main flow.
@@ -212,8 +227,9 @@ motivation: the user must commit (account + join) before seeing any value.
   reply time, moderator presence note.
 - [ ] Show the join path as 2 steps (1. private account, 2. pick an alias)
   with time estimate ("under a minute").
-- [ ] After sign-in, land back HERE with the alias picker open — never dump
-  the user at a generic home.
+- [x] After sign-in, land back HERE with the alias picker open — never dump
+  the user at a generic home. Built: community detail re-loads in place after
+  `AuthCard` sign-in and shows the alias picker (`real-community-detail.tsx`).
 
 ### 3.6 `/communities/[id]` member view (functional, not alive)
 
@@ -229,6 +245,8 @@ with a list under it, not a place where people are.
 - [ ] Reply expectations: each post shows reply state ("2 replies · last
   reply 2h ago") and the composer offers "Ask" vs "Share" intent so others
   know a response is wanted.
+  Status: expandable “Read and reply”/“Hide replies” with an empty state already
+  exists; counts, recency, and intent chips are missing.
 - [ ] Relevant-journey surfacing: when the agent matched this circle, pin a
   personal strip at top ("Because you talked about X: this thread helped
   people with similar timing pressure") linking to the thread.
@@ -264,8 +282,10 @@ and real communities.
 Observed: duty banner, community picker, Refresh queue, metrics chips, clear
 empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
-- [ ] Hide or grey-out metrics until n ≥ 1 ("No decisions yet" instead of
-  100%).
+- [x] Hide or grey-out metrics until n ≥ 1 ("No decisions yet" instead of
+  100%). Built: API returns `overturnRate: null` when nothing is judged; the UI
+  renders "-" (`moderation.ts`, `reviewer-queue.tsx`). The "100%" seen live was
+  real E2E-probe appeal data — see the suite-hygiene item.
 - [ ] Queue auto-refresh + new-report ping for on-duty reviewers (no
   silent stale queue during staffed hours).
 - [ ] Case view: full thread context (post + replies + author history
@@ -299,8 +319,10 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   dismiss), failure (inline, retryable, human words).
 - [ ] Homepage-grade entrance motion on route changes (fade/slide ≤300ms),
   all reversible and `prefers-reduced-motion` safe.
-- [ ] Chat: message send animation, typing indicator ≤300ms, smooth
+- [ ] Chat: message send animation, animated typing indicator, smooth
   scroll-to-latest that respects "user scrolled up to read".
+  Status: the immediate pending status line already exists; animation and
+  scroll behaviors are the gap.
 - [ ] Feed: skeleton cards on load, "new posts" pill on live arrival,
   optimistic post insert with "sending…" → confirmed treatment.
 
@@ -321,7 +343,10 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
 - [ ] Auth: explain email-code flow before asking for email ("we'll email
   a code — no password to remember"); resend with cooldown; code expiry
-  stated; deep-link back to the interrupted action after sign-in.
+  stated.
+  Status: OTP send/verify with rate-limit copy exists (`auth-card.tsx`); a resend
+  button (users currently cannot re-request a code), expiry text, and the
+  explainer are missing. Post-sign-in continuation in place already works.
 - [ ] Sessions ("Your saved conversations"): rename to human words ("Your
   chats"), show last-topic preview + age, one-tap resume/delete, honest
   90-day expiry note per item.
@@ -334,9 +359,11 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
 - [ ] First-run: land → first reply in ≤3 taps with zero account friction;
   measure taps-to-first-reply as the core funnel metric.
-- [ ] Chat → circle handoff: the agent's recommendation carries context
+- [ ] Chat → circle handoff: proactive in-chat recommendation carrying context
   ("matched because: family timing pressure") into the community preview
   and the join screen — the user never re-explains themselves.
+  Status: a context-carrying link (`/communities?themes=`) already exists in the
+  discovery footer; the agent never initiates it.
 - [ ] Join funnel: alias picker with gentle availability + tone guidance
   ("aliases can't identify you"), one review screen, and a calm confirm
   ("You're in as QuietRiver. Read quietly as long as you like.").
@@ -349,9 +376,10 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   checks unanswered questions daily") — replaces the current black box.
 - [ ] Re-entry: returning members land on "what's new since your visit"
   (counts + top threads), not a bare feed.
-- [ ] Crisis: in-chat detection already screens — add the visible layer:
-  one-tap helpline resources inline, never a dead-end, on every surface
-  where free text is entered.
+- [ ] Crisis: extend the visible layer to every free-text surface.
+  Status: talk (detection + help navigation) and the reviewer duty banner
+  already link help resources; the community composer has no crisis screening
+  or inline resources.
 
 ## 6. Workflows to improve (ops + automation behind the scenes)
 
@@ -360,20 +388,30 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   suite runs). Alert when backlog age > threshold.
 - [ ] Suite hygiene: E2E runs clean up the events they enqueue (or use a
   sandbox community) so verification never pollutes the pilot queue.
+  Note (verified 2026-11-02): suite appeals also pollute overturn-rate metrics,
+  and suite reports left a 113-deep worker backlog.
 - [ ] Unanswered-question sweeper: daily job surfacing questions with no
   reply in 24h to moderators + the community facilitator (see 7.1).
 - [ ] Moderator staffing: on-duty roster with handoff notes; holding queue
   outside staffed hours with honest user-facing copy ("reviews resume 9am").
 - [ ] Decision quality loop: sample overturned/appealed cases weekly into
   the eval set as regression cases (metadata only, consented/ synthetic).
-- [ ] Rate/quota tuning from real usage: replace single-instance memory
-  limiter with the shared (Upstash) backend before any public cohort.
+- [x] Rate/quota tuning from real usage: replace single-instance memory
+  limiter with the shared (Upstash) backend before any public cohort. Built:
+  shared backend wired via `instrumentation.ts` (`initSharedRateLimiting`,
+  env-gated) with memory fallback. Tuning from real usage remains.
 - [ ] Ops dashboard: queue depth/age, worker lag, model error rate, spend
   vs budget, signup→join→post funnel — one screen for the pilot review.
 
 ## 7. New feature tracks (the missing middle of the vision)
 
-### 7.1 Community facilitator (the "moderator agent") — NOT BUILT
+### 7.1 Community facilitator (the "moderator agent") — PARTIALLY BUILT
+
+Built: one scoped `community_moderator_agents` row per community (backfilled
+live), community purpose/topics injected into worker triage, helper attribution
+recorded on events and shown in the review queue; every model result stays
+advisory. Missing: anything that posts, welcomes, answers, nudges, or
+facilitates visibly.
 
 - [ ] Spec the role: welcomes, answers unanswered questions after N hours,
   summarizes long threads on request, enforces norms visibly ("moved to a
@@ -389,23 +427,47 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 
 - [ ] Opt-in "feature my journey" consent per post (separate from post
   consent; revocable; alias-preserving).
+  Status: a full fictional contributor prototype exists (private notes →
+  shareable summary → discoverable/question scope → approve/publish/revoke,
+  `renderContributor`); the real backend + consent records are missing.
 - [ ] Matching v1: theme overlap + recency → top thread shown in chat
   recommendation and pinned atop the matched circle for that user.
 - [ ] Display rules: excerpt only, link to full thread, "shared with
   permission" note, author can unfeature in one tap.
 
-### 7.3 Circle lifecycle (creation, dormancy) — NOT BUILT
+### 7.3 Circle lifecycle (creation, dormancy) — PARTIALLY BUILT
 
-- [ ] No-match path: when no circle fits, the agent says so honestly and
-  offers "request a circle" (topic + why) instead of force-fitting.
-- [ ] Circle requests queue for moderators: approve → seed circle with
-  norms + facilitator; merge or decline with a kind redirect.
-- [ ] User-created circles (phase 2): name, purpose, norms draft, founding
-  moderator; agent assists drafting, humans approve.
+Built: member proposal flow (`/communities/propose`), auto-provisioned pending
+community + host membership + scoped helper, non-owner invisibility,
+allowlisted reviewer approval with coverage attestation (`reviewPendingCommunity`),
+owner pending state. Verified live 2026-11-02.
+
+- [x] No-match path: when no circle fits, the agent says so honestly and
+  offers "request a circle" (topic + why) instead of force-fitting. Built:
+  the proposal flow covers request-with-purpose; the sample-discovery honest
+  no-match panel (“There isn't a close fit… No people will be invented”) also
+  exists. Missing: the agent proactively offering it from chat.
+- [ ] Circle requests queue: seed approved circles with norms; merge or
+  decline with a kind redirect.
+  Status: the allowlisted review queue with approve + coverage attestation and
+  helper provisioning already exists; norms seeding, merge, and kind-decline
+  paths are missing.
+- [x] User-created circles (phase 2): name, purpose, norms draft, founding
+  moderator; agent assists drafting, humans approve. Built: members propose
+  with name/purpose/topics, become host, allowlisted humans approve with
+  coverage attestation (`/communities/propose`, `[id]/review`). Missing: agent
+  drafting assistance and norms seeding.
 - [ ] Dormant circles: "quiet right now" state, archive (read-only) vs
   revive decision owned by moderators, never silent deletion.
 
-### 7.4 Profile, standing, volunteer track — NOT BUILT
+### 7.4 Profile, standing, volunteer track — PARTIALLY BUILT
+
+Built: private community-scoped activity levels (Contributor: 3 distinct
+qualifying contributions across 2 UTC days; Community regular: 10 across 5;
+20 trimmed chars; normalized dedupe; held/removed excluded) computed by a
+live RPC and shown on a progress card; role verification separately gated by
+flag with demo-only sample profiles. Missing: profile page, reactions,
+Trusted/Volunteer/Verified rungs, human-reviewed promotion, volunteer ops.
 
 - [ ] Member profile (private-first): my posts/replies, thanks received,
   circles, standing progress — visible to self; public slice is
@@ -413,14 +475,19 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 - [ ] Helpfulness signals: "this helped me" reactions, accepted answers on
   questions, moderator endorsements — no downvotes, no public counts that
   rank people against each other.
-- [ ] Standing ladder: New → Contributing → Trusted → Volunteer →
-  Verified supporter, with published criteria per rung.
+- [ ] Standing ladder: publish criteria per rung; add Trusted → Volunteer →
+  Verified supporter above the existing activity rungs.
+  Status: new-member → contributor → community-regular already computed live
+  (`community-progress.ts` + RPC); criteria are not yet published in-product.
 - [ ] Promotion = human-reviewed: eligibility is computed, approval is a
   moderator decision with rationale; appeals allowed.
 - [ ] Volunteer role: welcome duty, unanswered-question duty, training
   checklist, term limits, burnout guardrails (max cases/week).
 - [ ] Verified supporter: identity-verified (off-platform check), badge,
   scope limits (peer support only — never clinical/legal), revocation path.
+  Status: only the `community_member_verifications` table, the
+  `COMMUNITY_ROLE_VERIFICATION_ENABLED=false` gate, demo-only sample profiles,
+  and a fictional “no verified provider” scaffold exist.
 
 ### 7.5 People matching (if `/connect` survives) — NOT BUILT
 
@@ -438,8 +505,10 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
 - [ ] Notifications: email for replies/decisions/appeals (user opted-in,
   batched, quiet hours); in-app unread state; push only if a mobile shell
   is built. No notification should ever leak another member's identity.
-- [ ] Transactional email delivery for auth codes (provider + templates +
+- [ ] Transactional email delivery for auth codes (custom templates +
   deliverability check) — auth is email-code, so this is load-bearing.
+  Status: sending works via Supabase Auth `/otp` emails (`api/auth/otp`); no
+  custom templates, sender review, or deliverability monitoring.
 - [ ] Worker scheduler (cron) + backlog alerting (see 6).
 - [ ] Analytics (privacy-preserving, aggregated): funnel taps-to-first-
   reply, join rate, post rate, reply latency, retention — no per-user
@@ -450,6 +519,10 @@ empty state. "Overturn rate: 100%" with zero cases reads as a bug.
   journals, community health digest for moderators.
 
 ## 9. Suggested build order (PM cut — confirm before building)
+
+Status 2026-11-02: proposal flow, helper config + triage attribution, activity
+levels, and Upstash are already built (see sections above); the order below
+assumes those as done.
 
 **P0 — the core loop must feel alive (one cycle):**
 chat redesign (3.2) → real-circle matching + join handoff (3.3, 5) →
