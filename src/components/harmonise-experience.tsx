@@ -224,6 +224,8 @@ function CircleRecommendation({ themes }: { themes: string[] }) {
 
 function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) => void }) {
   const [sessions, setSessions] = useState<Array<{ id: string; title: string; last_active_at: string }> | null>(null);
+  const [resumingId, setResumingId] = useState<string | null>(null);
+  const [resumeError, setResumeError] = useState("");
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -241,6 +243,8 @@ function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) 
   }, []);
   if (!sessions || sessions.length === 0) return null;
   async function resume(id: string) {
+    setResumingId(id);
+    setResumeError("");
     try {
       const response = await fetch(`/api/sessions/${id}`, { credentials: "include", cache: "no-store" });
       const body = (await response.json().catch(() => null)) as {
@@ -248,7 +252,10 @@ function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) 
         messages?: { role: string; text: string }[];
         understanding?: { suggested_themes: string[]; confirmed_themes: string[]; support_need: string; need_summary: string } | null;
       } | null;
-      if (!response.ok || !body?.session) return;
+      if (!response.ok || !body?.session) {
+        setResumeError("This saved chat couldn’t be opened. Please try again.");
+        return;
+      }
       onResume({
         sessionId: id,
         title: body.session.title,
@@ -265,7 +272,9 @@ function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) 
           : null,
       });
     } catch {
-      /* Resume failures stay on the journey; the conversation tab still works. */
+      setResumeError("This saved chat couldn’t be opened. Check your connection and try again.");
+    } finally {
+      setResumingId(null);
     }
   }
   return (
@@ -280,13 +289,14 @@ function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) 
               <span className="small-note">{new Date(session.last_active_at).toLocaleString()}</span>
             </div>
             <div className="inline-actions">
-              <button type="button" className="button button-secondary" onClick={() => void resume(session.id)}>
-                Resume in My Space
+              <button type="button" className="button button-secondary" disabled={resumingId !== null} onClick={() => void resume(session.id)}>
+                {resumingId === session.id ? "Opening…" : "Resume in My Space"}
               </button>
             </div>
           </li>
         ))}
       </ul>
+      {resumeError && <p className="small-note" role="status">{resumeError}</p>}
     </section>
   );
 }
@@ -1019,7 +1029,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     const laterChapterActive = state.chapter === "belonging" && prior !== null;
     return <>
       <SavedChatsInJourney onResume={(payload) => { resumeSession(payload); stateDispatch({ type: "OPEN_CONVERSATION" }); }} />
-      <p className="lede">Only the words and choices you kept appear here. Nothing is saved beyond this session.</p>
+      <p className="lede">Takeaways and choices from this browser session stay here. Saved chats are private to your account and can be resumed.</p>
       <section className="panel goal-panel"><span className="tag tag-private">YOUR CHOICE · RELATIONSHIPS</span><h2>Try opening a conversation with Dad</h2><p>A small possible action, not a measure of how well the conversation goes.</p><div className="feedback-options" role="group" aria-label="Update the action you chose">{goalStates.map(([value, label]) => <button key={value} className={goalStatus === value ? "feedback-option selected" : "feedback-option"} aria-pressed={goalStatus === value} onClick={() => setGoalStatus(value)}>{label}</button>)}</div><p className="small-note">Status stays in this browser session. It does not mean your life is improving or that a goal is complete.</p><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_CONTRIBUTE" })}>Review contribution choices</SecondaryButton></section>
       <section className="panel"><h2>Other parts of life</h2><div className="topic-cards"><button className="topic-card" onClick={() => { startSeparateTopic("work", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Work decisions</strong><span>{topicChats.work?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button><button className="topic-card" onClick={() => { startSeparateTopic("rent", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Rent and housing</strong><span>{topicChats.rent?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button><button className="topic-card" onClick={() => { startSeparateTopic("family", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Family and choices</strong><span>{topicChats.family?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button></div><p className="small-note">Each topic has a separate in-memory transcript for this session. Nothing is carried into another topic unless you choose to restate it.</p></section>
       <div className="journey-grid">
