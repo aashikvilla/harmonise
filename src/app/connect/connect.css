@@ -7,7 +7,7 @@
   --cx-leaf: #f6d8c7;
   --cx-mist: #fbeee8;
   --cx-paper: #fffaf5;
-  --cx-card: #ffffff;
+  --cx-card: #fffefa;
   --cx-line: #eaded8;
   --cx-ink: #342f43;
   --cx-muted: #605b6b;
@@ -590,4 +590,11 @@
 }
 
 .cx-onetap { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px dashed var(--cx-line); }
+/* Theme-consistency: calm loading/empty states aligned to homepage tokens. */
+.cx-skeleton { min-height: 54px; padding: 14px 16px; border: 1px dashed var(--cx-line); border-radius: 12px; background: linear-gradient(100deg, #fbf1ed 20%, var(--cx-leaf) 50%, #fbf1ed 80%); background-size: 200% 100%; animation: cx-skeleton-shimmer 1.8s var(--cx-ease) infinite; }
+@keyframes cx-skeleton-shimmer { from { background-position: 120% 0; } to { background-position: -80% 0; } }
+.cx-state { padding: 22px; border: 1px solid var(--cx-line); border-radius: 16px; background: var(--cx-card); box-shadow: var(--cx-shadow); }
+.cx-state h2, .cx-state h3 { font: 500 22px/1.25 var(--cx-ser); letter-spacing: -.015em; }
+@media (prefers-reduced-motion: reduce) { .cx-skeleton { animation: none !important; } }
+@media (max-width: 640px) { .cx-state { padding: 18px; } .cx-body, .cx-topbar-inner { width: calc(100% - 32px); } }
 .cx-onetap .cx-note { margin: 10px 0 0; font-size: 13px; }

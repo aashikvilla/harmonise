@@ -37,7 +37,7 @@ export function CommunityHelperCard({ communityId }: { communityId: string }) {
   }
 
   if (state === "loading") return <section aria-busy="true" className="rounded-xl border border-[var(--line)] bg-[var(--lilac)] p-4">
-    <p role="status" className="text-sm text-[var(--muted)]">Checking this community’s helper…</p>
+    <p role="status" className="loading-skeleton text-sm text-[var(--muted)]">Checking this community’s helper…</p>
   </section>;
 
   if (state === "error" || !helper) return <section className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4">
@@ -47,7 +47,7 @@ export function CommunityHelperCard({ communityId }: { communityId: string }) {
 
   return <section className="rounded-xl border border-[var(--line)] bg-[var(--lilac)] p-4 sm:p-5" aria-label="Community AI helper">
     <div className="flex flex-wrap items-center gap-2">
-      <h3 className="font-semibold">{helper.displayName}</h3>
+      <h3 className="section-head">{helper.displayName}</h3>
       <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold">AI helper</span>
       <span className="text-sm text-[var(--muted)]">{helper.status === "active" ? "Configured" : "Paused"}</span>
     </div>

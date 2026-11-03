@@ -45,13 +45,13 @@ export function CommunityProgressCard({ communityId }: { communityId: string }) 
 
   if (state === "loading") {
     return <section aria-busy="true" className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]">
-      <p role="status" className="text-sm text-[var(--muted)]">Loading your community activity…</p>
+      <p role="status" className="loading-skeleton text-sm text-[var(--muted)]">Loading your community activity…</p>
     </section>;
   }
 
   if (state === "error" || !progress) {
     return <section className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]">
-      <h3 className="font-semibold">Community activity</h3>
+      <h3 className="section-head">Community activity</h3>
       <p role="alert" className="mt-1 text-sm text-[var(--muted)]">Your activity level couldn&apos;t be loaded.</p>
       <button type="button" onClick={() => void retry()} className="mt-3 min-h-11 rounded-full bg-[var(--sage)] px-4 py-2 text-sm font-semibold focus-visible:outline">
         Try again
@@ -71,7 +71,7 @@ export function CommunityProgressCard({ communityId }: { communityId: string }) 
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="page-kicker">YOUR COMMUNITY ACTIVITY</p>
-        <h3 id="community-progress-title" className="text-xl font-semibold">{LEVEL_LABELS[progress.level]}</h3>
+        <h3 id="community-progress-title" className="section-head">{LEVEL_LABELS[progress.level]}</h3>
       </div>
       <span className="rounded-full bg-[var(--lilac)] px-3 py-1.5 text-sm font-semibold">{progress.contributions} contributions</span>
     </div>

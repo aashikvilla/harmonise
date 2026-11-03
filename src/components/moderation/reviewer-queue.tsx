@@ -163,11 +163,11 @@ export default function ReviewerQueue() {
     }
   }
 
-  if (status === "loading") return <p role="status" className="text-[var(--muted)]">Loading reviewer access…</p>;
+  if (status === "loading") return <p role="status" className="loading-skeleton text-[var(--muted)]">Loading reviewer access…</p>;
   if (status === "unavailable") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">Moderation isn&apos;t connected yet</h2>
+        <h2 className="section-head">Moderation isn&apos;t connected yet</h2>
         <p className="mt-2 text-[var(--muted)]">The review queue appears once the database is connected and you hold a moderator role.</p>
       </div>
     );
@@ -177,7 +177,7 @@ export default function ReviewerQueue() {
   if (assignments.length === 0) {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">No reviewer access</h2>
+        <h2 className="section-head">No reviewer access</h2>
         <p className="mt-2 text-[var(--muted)]">
           This account is not a moderator in any community. Reviews are done by named humans only.
         </p>
@@ -256,7 +256,7 @@ export default function ReviewerQueue() {
       )}
 
       {queue === null ? (
-        <p role="status" className="text-[var(--muted)]">Loading queue…</p>
+        <p role="status" className="loading-skeleton text-[var(--muted)]">Loading queue…</p>
       ) : queue.length === 0 ? (
         <p className="rounded-xl border border-dashed border-[var(--line)] p-6 text-[var(--muted)]">
           The queue is clear. No open or appealed reports in this community.

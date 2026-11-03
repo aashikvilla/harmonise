@@ -106,7 +106,7 @@ export default function CommunityProposalReviewQueue() {
     </div>
     <p className="mt-2 text-sm text-[var(--muted)]">Only approve after confirming that a named person will cover moderation and escalation. The AI helper does not count as human coverage.</p>
     {notice && <p role="status" className="mt-3 rounded-lg bg-[var(--sage)] p-3 text-sm">{notice}</p>}
-    {state === "loading" && <p role="status" className="mt-4 text-sm text-[var(--muted)]">Loading proposals…</p>}
+    {state === "loading" && <p role="status" className="loading-skeleton mt-4 text-sm text-[var(--muted)]">Loading proposals…</p>}
     {state === "unavailable" && <div className="mt-4 text-sm">
       <p role="alert">Proposals couldn&apos;t be loaded.</p>
       <button type="button" onClick={() => { setState("loading"); void load(); }} className="mt-2 min-h-11 underline">Try again</button>

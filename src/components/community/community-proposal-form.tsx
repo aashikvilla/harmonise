@@ -200,11 +200,11 @@ export default function CommunityProposalForm() {
     }
   }
 
-  if (state === "loading") return <p role="status" className="text-[var(--muted)]">Checking your sign-in…</p>;
+  if (state === "loading") return <p role="status" className="loading-skeleton text-[var(--muted)]">Checking your sign-in…</p>;
 
   if (state === "unavailable") {
     return <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]" role="status">
-      <h2 className="text-xl font-semibold">Community creation isn’t connected yet</h2>
+      <h2 className="section-head">Community creation isn’t connected yet</h2>
       <p className="mt-2 text-[var(--muted)]">The live community service is unavailable right now. Your proposal has not been saved.</p>
     </section>;
   }
@@ -254,7 +254,7 @@ export default function CommunityProposalForm() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">AI-generated · editable draft</p>
-                  <h2 id="community-draft-title" className="mt-1 text-xl font-semibold">Community scope suggestions</h2>
+                  <h2 id="community-draft-title" className="section-head mt-1">Community scope suggestions</h2>
                 </div>
               </div>
               <div className="mt-4 space-y-4 text-sm">
