@@ -125,7 +125,7 @@ export default function RealCommunityList() {
             </span>
             {community.joined && <span className="rounded-full bg-[var(--lilac)] px-3 py-1 text-[var(--ink)]">Joined</span>}
           </div>
-          <h2 className="mt-3 text-xl font-semibold">{community.name}</h2>
+          <h2 className="serif-head mt-3 text-xl">{community.name}</h2>
           <p className="mt-1 text-[var(--muted)]">{community.description || "No description yet."}</p>
           {confirmedThemes.length > 0 &&
             (() => {

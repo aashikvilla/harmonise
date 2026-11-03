@@ -735,7 +735,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">
           {community.launch_status === "pending_review" ? "Private proposal" : community.visibility === "public" ? "Public community" : "Members-only community"} · real members, real posts
         </p>
-        <h2 className="mt-1 text-3xl font-semibold">{community.name}</h2>
+        <h2 className="serif-head mt-1 text-3xl">{community.name}</h2>
         <p className="mt-2 max-w-2xl text-[var(--muted)]">{community.description || "No description yet."}</p>
         <p className="mt-2 text-sm font-semibold">
           {community.memberCount} {community.memberCount === 1 ? "member" : "members"} · {community.postCount}{" "}

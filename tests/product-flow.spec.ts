@@ -418,6 +418,42 @@ test("navigation reaches safety information and supports keyboard use without ho
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+test("My Journey resumes a private saved chat and reports when it cannot be opened", async ({ page }) => {
+  await page.route("**/api/sessions", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ sessions: [{ id: "saved-session-1", title: "A private conversation", last_active_at: "2026-11-02T10:00:00.000Z" }] }),
+    });
+  });
+  await page.route("**/api/sessions/saved-session-1", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        session: { id: "saved-session-1", title: "A private conversation" },
+        messages: [{ role: "user", text: "I want to continue this private conversation." }],
+        understanding: null,
+      }),
+    });
+  });
+  await page.goto("/app?path=talk");
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name: "My Journey" }).click();
+  await expect(page.getByRole("heading", { name: "Your saved chats" })).toBeVisible();
+  await expect(page.getByText(/Saved chats are private to your account and can be resumed/i)).toBeVisible();
+  await page.getByRole("button", { name: "Resume in My Space" }).click();
+  await expect(page.getByText("I want to continue this private conversation.", { exact: true })).toBeVisible();
+
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name: "My Journey" }).click();
+  await page.unroute("**/api/sessions/saved-session-1");
+  await page.route("**/api/sessions/saved-session-1", async (route) => {
+    await route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: "not-found" }) });
+  });
+  await page.getByRole("button", { name: "Resume in My Space" }).click();
+  await expect(page.getByRole("status")).toHaveText("This saved chat couldn’t be opened. Please try again.");
+  await expect(page.getByRole("button", { name: "Resume in My Space" })).toBeEnabled();
+});
+
 test("hero and core flows fit 1920x1080 and mobile viewports without horizontal overflow", async ({ page }, testInfo) => {
   await page.goto("/app");
   await page.screenshot({ path: `/tmp/harmonise-${testInfo.project.name}-landing.png`, fullPage: true });
