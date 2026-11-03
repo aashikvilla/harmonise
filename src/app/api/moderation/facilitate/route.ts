@@ -16,6 +16,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (process.env.COMMUNITY_FACILITATOR_ENABLED !== "true") {
+    return NextResponse.json({ error: "unavailable" }, { status: 503 });
+  }
   const requestId = newRequestId();
   const started = Date.now();
   const secret = process.env.MODERATION_WORKER_SECRET?.trim();

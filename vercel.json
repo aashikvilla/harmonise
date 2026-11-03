@@ -4,10 +4,6 @@
     {
       "path": "/api/moderation/process",
       "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/moderation/facilitate",
-      "schedule": "0 9 * * *"
     }
   ]
 }
