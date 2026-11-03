@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ProductHeader from "@/components/product-header";
 
 type Contribution = {
   communityId: string;
@@ -44,9 +45,8 @@ const RUNGS: Array<{ name: string; rule: string }> = [
 
 async function getJson<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(path, { cache: "no-store" });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
+    const response = await fetch(path, { credentials: "include", cache: "no-store" });
+    return (await response.json().catch(() => null)) as T | null;
   } catch {
     return null;
   }
@@ -55,6 +55,9 @@ async function getJson<T>(path: string): Promise<T | null> {
 export default function ProfilePage() {
   const [contributions, setContributions] = useState<Contribution[] | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [profileStatus, setProfileStatus] = useState<"loading" | "ready" | "signed-out" | "error">("loading");
+  const [profileUserId, setProfileUserId] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
   const [promotions, setPromotions] = useState<Record<string, Promotion[]>>({});
   const [requesting, setRequesting] = useState<{ communityId: string; role: string } | null>(null);
   const [note, setNote] = useState("");
@@ -63,18 +66,45 @@ export default function ProfilePage() {
   const [seenAt, setSeenAt] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
-      const seen = window.localStorage.getItem("harmonise-notif-seen") ?? "";
-      setSeenAt(seen);
-      const [mine, notifs] = await Promise.all([
-        getJson<{ contributions?: Contribution[] }>("/api/account/contributions"),
-        getJson<{ notifications?: Notification[] }>("/api/account/notifications"),
-      ]);
-      setContributions(mine?.contributions ?? []);
-      setNotifications(notifs?.notifications ?? []);
-      window.localStorage.setItem("harmonise-notif-seen", new Date().toISOString());
+      try {
+        const meResponse = await fetch("/api/auth/me", { cache: "no-store", credentials: "include" });
+        if (meResponse.status === 401) {
+          if (!cancelled) setProfileStatus("signed-out");
+          return;
+        }
+        if (!meResponse.ok) throw new Error("Sign-in status unavailable");
+        const me = (await meResponse.json()) as { id?: unknown };
+        if (typeof me.id !== "string") throw new Error("Invalid account response");
+        const seenKey = `harmonise-notif-seen:${me.id}`;
+        const seen = window.localStorage.getItem(seenKey) ?? "";
+        const [mineResponse, notificationsResponse] = await Promise.all([
+          fetch("/api/account/contributions", { cache: "no-store", credentials: "include" }),
+          fetch("/api/account/notifications", { cache: "no-store", credentials: "include" }),
+        ]);
+        if (!mineResponse.ok || !notificationsResponse.ok) throw new Error("Profile data unavailable");
+        const [mine, notifs] = await Promise.all([
+          mineResponse.json() as Promise<{ contributions?: Contribution[] }>,
+          notificationsResponse.json() as Promise<{ notifications?: Notification[] }>,
+        ]);
+        if (cancelled) return;
+        setProfileUserId(me.id);
+        setSeenAt(seen);
+        setContributions(Array.isArray(mine.contributions) ? mine.contributions : []);
+        setNotifications(Array.isArray(notifs.notifications) ? notifs.notifications : []);
+        setProfileStatus("ready");
+      } catch {
+        if (!cancelled) setProfileStatus("error");
+      }
     })();
-  }, []);
+    return () => { cancelled = true; };
+  }, [retryKey]);
+
+  useEffect(() => {
+    if (profileStatus !== "ready" || !profileUserId) return;
+    window.localStorage.setItem(`harmonise-notif-seen:${profileUserId}`, new Date().toISOString());
+  }, [profileStatus, profileUserId]);
 
   useEffect(() => {
     if (!contributions) return;
@@ -124,18 +154,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10">
-      <h1 className="serif-head text-3xl">Your profile</h1>
+    <div className="product-page">
+      <ProductHeader current="profile" />
+      <main className="product-page-content flex max-w-3xl flex-col gap-6">
+      <p className="product-page-kicker">Your place to pick up again</p>
+      <h1 className="serif-head">Your profile</h1>
       <p className="text-sm text-[var(--muted)]">
         Private to you. Other members only ever see your per-community alias and standing badge.
       </p>
       {notice && <p className="rounded-2xl bg-[var(--lilac)] p-4 text-sm">{notice}</p>}
 
-      <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Notifications">
-        <h2 className="font-semibold">
+      {profileStatus === "signed-out" && <p className="state-card text-sm">Sign in to see your circles and private notifications. <Link href="/connect" className="underline">Continue to sign in.</Link></p>}
+      {profileStatus === "error" && <p role="alert" className="state-card text-sm">Your profile could not be loaded. Your circles and notifications are not being shown as empty. <button type="button" className="underline" onClick={() => { setProfileStatus("loading"); setRetryKey((key) => key + 1); }}>Try again</button></p>}
+
+      <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Notifications">
+        <h2 className="section-head">
           Notifications{unread > 0 ? ` (${unread} new)` : ""}
         </h2>
-        {notifications.length === 0 ? (
+        {profileStatus === "loading" ? <p className="loading-skeleton mt-2 text-sm" role="status">Loading your notifications…</p> : profileStatus !== "ready" ? <p className="mt-1 text-sm">Sign in to view private notifications.</p> : notifications.length === 0 ? (
           <p className="mt-1 text-sm">Nothing in the last 7 days.</p>
         ) : (
           <ul className="mt-2 flex flex-col gap-2 text-sm">
@@ -152,11 +188,13 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="My circles">
-        <h2 className="font-semibold">My circles</h2>
-        {contributions === null ? (
-          <p className="mt-1 text-sm">Loading…</p>
-        ) : contributions.length === 0 ? (
+      <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="My circles">
+        <h2 className="section-head">My circles</h2>
+        {profileStatus === "loading" ? (
+          <p className="loading-skeleton mt-2 text-sm" role="status">Loading your circles…</p>
+        ) : profileStatus !== "ready" ? (
+          <p className="mt-1 text-sm">Sign in to view your private circles.</p>
+        ) : !contributions || contributions.length === 0 ? (
           <p className="mt-1 text-sm">
             You have not joined any circles yet. <Link href="/communities" className="underline">Browse circles</Link>.
           </p>
@@ -248,8 +286,8 @@ export default function ProfilePage() {
         )}
       </section>
 
-      <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Standing ladder">
-        <h2 className="font-semibold">How standing works</h2>
+      <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Standing ladder">
+        <h2 className="section-head">How standing works</h2>
         <ul className="mt-2 flex flex-col gap-1 text-sm">
           {RUNGS.map((rung) => (
             <li key={rung.name}>
@@ -262,6 +300,7 @@ export default function ProfilePage() {
           rationale, and you can appeal a declined request by writing to the moderators.
         </p>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }
