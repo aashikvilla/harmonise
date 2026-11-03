@@ -658,3 +658,16 @@ confirmations have no persistence endpoint (labeled this-session
 reflections); no verified-supporter roster endpoint exists (coaches tab
 shows real application state instead); profile/ops/moderation are on
 develop but not yet deployed.
+
+
+**Migration verification addendum (2026-11-03, evening):** migrations
+0005/0006 are confirmed live. Verified end-to-end (browser + API): post
+reactions toggle on/off with real counts, feature/unfeature a journey,
+volunteer application -> moderator decline in the queue UI -> decision with
+rationale on the member profile, community archive/revive flipping public
+directory visibility, connect circles rendering real memberships and posts.
+Full suite re-run post-migration: 99 passed + 1 load flake (passes alone),
+18 credential-gated skips. Remaining config decisions, not code gaps: the
+community reviewer allowlist (COMMUNITY_REVIEWER_USER_IDS) returns 403 for
+current moderators, and the facilitator stays behind
+COMMUNITY_FACILITATOR_ENABLED until the unprompted-post policy is decided.
