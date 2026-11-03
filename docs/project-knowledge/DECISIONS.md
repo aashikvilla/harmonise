@@ -1,5 +1,11 @@
 # Decision Notes
 
+## 2026-11-03 — Hold automated facilitator replies until identity is verified
+
+- Remove the facilitator cron and default its endpoint to disabled with `COMMUNITY_FACILITATOR_ENABLED`.
+- The current alias lookup and random profile ID cannot safely establish a bot identity.
+- Re-enable after an Auth-backed automated actor, explicit content-transfer consent, idempotent writes and a synthetic end-to-end run are verified. Daily advisory triage remains scheduled.
+
 ## 2026-11-02 — Use Meta Model API directly from server routes
 
 - **Decision:** Use Muse Spark 1.3 Standard for text chat, adviser output, and structured moderation triage; use Muse Voice Transcribe 1.0 for voice input.

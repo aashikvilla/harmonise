@@ -1,5 +1,9 @@
 # Past Mistakes and Preventive Rules
 
+## 2026-11-03 — Display aliases cannot establish an automated actor's identity
+
+Facilitator setup searched a human-editable alias and otherwise created a profile with an ID absent from Auth. The first path could attribute AI output to a person, and the second violates the profile foreign key. Provision automated actors through a trusted identity mechanism with a unique immutable binding. Prove provisioning, concurrent calls and attribution before scheduling writes.
+
 ## 2026-11-03 — Remote migration tools can assign versions different from local filenames
 
 Applying checked-in SQL through the Supabase MCP created timestamped entries in

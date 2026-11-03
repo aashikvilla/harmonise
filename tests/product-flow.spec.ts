@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  await page.route(/\/api\/communities(?:\?.*)?$/, route => route.fulfill({ json: {
+    communities: [{ id: "steady-ground", name: "Finding steady ground", description: "A synthetic circle for practical peer support.", visibility: "member", launch_status: "approved", memberCount: 12, postCount: 8, recentPostCount: 2, topics: ["family-expectations", "personal-autonomy"] }],
+  } }));
   await page.route("**/api/chat", async (route) => {
     const body = route.request().postDataJSON() as { message?: unknown };
     const message = typeof body.message === "string" ? body.message : "";
@@ -409,6 +412,8 @@ test("My Journey keeps work and family conversation transcripts separate", async
 
 test("navigation reaches safety information and supports keyboard use without horizontal overflow", async ({ page }, testInfo) => {
   await page.goto("/app?path=talk");
+  await expect(page.getByRole("textbox", { name: "Your message" })).toBeEnabled();
+  await page.getByRole("link", { name: "Skip to content" }).focus();
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toBeVisible();
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("button", { name: "Find Support" }).click();

@@ -6,7 +6,7 @@ Reviewed 3 November 2026 against baseline `7207d5b`. This is a living execution 
 
 - The earlier cron deployment failure came from `*/5 * * * *` on Vercel Hobby. The fixed daily schedule passed GitHub verification and Vercel preview, and PR #5 was merged. Latest observed production deployment `dpl_BpYBJbZMEcNAQpuzvwQJLasGbN9t` is READY for `7207d5b`.
 - Existing session journals record local builds, deterministic journeys and four synthetic provider smoke calls. Those are historical evidence, not newly repeated live tests.
-- Current review passed lint and typecheck before the final test selector changes. A targeted desktop/mobile browser run initially passed 6/10. Four failures involved proposal navigation and an outdated audit-trail empty-state assertion. A serial rerun is recorded in the session journal.
+- Isolated production build (including TypeScript) and lint passed. Targeted desktop/mobile journeys passed 10/10 after fixing navigation waits and an outdated audit-trail expectation. The full 102-case run passed 73, skipped 26 and failed three. The failures exposed an unstubbed live directory dependency and a keyboard setup race. After correcting the fixtures/setup, all four affected desktop/mobile cases passed on rerun. The original moving-checkout run was interrupted and is excluded from release evidence.
 - Current review performed no production data mutations and no new provider completion. Authenticated live feature behavior, real email delivery, model quality and concurrent writes remain verification gaps.
 - Preview readiness previously reported missing database/model configuration. A green preview cannot establish production integration correctness.
 
@@ -50,6 +50,8 @@ Reviewed 3 November 2026 against baseline `7207d5b`. This is a living execution 
 | P1 / G13 | Hardcoded demo and real communities need a single understandable recommendation handoff. | Existing live-circle recommendations and labeled sample grid. | Test no-match, one match, many matches, rejected proposals and empty directory. Keep the confirmed reason visible into joining. |
 | P2 / G14 | Feed uses a bounded latest window; older useful conversations may be difficult to find. | Source, `listPosts` limit 50 and replies limit 100. | Cursor pagination and visible older-content affordance. Test more than 50 posts and 100 replies. |
 | P2 / G15 | Global process counters and memory rate limits can differ across server instances. | Architecture and Ops implementation. | Shared bounded metrics/rate-limit store before public scaling. Verify quotas across two instances. |
+| P1 / G16 | Archived circles are described as readable, but `checkPostsAccess` rejects every launch status except approved, including archived. | Source, `community.ts`, `checkPostsAccess`, called by posts GET. | Separate read permission from write permission. Active members can read archived feeds and prior replies, while post/reply/reaction mutations remain forbidden. |
+| P1 / G17 | Live circle recommendations use the hardcoded `COMMUNITY_THEMES[id]` map, so newly approved communities have no overlap and disappear from recommendations regardless of their approved topics. | Source, `CircleRecommendation` in `harmonise-experience.tsx`. | Derive normalized themes from approved scope metadata. Test a newly approved community, unknown themes, zero members and tied scores. |
 
 ## Design, accessibility and emotional friction
 
@@ -96,9 +98,9 @@ High-value experiments, pending product choice and evaluation
 
 | Journey | Required variants | Current evidence / gap |
 |---|---|---|
-| Visitor/demo | first visit, one-tap/manual entry, refresh, saved chat, offline retry | Historical fixture E2E and latest 6 passing targeted cases; complete rerun pending. |
+| Visitor/demo | first visit, one-tap/manual entry, refresh, saved chat, offline retry | Current isolated full-suite coverage plus passing targeted reruns. Live persistence remains separate. |
 | Auth | OTP success/expiry/wrong code/resend/rate-limit/refresh/sign-out | Existing code and fixture tests; live mailbox verification pending. |
-| Proposal | validation, setup failure, edit/confirm, pending owner/outsider, approve/decline | Local fixture navigation failed in first run; serial rerun pending. |
+| Proposal | validation, setup failure, edit/confirm, pending owner/outsider, approve/decline | Local fixture proposal/approval journeys passed desktop and mobile. Live authorization remains pending. |
 | Member | join/leave/rejoin, private feed, Ask/Share, edit review, reply/report/block | Existing live tests gated by credentials; current multi-account live run pending. |
 | Engagement | react/unreact/retry, feature/revoke, deleted/held/blocked posts | Source review identifies authorization gaps; post-fix live matrix pending. |
 | Moderator | outsider denial, assignment, report decision, conflict appeal, export, archive/revive | Source review and historic tests; concurrency and direct Data API checks pending. |
