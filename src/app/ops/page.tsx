@@ -30,6 +30,7 @@ export default function OpsPage() {
 
   async function load(value: string) {
     setError("");
+    setBody(null);
     try {
       const res = await fetch("/api/ops/metrics", { headers: { "x-ops-secret": value }, cache: "no-store" });
       if (res.status === 403) {
@@ -37,6 +38,7 @@ export default function OpsPage() {
         setBody(null);
         return;
       }
+      if (!res.ok) throw new Error("Metrics unavailable");
       const data = (await res.json()) as OpsBody;
       setBody(data);
       setBacklogHours(

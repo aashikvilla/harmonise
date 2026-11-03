@@ -21,7 +21,7 @@ import { SupabaseError, isUuid, selectSingle, supabaseCount, supabaseRest } from
 import { ensureProfile } from "@/lib/db/sessions";
 import { enqueueModerationEvent } from "@/lib/db/moderation";
 
-export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number; recentPostCount: number; joined: boolean; moderatorCount: number };
+export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number; recentPostCount: number; joined: boolean };
 export type PublicCommunity = Omit<CommunityWithCounts, "created_by" | "reviewed_by" | "reviewed_at" | "coverage_confirmed_at">;
 export type PostWithAuthor = PostRow & { author_alias: string; replyCount: number; lastReplyAt: string | null };
 
@@ -76,13 +76,12 @@ export async function listCommunities(userId?: string): Promise<CommunityWithCou
   }
   return Promise.all(
     rows.map(async (community) => {
-      const [memberCount, postCount, recentPostCount, moderatorCount] = await Promise.all([
+      const [memberCount, postCount, recentPostCount] = await Promise.all([
         supabaseCount("memberships", `?community_id=eq.${community.id}&status=eq.active`),
         supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible`),
         supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible&created_at=gte.${weekAgo}`),
-        supabaseCount("memberships", `?community_id=eq.${community.id}&status=eq.active&role=eq.moderator`),
       ]);
-      return { ...community, memberCount, postCount, recentPostCount, joined: joinedIds.has(community.id), moderatorCount };
+      return { ...community, memberCount, postCount, recentPostCount, joined: joinedIds.has(community.id) };
     }),
   );
 }
@@ -92,13 +91,12 @@ export async function getCommunityWithCounts(id: string): Promise<CommunityWithC
   const community = selectSingle(rows);
   if (!community) return null;
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [memberCount, postCount, recentPostCount, moderatorCount] = await Promise.all([
+  const [memberCount, postCount, recentPostCount] = await Promise.all([
     supabaseCount("memberships", `?community_id=eq.${id}&status=eq.active`),
     supabaseCount("posts", `?community_id=eq.${id}&status=eq.visible`),
     supabaseCount("posts", `?community_id=eq.${id}&status=eq.visible&created_at=gte.${weekAgo}`),
-    supabaseCount("memberships", `?community_id=eq.${id}&status=eq.active&role=eq.moderator`),
   ]);
-  return { ...community, memberCount, postCount, recentPostCount, joined: false, moderatorCount };
+  return { ...community, memberCount, postCount, recentPostCount, joined: false };
 }
 
 export async function createPendingCommunity(input: {
@@ -276,11 +274,13 @@ export async function setCommunityArchived(userId: string, communityId: string, 
   try {
     const rows = await supabaseRest<CommunityRow[]>("communities", {
       method: "PATCH",
-      query: `?id=eq.${communityId}`,
+      query: `?id=eq.${communityId}&launch_status=eq.${archived ? "approved" : "archived"}`,
       body: { launch_status: archived ? "archived" : "approved" },
       prefer: "return=representation",
     });
-    return { community: selectSingle(rows) ?? null };
+    const community = selectSingle(rows);
+    if (!community) return { error: "forbidden" } as const;
+    return { community };
   } catch {
     return null;
   }
@@ -685,6 +685,21 @@ export async function createReport(
 
 export type ReactionSummary = { count: number; reacted: boolean };
 
+export async function readReactionSummary(userId: string, communityId: string, postId: string) {
+  if (!isUuid(postId)) return { error: "not-found" } as const;
+  const access = await checkPostsAccess(userId, communityId);
+  if (!access.ok) return { error: "forbidden" } as const;
+  const posts = await supabaseRest<PostRow[]>("posts", {
+    query: `?id=eq.${postId}&community_id=eq.${communityId}&select=*${access.moderator ? "" : "&status=eq.visible"}`,
+  });
+  const post = selectSingle(posts);
+  if (!post) return { error: "not-found" } as const;
+  const blocked = await blockedMembershipIds(userId, communityId);
+  if (blocked.includes(post.author_membership_id)) return { error: "not-found" } as const;
+  const membership = await getMembership(userId, communityId);
+  return getReactionSummary(postId, membership?.id ?? null);
+}
+
 export async function getReactionSummary(
   postId: string,
   membershipId: string | null,
@@ -710,10 +725,12 @@ export async function toggleReaction(
   postId: string,
 ): Promise<ReactionSummary | { error: "not-found" | "forbidden" } | null> {
   if (!isUuid(postId)) return { error: "not-found" };
+  const readable = await readReactionSummary(userId, communityId, postId);
+  if (!readable || "error" in readable) return readable;
   const membership = await getMembership(userId, communityId);
   if (!membership) return { error: "not-found" };
   if (membership.status !== "active") return { error: "forbidden" };
-  const posts = await supabaseRest<PostRow[]>("posts", { query: `?id=eq.${postId}&community_id=eq.${communityId}&select=id` });
+  const posts = await supabaseRest<PostRow[]>("posts", { query: `?id=eq.${postId}&community_id=eq.${communityId}&status=eq.visible&select=id` });
   if (!selectSingle(posts)) return { error: "not-found" };
   try {
     const existing = await supabaseRest<PostReactionRow[]>("post_reactions", {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useSession, type ConnectTab } from "@/lib/connect/session";
 import Adviser from "@/components/connect/adviser";
 import Circles from "@/components/connect/circles";
@@ -46,10 +47,45 @@ export default function MemberShell() {
   const { state, dispatch } = useSession();
   const router = useRouter();
   const active = TABS.find((tab) => tab.id === state.tab) ?? TABS[0];
+  const [restoreAttempted, setRestoreAttempted] = useState(false);
+  const restoring = !state.entered && !restoreAttempted;
+  useEffect(() => {
+    if (state.entered) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+        const body = (await response.json().catch(() => null)) as { id?: unknown; email?: unknown } | null;
+        if (cancelled) return;
+        if (response.ok && body && typeof body.id === "string") {
+          const address = typeof body.email === "string" ? body.email : "";
+          const local = address.split("@")[0].replace(/[._-]+/g, " ").trim();
+          const displayName = local ? local.charAt(0).toUpperCase() + local.slice(1) : "Member";
+          dispatch({ type: "enter", displayName, nameMode: "alias", email: address, demo: false });
+        }
+      } catch {
+        /* Signed-out visitors keep the entrance card. */
+      } finally {
+        if (!cancelled) setRestoreAttempted(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [state.entered, dispatch]);
 
-  function exitDemo() {
+  async function exitSpace() {
+    await fetch("/api/auth/signout", { method: "POST", credentials: "include" }).catch(() => null);
     dispatch({ type: "exit" });
     router.push("/connect");
+  }
+
+  if (restoring) {
+    return (
+      <main className="cx-gate">
+        <div className="cx-gate-inner">
+          <p className="cx-note" role="status" style={{ maxWidth: "620px", margin: "60px auto" }}>Opening your space…</p>
+        </div>
+      </main>
+    );
   }
 
   if (!state.entered) {
@@ -59,7 +95,7 @@ export default function MemberShell() {
           <section className="cx-card-white" style={{ maxWidth: "620px", margin: "60px auto" }} aria-label="Entry required">
             <p className="cx-kicker">Harmonise</p>
             <h1 style={{ fontFamily: "var(--cx-ser)", fontSize: "34px", margin: "6px 0 10px" }}>Start at the entrance</h1>
-            <p className="cx-lede">Choose how you want to enter — it takes less than a minute, or explore the demo.</p>
+            <p className="cx-lede">Sign in with email — it takes less than a minute.</p>
             <Link className="cx-btn cx-btn-primary" href="/connect">Go to entrance</Link>
           </section>
         </div>
@@ -77,8 +113,8 @@ export default function MemberShell() {
             <button type="button" className="cx-btn cx-btn-urgent" onClick={() => dispatch({ type: "urgent", open: true })}>
               Urgent support
             </button>
-            <button type="button" className="cx-btn cx-btn-soft" onClick={exitDemo}>
-              Exit demo
+            <button type="button" className="cx-btn cx-btn-soft" onClick={() => void exitSpace()}>
+              Sign out
             </button>
           </div>
         </div>
