@@ -26,6 +26,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            docs
+            evals
+            public
+            scripts
+            src
+            supabase
+            tests
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -48,6 +58,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            docs
+            evals
+            public
+            scripts
+            src
+            supabase
+            tests
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -69,6 +89,16 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            docs
+            evals
+            public
+            scripts
+            src
+            supabase
+            tests
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
