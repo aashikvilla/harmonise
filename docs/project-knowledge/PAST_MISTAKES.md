@@ -101,3 +101,10 @@ Next server stopped answering readiness requests. The affected homepage and
 product flows passed when rerun serially after the server recovered. Capture
 `/api/ready` and server logs, then rerun affected journeys before changing app
 behavior based on a timeout.
+
+## 2026-11-03 — Test-user seeders must never inherit the app's database target
+
+A committed local seeder read `.env.local`, created fresh Supabase users and
+moderator memberships on every run, and had no cleanup path. Use dedicated
+test-project credentials plus an explicit project confirmation; never inherit
+the app's default Supabase target for destructive or persistent test setup.
