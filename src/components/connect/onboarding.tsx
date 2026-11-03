@@ -1,116 +1,183 @@
 "use client";
 
-import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/connect/session";
 import { CoachDashboardPreview } from "@/components/connect/coaches";
 import SharedBrand from "@/components/connect/brand";
 
-const DEMO_EMAIL = "demo@harmonise.example";
-const DEMO_PASSWORD = "MuseDemo2026!";
-const DEMO_DISPLAY_NAME = "Quiet Fern";
-
-function subscribeToHydration() {
-  return () => {};
-}
-
-function getClientHydrationSnapshot() {
-  return true;
-}
-
-function getServerHydrationSnapshot() {
-  return false;
-}
-
 function Brand() {
   return <SharedBrand tagline="Human growth, shared." />;
 }
-function OneTapDemo() {
-  const { dispatch } = useSession();
-  const router = useRouter();
 
-  function enter() {
-    dispatch({ type: "enter", displayName: DEMO_DISPLAY_NAME, nameMode: "alias", email: DEMO_EMAIL, demo: true });
-    router.push("/connect/member");
+function displayNameFor(email: string): string {
+  const local = email.split("@")[0].replace(/[._-]+/g, " ").trim();
+  if (!local) return "Member";
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+type MeResult = { id: string; email?: string } | null;
+
+async function fetchMe(): Promise<MeResult> {
+  try {
+    const response = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+    if (!response.ok) return null;
+    const body = (await response.json().catch(() => null)) as { id?: unknown; email?: unknown } | null;
+    if (!body || typeof body.id !== "string") return null;
+    return { id: body.id, email: typeof body.email === "string" ? body.email : undefined };
+  } catch {
+    return null;
   }
-
-  return (
-    <div className="cx-onetap">
-      <button type="button" className="cx-btn cx-btn-primary cx-btn-block" onClick={enter}>
-        Try the demo in one tap
-      </button>
-      <p className="cx-note">
-        One tap confirms you are 18 or older and that demo messages are sent to Meta Muse Spark. Shared demo
-        account — nothing is saved. Prefer the manual sign-in below instead.
-      </p>
-    </div>
-  );
 }
 
 function MemberForm() {
   const { dispatch } = useSession();
   const router = useRouter();
-  const ready = useSyncExternalStore(
-    subscribeToHydration,
-    getClientHydrationSnapshot,
-    getServerHydrationSnapshot,
-  );
-  const [email, setEmail] = useState(DEMO_EMAIL);
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [checking, setChecking] = useState(true);
+  const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [adult, setAdult] = useState(false);
   const [providerConsent, setProviderConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (email.trim().toLowerCase() !== DEMO_EMAIL || password !== DEMO_PASSWORD) {
-      setError("Those demo credentials do not match. Use the credentials shown above.");
-      return;
-    }
-    if (!adult) {
-      setError("Please confirm you are 18 or older.");
-      return;
-    }
-    if (!providerConsent) {
-      setError("Please confirm that your message will be sent to Meta Muse Spark.");
-      return;
-    }
-    dispatch({ type: "enter", displayName: DEMO_DISPLAY_NAME, nameMode: "alias", email: DEMO_EMAIL, demo: true });
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const me = await fetchMe();
+      if (cancelled) return;
+      if (me) setSignedInEmail(me.email ?? "");
+      setChecking(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  function enterSpace(address: string) {
+    dispatch({ type: "enter", displayName: displayNameFor(address), nameMode: "alias", email: address, demo: false });
     router.push("/connect/member");
   }
 
-  return (
-    <div>
-      <OneTapDemo />
-      <div className="cx-demo-credentials" aria-label="Demo credentials">
-        <p className="cx-demo-title">Demo account</p>
-        <dl>
-          <div><dt>Email</dt><dd>{DEMO_EMAIL}</dd></div>
-          <div><dt>Password</dt><dd>{DEMO_PASSWORD}</dd></div>
-        </dl>
-        <p>These shared demo credentials are not a private or real account.</p>
+  function disclosuresOk(): boolean {
+    if (!adult) {
+      setError("Please confirm you are 18 or older.");
+      return false;
+    }
+    if (!providerConsent) {
+      setError("Please confirm that your message will be sent to Meta Muse Spark.");
+      return false;
+    }
+    return true;
+  }
+
+  async function sendCode() {
+    if (busy) return;
+    if (!disclosuresOk()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (response.ok) {
+        setCodeSent(true);
+      } else if (response.status === 429) {
+        setError("Too many code requests. Wait a minute and try again.");
+      } else {
+        setError("The sign-in code could not be sent. Check the email and try again.");
+      }
+    } catch {
+      setError("The sign-in code could not be sent. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyCode() {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
+      });
+      if (!response.ok) {
+        setError("That code did not match or has expired. Resend a fresh code and use the latest email.");
+        return;
+      }
+      const me = await fetchMe();
+      enterSpace(me?.email ?? email.trim());
+    } catch {
+      setError("Sign-in could not be confirmed. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function switchAccount() {
+    setBusy(true);
+    try {
+      await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
+    } catch {
+      /* The sign-in form still shows. */
+    }
+    setSignedInEmail(null);
+    setBusy(false);
+  }
+
+  function submitSend(event: FormEvent) {
+    event.preventDefault();
+    void sendCode();
+  }
+
+  function submitVerify(event: FormEvent) {
+    event.preventDefault();
+    void verifyCode();
+  }
+
+  if (checking) {
+    return <p className="cx-note" role="status">Checking your sign-in…</p>;
+  }
+
+  if (signedInEmail !== null) {
+    return (
+      <div>
+        <p className="cx-note">You are signed in{signedInEmail ? ` as ${signedInEmail}` : ""}.</p>
+        <div className="cx-cta-row">
+          <button type="button" className="cx-btn cx-btn-primary cx-btn-block" onClick={() => enterSpace(signedInEmail)}>
+            Continue to your space
+          </button>
+        </div>
+        <div className="cx-cta-row">
+          <button type="button" className="cx-btn cx-btn-soft cx-btn-block" disabled={busy} onClick={() => void switchAccount()}>
+            Use a different account
+          </button>
+        </div>
       </div>
-      <form onSubmit={submit} noValidate aria-label="Demo account sign in">
+    );
+  }
+
+  if (!codeSent) {
+    return (
+      <form onSubmit={submitSend} noValidate aria-label="Member email sign in">
         <div className="cx-field">
-          <label className="cx-label" htmlFor="cx-demo-email">Demo email</label>
+          <label className="cx-label" htmlFor="cx-member-email">Email for a sign-in code</label>
           <input
-            id="cx-demo-email"
+            id="cx-member-email"
             className="cx-input"
             type="email"
-            autoComplete="username"
+            autoComplete="email"
+            maxLength={120}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-          />
-        </div>
-        <div className="cx-field">
-          <label className="cx-label" htmlFor="cx-demo-password">Demo password</label>
-          <input
-            id="cx-demo-password"
-            className="cx-input"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            placeholder="you@example.com"
           />
         </div>
         <label className="cx-check-row">
@@ -123,17 +190,61 @@ function MemberForm() {
         </label>
         {error ? <p className="cx-error" role="alert">{error}</p> : null}
         <div className="cx-disclaimer">
-          Demo only: sign-in and circle membership stay in this browser session. No account, conversation, or community
-          post is written to Supabase. Use fictional details; do not enter information that identifies you.
+          A private account: your conversations are stored for you alone and expire after 90 days without use.
+          Nothing is shared with any community without your explicit review.
           Harmonise is not therapy, diagnosis, legal advice, financial advice, or emergency response.
         </div>
         <div className="cx-cta-row">
-          <button type="submit" disabled={!ready} className="cx-btn cx-btn-primary cx-btn-block">
-            Sign in and continue to chat
+          <button type="submit" disabled={busy || email.trim().length === 0} className="cx-btn cx-btn-primary cx-btn-block">
+            {busy ? "Sending…" : "Email me a code"}
           </button>
         </div>
       </form>
-    </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submitVerify} noValidate aria-label="Member code verification">
+      <p className="cx-note">A code is on its way to {email.trim()}. Codes expire quickly — always use the most recent email.</p>
+      <div className="cx-field">
+        <label className="cx-label" htmlFor="cx-member-code">6-digit code from your email</label>
+        <input
+          id="cx-member-code"
+          className="cx-input"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={8}
+          value={code}
+          onChange={(event) => setCode(event.target.value)}
+          placeholder="123456"
+        />
+      </div>
+      {error ? <p className="cx-error" role="alert">{error}</p> : null}
+      <div className="cx-cta-row">
+        <button type="submit" disabled={busy || code.trim().length === 0} className="cx-btn cx-btn-primary cx-btn-block">
+          {busy ? "Checking…" : "Sign in and continue to chat"}
+        </button>
+      </div>
+      <div className="cx-cta-row">
+        <button type="button" className="cx-btn cx-btn-soft cx-btn-block" disabled={busy} onClick={() => void sendCode()}>
+          Resend code
+        </button>
+      </div>
+      <div className="cx-cta-row">
+        <button
+          type="button"
+          className="cx-btn cx-btn-soft cx-btn-block"
+          disabled={busy}
+          onClick={() => {
+            setCodeSent(false);
+            setCode("");
+            setError(null);
+          }}
+        >
+          Use a different email
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -202,7 +313,7 @@ export default function Onboarding() {
             <ol className="cx-flow">
               <li>
                 <span className="cx-flow-num" aria-hidden="true">1</span>
-                <div><strong>Sign in to the demo</strong><span>Use the shared demo credentials; no new account is created.</span></div>
+                <div><strong>Sign in with email</strong><span>A one-time code — no password and no shared account.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">2</span>
@@ -210,7 +321,7 @@ export default function Onboarding() {
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">3</span>
-                <div><strong>You choose a circle</strong><span>Sample communities appear only after you ask to see them.</span></div>
+                <div><strong>You choose a circle</strong><span>Communities appear only after you ask to see them.</span></div>
               </li>
             </ol>
             <div className="cx-privacy-list">
@@ -218,15 +329,15 @@ export default function Onboarding() {
               <ul>
                 <li>Meta Muse Spark generates general guidance from the message you send.</li>
                 <li>Your conversation is not posted to a community.</li>
-                <li>Demo chat and circle membership stay in this browser session, not the app database.</li>
-                <li>Sample circles appear after you ask and joining is your choice.</li>
+                <li>Your account is private: conversations stay with you and expire after 90 days without use.</li>
+                <li>Circles appear after you ask, and joining is always your choice.</li>
                 <li>Raw conversation should never automatically become a public profile or community post.</li>
               </ul>
             </div>
           </div>
           <section className="cx-gate-card cx-card-white" aria-label="Enter Harmonise">
-            <p className="cx-kicker">Demo sign-in</p>
-            <h2>Continue without creating an account</h2>
+            <p className="cx-kicker">Member sign-in</p>
+            <h2>Continue with your private account</h2>
             <div className="cx-path-tabs" role="tablist" aria-label="Entry path">
               <button
                 type="button"
@@ -235,7 +346,7 @@ export default function Onboarding() {
                 className="cx-path-tab"
                 onClick={() => setPath("member")}
               >
-                Member demo
+                Member sign-in
               </button>
               <button
                 type="button"
