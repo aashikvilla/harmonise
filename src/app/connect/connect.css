@@ -546,6 +546,7 @@
 @media (max-width: 1020px) {
   .cx-body { grid-template-columns: 240px minmax(0, 1fr); gap: 18px; }
   .cx-gate-grid { grid-template-columns: 1fr; }
+  .cx-gate-grid .cx-gate-card { order: -1; }
 }
 @media (max-width: 760px) {
   .cx-gate-inner { width: calc(100% - 32px); }
