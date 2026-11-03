@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { logRouteCall, newRequestId } from "@/lib/api-guard";
 import { getAuthUser, isDatabaseConfigured } from "@/lib/db/supabase";
-import { getMembership, getReactionSummary, toggleReaction, validCommunityId } from "@/lib/db/community";
+import { readReactionSummary, toggleReaction, validCommunityId } from "@/lib/db/community";
 import { checkUserRateLimit } from "@/lib/meta-model";
 
 export const runtime = "nodejs";
@@ -23,9 +23,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   }
   try {
-    const membership = await getMembership(user.id, resolved.communityId);
-    const summary = await getReactionSummary(resolved.postId, membership?.id ?? null);
+    const summary = await readReactionSummary(user.id, resolved.communityId, resolved.postId);
     if (!summary) return NextResponse.json({ error: "unavailable" }, { status: 503 });
+    if ("error" in summary) return NextResponse.json(summary, { status: summary.error === "not-found" ? 404 : 403 });
     logRouteCall({ route: "reactions", status: 200, latencyMs: Date.now() - started, requestId, outcome: "ok" });
     return NextResponse.json(summary);
   } catch {

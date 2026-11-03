@@ -1,5 +1,11 @@
 # Decision Notes
 
+## 2026-11-03 — Hold automated facilitator replies until identity is verified
+
+- Remove the facilitator cron and default its endpoint to disabled with `COMMUNITY_FACILITATOR_ENABLED`.
+- The current alias lookup and random profile ID cannot safely establish a bot identity.
+- Re-enable after an Auth-backed automated actor, explicit content-transfer consent, idempotent writes and a synthetic end-to-end run are verified. Daily advisory triage remains scheduled.
+
 ## 2026-11-02 — Use Meta Model API directly from server routes
 
 - **Decision:** Use Muse Spark 1.3 Standard for text chat, adviser output, and structured moderation triage; use Muse Voice Transcribe 1.0 for voice input.
@@ -53,3 +59,10 @@
 - **Implementation:** The setup copilot uses Muse Spark by default; `META_SETUP_MODEL` is server-only and restricted to Spark/Wonder for non-production evaluation. The member guide receives only approved scope/public metadata and the current question. Scope recommendations use a moderator-selected excerpt, disclosed before submission; raw excerpt text is not stored. Split creation is transactional and idempotent, and launch still requires the allowlisted reviewer and coverage attestation.
 - **Not enabled:** Timeout-based approval, background post scanning, automatic scope expansion, automated moderation enforcement, member invites, or agent-authored public posts/replies.
 - **Revisit when:** A staffed pilot has member-governance rules, representative scope-quality evaluations, clear ownership, notices/appeals, and explicit approval for any delegated low-risk changes.
+
+## 2026-11-03 — Keep engagement tables server-only
+
+- **Decision:** Reactions, promotion requests and the moderation queue are accessed through authenticated server routes using `service_role`. Revoke `anon` and `authenticated` table privileges and keep RLS enabled with no direct-API policies.
+- **Reason:** The app already performs member, post-visibility and moderator checks at the route boundary. The initial table policies did not fully bind a reaction to the author's community and allowed reads of hidden-post reactions in public circles.
+- **Implementation:** Production migrations `20261103164619_lock_engagement_tables_to_server.sql` and `20261103165740_lock_moderation_events_to_server.sql` revoke the direct grants and remove the unused engagement policies. SQL privilege checks confirm API roles are denied and `service_role` retains route access.
+- **Revisit when:** A product feature requires direct PostgREST access; first design and verify an owner/member/moderator JWT policy matrix for cross-community, hidden, blocked and lifecycle states.

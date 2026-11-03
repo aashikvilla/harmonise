@@ -276,11 +276,13 @@ export async function setCommunityArchived(userId: string, communityId: string, 
   try {
     const rows = await supabaseRest<CommunityRow[]>("communities", {
       method: "PATCH",
-      query: `?id=eq.${communityId}`,
+      query: `?id=eq.${communityId}&launch_status=eq.${archived ? "approved" : "archived"}`,
       body: { launch_status: archived ? "archived" : "approved" },
       prefer: "return=representation",
     });
-    return { community: selectSingle(rows) ?? null };
+    const community = selectSingle(rows);
+    if (!community) return { error: "forbidden" } as const;
+    return { community };
   } catch {
     return null;
   }
@@ -685,6 +687,21 @@ export async function createReport(
 
 export type ReactionSummary = { count: number; reacted: boolean };
 
+export async function readReactionSummary(userId: string, communityId: string, postId: string) {
+  if (!isUuid(postId)) return { error: "not-found" } as const;
+  const access = await checkPostsAccess(userId, communityId);
+  if (!access.ok) return { error: "forbidden" } as const;
+  const posts = await supabaseRest<PostRow[]>("posts", {
+    query: `?id=eq.${postId}&community_id=eq.${communityId}&select=*${access.moderator ? "" : "&status=eq.visible"}`,
+  });
+  const post = selectSingle(posts);
+  if (!post) return { error: "not-found" } as const;
+  const blocked = await blockedMembershipIds(userId, communityId);
+  if (blocked.includes(post.author_membership_id)) return { error: "not-found" } as const;
+  const membership = await getMembership(userId, communityId);
+  return getReactionSummary(postId, membership?.id ?? null);
+}
+
 export async function getReactionSummary(
   postId: string,
   membershipId: string | null,
@@ -710,10 +727,12 @@ export async function toggleReaction(
   postId: string,
 ): Promise<ReactionSummary | { error: "not-found" | "forbidden" } | null> {
   if (!isUuid(postId)) return { error: "not-found" };
+  const readable = await readReactionSummary(userId, communityId, postId);
+  if (!readable || "error" in readable) return readable;
   const membership = await getMembership(userId, communityId);
   if (!membership) return { error: "not-found" };
   if (membership.status !== "active") return { error: "forbidden" };
-  const posts = await supabaseRest<PostRow[]>("posts", { query: `?id=eq.${postId}&community_id=eq.${communityId}&select=id` });
+  const posts = await supabaseRest<PostRow[]>("posts", { query: `?id=eq.${postId}&community_id=eq.${communityId}&status=eq.visible&select=id` });
   if (!selectSingle(posts)) return { error: "not-found" };
   try {
     const existing = await supabaseRest<PostReactionRow[]>("post_reactions", {

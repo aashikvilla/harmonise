@@ -82,6 +82,7 @@ test("propose, review, and enter a community with its scoped helper and activity
   expect(proposalBody).toEqual({ name: "New parent circle", description: "A calm space for new parents to share practical support.", topics: ["New parents"] });
 
   await page.getByRole("link", { name: "View your proposal" }).click();
+  await expect(page).toHaveURL(new RegExp(`/communities/${createdId}$`), { timeout: 20000 });
   await expect(page.getByText("This proposal is private.")).toBeVisible();
   await expect(page.getByRole("heading", { name: /AI community helper/ })).toBeVisible();
   await expect(page.getByText(/Human replies depend on people being available/)).toBeVisible();
