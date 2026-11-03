@@ -100,7 +100,7 @@ export default function CommunityProposalReviewQueue() {
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="page-kicker">LAUNCH REVIEW</p>
-        <h2 id="community-proposals-heading" className="text-xl font-semibold">Community proposals</h2>
+        <h2 id="community-proposals-heading" className="serif-head text-xl">Community proposals</h2>
       </div>
       {state === "ready" && <span className="rounded-full bg-[var(--peach)] px-3 py-1 text-sm">{proposals.length} waiting</span>}
     </div>

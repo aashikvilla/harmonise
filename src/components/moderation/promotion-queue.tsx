@@ -82,7 +82,7 @@ export default function PromotionQueue() {
 
   return (
     <section className="mt-6 rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Promotion requests">
-      <h2 className="text-lg font-semibold">Volunteer &amp; verified-supporter requests</h2>
+      <h2 className="serif-head text-xl">Volunteer &amp; verified-supporter requests</h2>
       {notice && <p className="mt-1 text-sm">{notice}</p>}
       <ul className="mt-3 flex flex-col gap-4">
         {groups.map((entry) =>

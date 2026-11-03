@@ -14,7 +14,7 @@ export default function CommunitiesPage() {
         ← Home
       </Link>
       <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">harmonize. · live pilot</p>
-      <h1 className="mt-1 text-4xl font-semibold">Communities</h1>
+      <h1 className="serif-head mt-1 text-4xl">Communities</h1>
       <p className="mt-2 max-w-2xl text-[var(--muted)]">
         Real memberships, real posts, and human moderators. Counts below come from the database — never samples.
       </p>

@@ -35,7 +35,7 @@ function AuditBody() {
       <Link href="/moderation" className="text-sm underline">
         Back to moderation
       </Link>
-      <h1 className="text-2xl font-semibold">Moderation audit trail</h1>
+      <h1 className="serif-head text-3xl">Moderation audit trail</h1>
       <p className="text-sm text-[var(--muted)]">
         Every moderation outcome, newest first. Each row keeps the decision separate from the original report so
         appeals stay independent.

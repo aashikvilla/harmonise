@@ -55,7 +55,7 @@ export default function OpsPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10">
-      <h1 className="text-2xl font-semibold">Pilot ops dashboard</h1>
+      <h1 className="serif-head text-3xl">Pilot ops dashboard</h1>
       <p className="text-sm text-[var(--muted)]">
         Queue depth, worker lag, model errors, token spend, and the signup → join → post funnel. Metadata only —
         no private text or identities.
