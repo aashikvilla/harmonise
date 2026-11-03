@@ -176,6 +176,11 @@ test("independent spaces support group-only contact, reviewed contribution and h
     if (!request.url().startsWith("data:") && new URL(request.url()).origin !== appOrigin) externalRequests.push(request.url());
   });
   await reachCommunity(page);
+  const liveCircle = page.getByRole("region", { name: "A circle that may fit" });
+  await expect(liveCircle.getByRole("heading", { name: "Finding steady ground" })).toBeVisible();
+  await expect(liveCircle).toContainText(/\d+ members · \d+ posts/);
+  const steadyGroundCard = liveCircle.locator(".circle-recommendation-card").filter({ hasText: "Finding steady ground" });
+  await expect(steadyGroundCard.getByRole("link", { name: "Preview this circle" })).toHaveAttribute("href", "/communities/steady-ground");
   await expect(page.getByRole("heading", { name: "Family Expectations & Personal Choices", level: 2 })).toBeVisible();
   await page.getByRole("button", { name: "Explore community" }).first().click();
   await expect(page.getByText(/Community host note · fictional role/i)).toBeVisible();

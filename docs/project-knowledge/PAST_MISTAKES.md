@@ -36,6 +36,13 @@ projects ran alongside other specs. Give unusually long journeys explicit
 headroom and rerun the full suite; a test timeout at its final action can hide
 that the UI transition itself succeeded.
 
+## 2026-11-03 — Isolate Playwright artifact output across overlapping runs
+
+Reusing the shared `C:\tmp\hormonise-playwright-results` directory produced
+missing trace-file errors during teardown even when the product journey passed.
+Give concurrent or targeted QA runs a unique `--output` directory; disable
+traces when isolating non-interaction failures.
+
 ## 2026-11-02 — A moderation queue is not a staffed monitoring service
 
 The live `/communities` and `/moderation` surfaces now have database-backed posts, reports, triage events, reviewer decisions, and appeals. The `/app` and `/connect` demos still use fixtures. A once-daily worker and no named moderators do not provide continuous monitoring or timely human response. Keep the limitation visible until backlog recovery and staffed escalation are operating.
