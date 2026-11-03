@@ -62,7 +62,7 @@
 
 ## 2026-11-03 — Keep engagement tables server-only
 
-- **Decision:** Reactions and promotion requests are accessed through authenticated server routes using `service_role`. Revoke `anon` and `authenticated` table privileges and keep RLS enabled with no direct-API policies.
+- **Decision:** Reactions, promotion requests and the moderation queue are accessed through authenticated server routes using `service_role`. Revoke `anon` and `authenticated` table privileges and keep RLS enabled with no direct-API policies.
 - **Reason:** The app already performs member, post-visibility and moderator checks at the route boundary. The initial table policies did not fully bind a reaction to the author's community and allowed reads of hidden-post reactions in public circles.
-- **Implementation:** Production migration `20261103164619_lock_engagement_tables_to_server.sql` revokes the direct grants and removes the unused policies. SQL privilege checks confirm API roles are denied and `service_role` retains route access.
+- **Implementation:** Production migrations `20261103164619_lock_engagement_tables_to_server.sql` and `20261103165740_lock_moderation_events_to_server.sql` revoke the direct grants and remove the unused engagement policies. SQL privilege checks confirm API roles are denied and `service_role` retains route access.
 - **Revisit when:** A product feature requires direct PostgREST access; first design and verify an owner/member/moderator JWT policy matrix for cross-community, hidden, blocked and lifecycle states.

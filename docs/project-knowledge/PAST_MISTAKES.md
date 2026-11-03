@@ -111,7 +111,8 @@ behavior based on a timeout.
 The engagement tables inherited broad `anon`/`authenticated` grants. Their
 RLS policies limited rows but did not bind a reaction's membership to its
 post's community, and the public-circle read policy did not exclude hidden
-posts. Check actual ACLs and `has_table_privilege` for each API role after every
+posts. An internal moderation queue also had broad grants without policies.
+Check actual ACLs and `has_table_privilege` for each API role after every
 public-schema migration; test policies against the full foreign-key relationship
 and row lifecycle. If the application only uses server routes, revoke direct
 API grants rather than keeping unused policies that could be accidentally
