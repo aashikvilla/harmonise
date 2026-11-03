@@ -52,7 +52,7 @@ test.describe('new product surfaces', () => {
     await page.route('**/api/account/contributions', route => route.fulfill({ status: 500, json: { error: 'unavailable' } }));
     await page.route('**/api/account/notifications', route => route.fulfill({ status: 200, json: { notifications: [] } }));
     await page.goto('/profile');
-    await expect(page.getByRole('alert')).toContainText('not being shown as empty');
+    await expect(page.locator('p[role="alert"]')).toContainText('not being shown as empty');
     await expect(page.getByText('You have not joined any circles yet.')).toHaveCount(0);
   });
 

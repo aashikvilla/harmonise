@@ -1,6 +1,33 @@
 import { expect, test } from "@playwright/test";
 
-test("demo sign-in leads from a private chat to an explicitly joined circle", async ({ page }) => {
+const COMMUNITY = {
+  id: "steady-ground",
+  name: "Finding steady ground",
+  description: "For uncertainty, grief, loneliness, family pressure, anxiety, and disrupted routines.",
+  visibility: "members-only",
+  topics: ["family pressure", "routines"],
+  memberCount: 12,
+  postCount: 1,
+  recentPostCount: 1,
+};
+
+test("member sign-in leads from a private chat to an explicitly joined circle", async ({ page }) => {
+  let signedIn = false;
+  let joined = false;
+  await page.route("**/api/auth/me", (route) =>
+    route.fulfill({
+      status: signedIn ? 200 : 401,
+      contentType: "application/json",
+      body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
+    }),
+  );
+  await page.route("**/api/auth/otp", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' }),
+  );
+  await page.route("**/api/auth/verify", (route) => {
+    signedIn = true;
+    return route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
+  });
   await page.route("**/api/advice", async (route) => {
     await route.fulfill({
       status: 200,
@@ -16,21 +43,63 @@ test("demo sign-in leads from a private chat to an explicitly joined circle", as
       }),
     });
   });
+  await page.route("**/api/communities", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ communities: [{ ...COMMUNITY, joined }] }),
+    }),
+  );
+  await page.route("**/api/communities/steady-ground/join", (route) => {
+    joined = true;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: '{"membership":{"id":"membership-1","alias":"Fern","role":"member","status":"active"}}',
+    });
+  });
+  await page.route("**/api/communities/steady-ground/membership", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: joined
+        ? '{"membership":{"id":"membership-1","alias":"Fern","role":"member","status":"active"}}'
+        : '{"membership":null}',
+    }),
+  );
+  await page.route("**/api/communities/steady-ground/posts", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        posts: [
+          {
+            id: "post-1",
+            author_alias: "Harbor",
+            body: "What is one routine — however small — that steadied you this week?",
+            created_at: "2026-11-02T10:00:00.000Z",
+          },
+        ],
+      }),
+    }),
+  );
 
   await page.goto("/");
   const homepage = page.frameLocator('iframe[title="Harmonize — a space for unfinished thoughts"]');
   await homepage.getByRole("link", { name: "Try the demo" }).click();
   await expect(page).toHaveURL(/\/connect$/);
-  await expect(page.getByRole("button", { name: "Sign in and continue to chat" })).toBeEnabled();
 
-  // Exercise both entry tabs before continuing through the member demo.
+  // Exercise both entry tabs before continuing through member sign-in.
   await page.getByRole("tab", { name: "Coach preview" }).click();
-  await page.getByRole("tab", { name: "Member demo" }).click();
+  await page.getByRole("tab", { name: "Member sign-in" }).click();
+  await page.getByLabel("Email for a sign-in code").fill("fern@example.com");
   await page.getByLabel("I confirm I am 18 or older.").check();
   await page.getByLabel("I understand my message will be sent to Meta Muse Spark for a response.").check();
   await expect(page.locator('input[type="checkbox"]')).toHaveCount(2);
   await expect(page.locator('input[type="checkbox"]').nth(0)).toBeChecked();
   await expect(page.locator('input[type="checkbox"]').nth(1)).toBeChecked();
+  await page.getByRole("button", { name: "Email me a code" }).click();
+  await page.getByLabel("6-digit code from your email").fill("123456");
   await page.getByRole("button", { name: "Sign in and continue to chat" }).click();
   await expect(page).toHaveURL(/\/connect\/member$/);
   await expect(page.getByRole("heading", { name: "Find connection" })).toBeVisible();
@@ -47,8 +116,8 @@ test("demo sign-in leads from a private chat to an explicitly joined circle", as
   await page.getByRole("button", { name: /Join as alias/ }).click();
   await page.getByRole("button", { name: "Open in My circles" }).click();
 
-  await expect(page.getByRole("heading", { name: "My circles" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "You haven't joined any circles yet" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Finding steady ground" })).toBeVisible();
   await expect(page.getByText("What is one routine — however small — that steadied you this week?")).toBeVisible();
-  await expect(page.getByText("Prototype circle", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Post in Finding steady ground")).toBeVisible();
 });

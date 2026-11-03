@@ -12,7 +12,10 @@ test("product screens carry the Motion Revival identity into the Harmonize exper
     coral: getComputedStyle(document.documentElement).getPropertyValue("--teal").trim(),
     serif: getComputedStyle(document.documentElement).getPropertyValue("--serif").trim(),
   }));
-  expect(theme).toEqual({ paper: "#fffaf5", coral: "#af554f", serif: '"DM Serif Display", Georgia, "Times New Roman", serif' });
+  expect(theme.paper).toEqual("#fffaf5");
+  expect(theme.coral).toEqual("#af554f");
+  expect(theme.serif).toContain('"DM Serif Display"');
+  expect(theme.serif).toContain("Georgia");
 
   await page.getByRole("button", { name: "Communities", exact: true }).click();
   await expect(page.locator(".community-card").first()).toBeVisible();

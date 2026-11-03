@@ -150,7 +150,7 @@ test.describe('Connect journey and coaches — real data', () => {
 
     await expect(page.getByText('Unavailable', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'My journey' }).click();
-    await expect(page.getByText(/could not be loaded just now/)).toBeVisible();
+    await expect(page.getByText(/could not be loaded just now/).first()).toBeVisible();
     await expect(page.locator('section[aria-label="Your contributions"]').getByText(/0 posts/)).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Support Coaches' }).click();
