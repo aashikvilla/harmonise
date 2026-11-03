@@ -7,7 +7,7 @@ import { useSession, type ConnectTab } from "@/lib/connect/session";
 import Adviser from "@/components/connect/adviser";
 import Circles from "@/components/connect/circles";
 import Journey from "@/components/connect/journey";
-import Coaches, { CoachDashboardPreview } from "@/components/connect/coaches";
+import Coaches, { CoachDashboardPreview, useSupporterData, type SupporterData } from "@/components/connect/coaches";
 import UrgentModal from "@/components/connect/urgent-modal";
 import SharedBrand from "@/components/connect/brand";
 
@@ -34,7 +34,7 @@ const TABS: { id: ConnectTab; label: string; heading: string; lede: string }[] =
     id: "coaches",
     label: "Support Coaches",
     heading: "Support Coaches",
-    lede: "People with lived experience. Peer coaching only — never therapy, never automatic.",
+    lede: "Your real path to peer support roles. Human-reviewed only — never therapy, never automatic.",
   },
 ];
 
@@ -49,6 +49,9 @@ export default function MemberShell() {
   const active = TABS.find((tab) => tab.id === state.tab) ?? TABS[0];
   const [restoreAttempted, setRestoreAttempted] = useState(false);
   const restoring = !state.entered && !restoreAttempted;
+  const supporter = useSupporterData(state.entered && !state.demo);
+  const supporterData: SupporterData = state.demo ? { status: "demo", contributions: [], promotions: {} } : { status: supporter.status, contributions: supporter.contributions, promotions: supporter.promotions };
+  const totalPosts = supporterData.contributions.reduce((sum, entry) => sum + entry.posts.length, 0);
   useEffect(() => {
     if (state.entered) return;
     let cancelled = false;
@@ -136,9 +139,9 @@ export default function MemberShell() {
               <span className="cx-tag cx-tag-dark">Prototype</span>
               {state.demo ? <span className="cx-tag"> exploring demo</span> : null}
             </div>
-            <div className="cx-points" aria-label={`Helpfulness points: ${state.points}`}>
-              <span>Helpfulness points</span>
-              <b>{state.points}</b>
+            <div className="cx-points" aria-label={supporterData.status === "ready" ? `Your contributions: ${totalPosts} posts in ${supporterData.contributions.length} circles` : "Your contributions"}>
+              <span>Your contributions</span>
+              <b>{supporterData.status === "loading" ? "…" : supporterData.status === "ready" ? `${totalPosts} posts · ${supporterData.contributions.length} circles` : supporterData.status === "demo" ? "Demo" : "Unavailable"}</b>
             </div>
           </section>
           <nav className="cx-nav cx-card-white" aria-label="Member tabs">
@@ -157,7 +160,7 @@ export default function MemberShell() {
           </nav>
           <div className="cx-side-actions cx-card-white">
             <button type="button" className="cx-btn cx-btn-soft cx-btn-block" onClick={() => dispatch({ type: "coach-preview", open: true })}>
-              Coach portal preview
+              Your supporter applications
             </button>
           </div>
         </aside>
@@ -168,9 +171,9 @@ export default function MemberShell() {
             <p className="cx-lede">{active.lede}</p>
           </div>
           {state.tab === "find" ? <Adviser /> : null}
-          {state.tab === "journey" ? <Journey /> : null}
+          {state.tab === "journey" ? <Journey data={supporterData} /> : null}
           {state.tab === "circles" ? <Circles /> : null}
-          {state.tab === "coaches" ? <Coaches /> : null}
+          {state.tab === "coaches" ? <Coaches data={supporterData} onChanged={supporter.reload} /> : null}
         </main>
       </div>
       {state.urgentOpen ? <UrgentModal onClose={() => dispatch({ type: "urgent", open: false })} /> : null}
@@ -180,13 +183,13 @@ export default function MemberShell() {
             className="cx-modal cx-modal-wide cx-card-white"
             role="dialog"
             aria-modal="true"
-            aria-label="Coach portal preview"
+            aria-label="Your supporter applications"
             onClick={(event) => event.stopPropagation()}
           >
-            <CoachDashboardPreview />
+            <CoachDashboardPreview data={supporterData} onChanged={supporter.reload} />
             <div className="cx-modal-actions">
               <button type="button" className="cx-btn cx-btn-primary cx-btn-block" onClick={() => dispatch({ type: "coach-preview", open: false })}>
-                Close preview
+                Close
               </button>
             </div>
           </div>
