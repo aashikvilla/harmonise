@@ -86,3 +86,18 @@ An immediate Playwright click after navigating from the homepage iframe could
 submit a client-only form as a native GET before React attached its handler.
 Keep submit controls disabled until the client handler is ready, and have E2E
 flows wait for the enabled state before submitting.
+
+## 2026-11-03 — CSV quoting does not stop spreadsheet formulas
+
+Doubling quotes and wrapping fields prevents CSV column breaks, but spreadsheet
+apps can still execute cells that begin with `=`, `+`, `-`, or `@`. Prefix
+untrusted export cells with an apostrophe when the first non-whitespace
+character is a formula marker, and cover that boundary with unit tests.
+
+## 2026-11-03 — Check local server health before treating an E2E timeout as a bug
+
+A long Playwright run hit page navigation and teardown timeouts while the local
+Next server stopped answering readiness requests. The affected homepage and
+product flows passed when rerun serially after the server recovered. Capture
+`/api/ready` and server logs, then rerun affected journeys before changing app
+behavior based on a timeout.

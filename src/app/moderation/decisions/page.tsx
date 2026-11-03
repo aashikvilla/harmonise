@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { quoteCsvCell } from "@/lib/csv";
 
 type Decision = {
   id: string;
@@ -17,6 +18,9 @@ type Decision = {
 function AuditBody() {
   const community = useSearchParams().get("community") ?? "";
   const [decisions, setDecisions] = useState<Decision[] | null>(null);
+  const router = useRouter();
+  const [options, setOptions] = useState<{ community_id: string; community_name: string }[] | null>(null);
+  const [choice, setChoice] = useState("");
   useEffect(() => {
     if (!community) return;
     void (async () => {
@@ -29,6 +33,20 @@ function AuditBody() {
       }
     })();
   }, [community]);
+  useEffect(() => {
+    if (community || options !== null) return;
+    void (async () => {
+      try {
+        const res = await fetch("/api/moderation/assignments", { cache: "no-store" });
+        const body = (await res.json()) as { assignments?: { community_id: string; community_name: string }[] };
+        const list = Array.isArray(body.assignments) ? body.assignments : [];
+        setOptions(list);
+        if (list.length > 0) setChoice(list[0].community_id);
+      } catch {
+        setOptions([]);
+      }
+    })();
+  }, [community, options]);
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10">
@@ -41,7 +59,25 @@ function AuditBody() {
         appeals stay independent.
       </p>
       {!community ? (
-        <p className="text-sm">Choose a community from the moderation page first.</p>
+        <div className="flex flex-col gap-3">
+          {options === null ? (
+            <p className="text-sm">Loading the communities you moderate…</p>
+          ) : options.length === 0 ? (
+            <p className="text-sm">You do not moderate any community yet, so there is no audit trail to show.</p>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="text-sm" htmlFor="audit-community">Community</label>
+              <select id="audit-community" className="min-h-[44px] rounded-lg border border-[var(--line)] bg-white px-3 text-sm" value={choice} onChange={(event) => setChoice(event.target.value)}>
+                {options.map((option) => (
+                  <option key={option.community_id} value={option.community_id}>{option.community_name}</option>
+                ))}
+              </select>
+              <button type="button" className="button button-secondary" disabled={!choice} onClick={() => router.push(`/moderation/decisions?community=${choice}`)}>
+                View audit trail
+              </button>
+            </div>
+          )}
+        </div>
       ) : decisions === null ? (
         <p className="text-sm">Loading decisions…</p>
       ) : decisions.length === 0 ? (
@@ -64,14 +100,14 @@ function AuditBody() {
                   ]),
                 ];
                 const csv = rows
-                  .map((cells) => cells.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+                  .map((cells) => cells.map(quoteCsvCell).join(","))
                   .join("\n");
                 const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
                 const link = document.createElement("a");
                 link.href = url;
-                link.download = `moderation-audit-${community}.csv`;
+                link.download = `moderation-audit-${community.replace(/[^a-z0-9_-]/gi, "-")}.csv`;
                 link.click();
-                URL.revokeObjectURL(url);
+                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
               }}
               className="rounded-full border border-[var(--line)] px-4 py-2 text-sm"
             >
@@ -79,7 +115,7 @@ function AuditBody() {
             </button>
           </div>
           <ol className="flex flex-col gap-3">
-          {decisions.map((row) => (
+            {decisions.map((row) => (
             <li
               key={row.id}
               className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 text-sm dark:bg-black/40"
@@ -94,8 +130,8 @@ function AuditBody() {
               </p>
               {row.rationale ? <p className="mt-2">{row.rationale}</p> : null}
             </li>
-          ))}
-        </ol>
+            ))}
+          </ol>
         </>
       )}
     </main>
