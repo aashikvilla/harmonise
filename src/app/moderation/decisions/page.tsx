@@ -47,7 +47,38 @@ function AuditBody() {
       ) : decisions.length === 0 ? (
         <p className="text-sm">No moderation decisions recorded yet.</p>
       ) : (
-        <ol className="flex flex-col gap-3">
+        <>
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                const rows = [
+                  ["decision", "appeal status", "decided at", "decided by", "report reason", "rationale"],
+                  ...decisions.map((row) => [
+                    row.decision,
+                    row.appealStatus ?? "",
+                    row.createdAt,
+                    row.reviewerAlias,
+                    row.reportReason,
+                    row.rationale,
+                  ]),
+                ];
+                const csv = rows
+                  .map((cells) => cells.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+                  .join("\n");
+                const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = `moderation-audit-${community}.csv`;
+                link.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="rounded-full border border-[var(--line)] px-4 py-2 text-sm"
+            >
+              Export CSV for pilot review
+            </button>
+          </div>
+          <ol className="flex flex-col gap-3">
           {decisions.map((row) => (
             <li
               key={row.id}
@@ -65,6 +96,7 @@ function AuditBody() {
             </li>
           ))}
         </ol>
+        </>
       )}
     </main>
   );
