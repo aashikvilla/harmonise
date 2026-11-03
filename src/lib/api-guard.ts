@@ -32,6 +32,7 @@ export type RouteLogFields = {
   outcome: "ok" | "invalid" | "rate-limited" | "crisis-screened" | "unavailable" | "error";
   providerLatencyMs?: number;
   usage?: MetaUsage;
+  model?: string;
   errorKind?: string;
 };
 
@@ -46,6 +47,7 @@ export function logRouteCall(fields: RouteLogFields) {
   };
   if (fields.providerLatencyMs !== undefined) line.providerLatencyMs = fields.providerLatencyMs;
   if (fields.errorKind) line.errorKind = fields.errorKind;
+  if (fields.model) line.model = fields.model;
   if (fields.usage) {
     if (fields.usage.inputTokens !== undefined) line.inputTokens = fields.usage.inputTokens;
     if (fields.usage.outputTokens !== undefined) line.outputTokens = fields.usage.outputTokens;
@@ -66,6 +68,8 @@ export type MetaHeaders = {
   requestId: string;
   providerLatencyMs?: number;
   usage?: MetaUsage;
+  model?: string;
+  errorKind?: string;
 };
 
 /** Attach safe observability metadata (no prompts, completions, keys, or audio). */
@@ -77,5 +81,7 @@ export function withMetaHeaders<T>(response: NextResponse<T>, meta: MetaHeaders)
   if (meta.usage?.inputTokens !== undefined) response.headers.set("x-meta-input-tokens", String(meta.usage.inputTokens));
   if (meta.usage?.outputTokens !== undefined) response.headers.set("x-meta-output-tokens", String(meta.usage.outputTokens));
   if (meta.usage?.totalTokens !== undefined) response.headers.set("x-meta-total-tokens", String(meta.usage.totalTokens));
+  if (meta.model !== undefined) response.headers.set("x-meta-model", meta.model);
+  if (meta.errorKind !== undefined) response.headers.set("x-meta-error-kind", meta.errorKind);
   return response;
 }

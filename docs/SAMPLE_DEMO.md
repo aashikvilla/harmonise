@@ -126,12 +126,14 @@ deploy or manual step per community.
 The app calls the **Meta Model API** (`https://api.meta.ai/v1`) with
 `muse-spark-1.3` for the adviser, private chat, moderation triage, the
 facilitator, and the setup copilot. There is no separate orchestrator service —
-orchestration is the Next.js route layer. `muse-wonder-1.0` exists on the same
-API and is wired **only** as an optional setup-copilot model
-(`META_SETUP_MODEL`), explicitly for evaluation and hard-blocked in
-production. We tested it locally: it responds, but its drafts failed the
-strict draft validation, so Spark stays the setup model until Wonder's output
-passes the same checks.
+orchestration is the Next.js route layer. `muse-wonder-1.0` on the same API is
+now the **primary model for the two advisory paths** — the adviser and the
+setup copilot — with automatic Spark fallback on transport errors *and* on
+output that fails strict validation (`META_WONDER_ROUTES`, default
+`setup,advice`; `x-meta-model` shows which model answered, `x-meta-error-kind`
+names failures). Chat, the facilitator, and moderation triage stay on Spark:
+triage is safety-adjacent, and the others keep the proven baseline. The
+strict output validators accept either model.
 
 ---
 
@@ -158,8 +160,9 @@ Recommended: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (shared
 rate limits), `META_TEXT_MODEL=muse-spark-1.3`,
 `DAILY_MODEL_CALLS_PER_USER=100`.
 
-Do not set in production: `META_SETUP_MODEL` (Wonder is blocked there by
-design) and `HARMONISE_KILL_SWITCH` (emergency only).
+Optional in production: `META_WONDER_ROUTES` (defaults to `setup,advice`;
+set empty to run everything on Spark). Leave `HARMONISE_KILL_SWITCH` unset
+(emergency only).
 
 Note: cron frequency is plan-dependent on Vercel (Hobby allows daily). Moving
 `/api/moderation/process` to every-5-minutes needs a Pro plan.
