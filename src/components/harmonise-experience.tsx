@@ -222,6 +222,75 @@ function CircleRecommendation({ themes }: { themes: string[] }) {
   );
 }
 
+function SavedChatsInJourney({ onResume }: { onResume: (payload: ResumePayload) => void }) {
+  const [sessions, setSessions] = useState<Array<{ id: string; title: string; last_active_at: string }> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/sessions", { credentials: "include", cache: "no-store" });
+        const body = (await response.json().catch(() => null)) as { sessions?: Array<{ id: string; title: string; last_active_at: string }> } | null;
+        if (!cancelled) setSessions(response.ok && Array.isArray(body?.sessions) ? body.sessions : []);
+      } catch {
+        if (!cancelled) setSessions([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  if (!sessions || sessions.length === 0) return null;
+  async function resume(id: string) {
+    try {
+      const response = await fetch(`/api/sessions/${id}`, { credentials: "include", cache: "no-store" });
+      const body = (await response.json().catch(() => null)) as {
+        session?: { id: string; title: string };
+        messages?: { role: string; text: string }[];
+        understanding?: { suggested_themes: string[]; confirmed_themes: string[]; support_need: string; need_summary: string } | null;
+      } | null;
+      if (!response.ok || !body?.session) return;
+      onResume({
+        sessionId: id,
+        title: body.session.title,
+        turns: (body.messages ?? [])
+          .filter((message) => message.role === "user" || message.role === "assistant")
+          .map((message) => ({ role: message.role === "user" ? ("you" as const) : ("harmonise" as const), text: message.text })),
+        understanding: body.understanding
+          ? {
+              suggested: body.understanding.suggested_themes ?? [],
+              confirmed: body.understanding.confirmed_themes ?? [],
+              need: body.understanding.support_need ?? "not-sure",
+              summary: body.understanding.need_summary ?? "",
+            }
+          : null,
+      });
+    } catch {
+      /* Resume failures stay on the journey; the conversation tab still works. */
+    }
+  }
+  return (
+    <section className="panel" aria-label="Your saved chats">
+      <span className="tag tag-private">SAVED · ONLY YOU</span>
+      <h2>Your saved chats</h2>
+      <ul className="session-list">
+        {sessions.map((session) => (
+          <li key={session.id}>
+            <div>
+              <strong>{session.title}</strong>
+              <span className="small-note">{new Date(session.last_active_at).toLocaleString()}</span>
+            </div>
+            <div className="inline-actions">
+              <button type="button" className="button button-secondary" onClick={() => void resume(session.id)}>
+                Resume in My Space
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function HarmoniseExperience({ initialPath }: { initialPath?: Exclude<EntryPath, null> | "arjun" | "help" }) {
   const [state, dispatch] = useReducer(harmoniseReducer, initialPath, stateForEntry);
   const [joinedGroups, setJoinedGroups] = useState<string[]>([]);
@@ -414,6 +483,21 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     });
   }
 
+
+  function resumeSession(payload: ResumePayload) {
+    const turns = payload.turns.map((turn, index) => ({ id: `srv-${payload.sessionId}-${index}`, role: turn.role, text: turn.text }));
+    setChatTurns(turns);
+    setTopicChats((chats) => ({ ...chats, [spaceTopic]: turns }));
+    setComposer("");
+    setChatError("");
+    const supportedNeeds = ["human-perspective", "quiet-reading", "shared-activity", "not-sure"];
+    setSuggestedThemes((payload.understanding?.suggested ?? []).filter((theme): theme is ThemeId => Object.hasOwn(themeLabels, theme)));
+    setSuggestedNeed({ summary: payload.understanding?.summary ?? "", type: (supportedNeeds.includes(payload.understanding?.need ?? "") ? payload.understanding?.need : "not-sure") as SupportNeed });
+    setCorrectedUnderstanding(payload.understanding?.summary ?? "");
+    setUnderstandingConfirmed((payload.understanding?.confirmed.length ?? 0) > 0);
+    setCorrectionRequested(false);
+    setActiveSessionId(payload.sessionId);
+  }
   function renderConversation() {
     async function sendChat(text = composer) {
       const clean = text.trim();
@@ -472,21 +556,6 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
       } finally {
         setChatPending(false);
       }
-    }
-
-    function resumeSession(payload: ResumePayload) {
-      const turns = payload.turns.map((turn, index) => ({ id: `srv-${payload.sessionId}-${index}`, role: turn.role, text: turn.text }));
-      setChatTurns(turns);
-      setTopicChats((chats) => ({ ...chats, [spaceTopic]: turns }));
-      setComposer("");
-      setChatError("");
-      const supportedNeeds = ["human-perspective", "quiet-reading", "shared-activity", "not-sure"];
-      setSuggestedThemes((payload.understanding?.suggested ?? []).filter((theme): theme is ThemeId => Object.hasOwn(themeLabels, theme)));
-      setSuggestedNeed({ summary: payload.understanding?.summary ?? "", type: (supportedNeeds.includes(payload.understanding?.need ?? "") ? payload.understanding?.need : "not-sure") as SupportNeed });
-      setCorrectedUnderstanding(payload.understanding?.summary ?? "");
-      setUnderstandingConfirmed((payload.understanding?.confirmed.length ?? 0) > 0);
-      setCorrectionRequested(false);
-      setActiveSessionId(payload.sessionId);
     }
 
     function beginNewServerSession() {
@@ -949,6 +1018,7 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     };
     const laterChapterActive = state.chapter === "belonging" && prior !== null;
     return <>
+      <SavedChatsInJourney onResume={(payload) => { resumeSession(payload); stateDispatch({ type: "OPEN_CONVERSATION" }); }} />
       <p className="lede">Only the words and choices you kept appear here. Nothing is saved beyond this session.</p>
       <section className="panel goal-panel"><span className="tag tag-private">YOUR CHOICE · RELATIONSHIPS</span><h2>Try opening a conversation with Dad</h2><p>A small possible action, not a measure of how well the conversation goes.</p><div className="feedback-options" role="group" aria-label="Update the action you chose">{goalStates.map(([value, label]) => <button key={value} className={goalStatus === value ? "feedback-option selected" : "feedback-option"} aria-pressed={goalStatus === value} onClick={() => setGoalStatus(value)}>{label}</button>)}</div><p className="small-note">Status stays in this browser session. It does not mean your life is improving or that a goal is complete.</p><SecondaryButton onClick={() => stateDispatch({ type: "OPEN_CONTRIBUTE" })}>Review contribution choices</SecondaryButton></section>
       <section className="panel"><h2>Other parts of life</h2><div className="topic-cards"><button className="topic-card" onClick={() => { startSeparateTopic("work", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Work decisions</strong><span>{topicChats.work?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button><button className="topic-card" onClick={() => { startSeparateTopic("rent", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Rent and housing</strong><span>{topicChats.rent?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button><button className="topic-card" onClick={() => { startSeparateTopic("family", ""); stateDispatch({ type: "OPEN_CONVERSATION" }); }}><strong>Family and choices</strong><span>{topicChats.family?.length ? "Resume this separate conversation" : "Start a separate topic"}</span></button></div><p className="small-note">Each topic has a separate in-memory transcript for this session. Nothing is carried into another topic unless you choose to restate it.</p></section>
