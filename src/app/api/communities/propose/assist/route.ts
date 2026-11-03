@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeaders } from "@/lib/api-guard";
 import { checkUserQuota, isKillSwitchOn } from "@/lib/ops-limits";
-import { checkUserRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatRouted } from "@/lib/meta-model";
+import { checkUserRateLimit, modelErrorKind, modelFailureStatus, requestValidatedWithFallback } from "@/lib/meta-model";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 import { getAuthUser, isDatabaseConfigured, supabaseRest } from "@/lib/db/supabase";
 import type { CommunityRow } from "@/lib/db/types";
@@ -185,25 +185,22 @@ export async function POST(request: Request) {
       description: candidate.description.slice(0, 400),
       topics: Array.isArray(candidate.topics) ? candidate.topics.filter((topic) => typeof topic === "string").slice(0, 8).map((topic) => topic.slice(0, 36)) : [],
     }));
-    const result = await requestMetaChatRouted("setup", {
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: JSON.stringify({ proposal: { name, purpose: description, topics }, approvedCommunities: candidates }),
-        },
-      ],
-      maxTokens: 900,
-      temperature: 0.2,
-      responseFormat: RESPONSE_FORMAT,
-    });
-    let draft: SetupDraft | null = null;
-    try {
-      draft = validateDraft(JSON.parse(result.text) as unknown, candidates);
-    } catch {
-      draft = null;
-    }
-    if (!draft) return finish({ error: "unavailable" }, 502, "unavailable", { providerLatencyMs: result.latencyMs, usage: result.usage, errorKind: "bad-response" });
+    const { value: draft, result } = await requestValidatedWithFallback(
+      "setup",
+      {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: JSON.stringify({ proposal: { name, purpose: description, topics }, approvedCommunities: candidates }),
+          },
+        ],
+        maxTokens: 900,
+        temperature: 0.2,
+        responseFormat: RESPONSE_FORMAT,
+      },
+      (text) => validateDraft(JSON.parse(text) as unknown, candidates),
+    );
     const candidateById = new Map(candidates.map((candidate) => [candidate.id, candidate]));
     return finish({
       draft,

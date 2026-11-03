@@ -69,6 +69,7 @@ export type MetaHeaders = {
   providerLatencyMs?: number;
   usage?: MetaUsage;
   model?: string;
+  errorKind?: string;
 };
 
 /** Attach safe observability metadata (no prompts, completions, keys, or audio). */
@@ -81,5 +82,6 @@ export function withMetaHeaders<T>(response: NextResponse<T>, meta: MetaHeaders)
   if (meta.usage?.outputTokens !== undefined) response.headers.set("x-meta-output-tokens", String(meta.usage.outputTokens));
   if (meta.usage?.totalTokens !== undefined) response.headers.set("x-meta-total-tokens", String(meta.usage.totalTokens));
   if (meta.model !== undefined) response.headers.set("x-meta-model", meta.model);
+  if (meta.errorKind !== undefined) response.headers.set("x-meta-error-kind", meta.errorKind);
   return response;
 }

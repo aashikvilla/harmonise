@@ -97,6 +97,36 @@ export async function requestMetaChatRouted(route: ModelRoute, options: Omit<Cha
   }
 }
 
+/**
+ * Routed call with validated output: if the primary model's output fails
+ * validation, retry once on the proven text model before giving up.
+ */
+export async function requestValidatedWithFallback<T>(
+  route: ModelRoute,
+  options: Omit<ChatOptions, "model">,
+  validate: (text: string) => T | null,
+): Promise<{ value: T; result: MetaResult }> {
+  const first = await requestMetaChatRouted(route, options);
+  let value: T | null = null;
+  try {
+    value = validate(first.text);
+  } catch {
+    value = null;
+  }
+  if (value !== null) return { value, result: first };
+  const fallback = configuredTextModel();
+  if (first.model === fallback) throw new MetaModelError(502, "bad-response");
+  const second = await requestMetaChatDetailed({ ...options, model: fallback });
+  let retry: T | null = null;
+  try {
+    retry = validate(second.text);
+  } catch {
+    retry = null;
+  }
+  if (retry !== null) return { value: retry, result: second };
+  throw new MetaModelError(502, "bad-response");
+}
+
 function validModelId(value: string) {
   return MODEL_ID_PATTERN.test(value);
 }

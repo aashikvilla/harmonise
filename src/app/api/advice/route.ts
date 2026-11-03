@@ -8,7 +8,7 @@ import {
   type AdviceResult,
 } from "@/lib/connect/advice";
 import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeaders } from "@/lib/api-guard";
-import { checkRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatRouted } from "@/lib/meta-model";
+import { checkRateLimit, modelErrorKind, modelFailureStatus, requestValidatedWithFallback } from "@/lib/meta-model";
 import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 
@@ -156,25 +156,20 @@ export async function POST(request: Request) {
     const matchBlock = matchable.length > 0
       ? ` Available circles (id: name — themes): ${matchable.map((m) => m.line).join(" | ")}`
       : " No circles are available right now.";
-    const result = await requestMetaChatRouted("advice", {
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT + matchBlock },
-        ...history.map((turn) => ({ role: turn.role === "user" ? "user" as const : "assistant" as const, content: turn.text })),
-        { role: "user", content: message },
-      ],
-      maxTokens: 700,
-      temperature: 0.7,
-      responseFormat: responseFormat([...allowed]),
-    });
-    let advice: AdviceResult | null = null;
-    try {
-      advice = validAdvice(JSON.parse(result.text) as unknown, allowed);
-    } catch {
-      advice = null;
-    }
-    if (!advice) {
-      return finish({ error: "unavailable" }, 502, "unavailable", { providerLatencyMs: result.latencyMs, usage: result.usage, errorKind: "bad-response" });
-    }
+    const { value: advice, result } = await requestValidatedWithFallback(
+      "advice",
+      {
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT + matchBlock },
+          ...history.map((turn) => ({ role: turn.role === "user" ? "user" as const : "assistant" as const, content: turn.text })),
+          { role: "user", content: message },
+        ],
+        maxTokens: 700,
+        temperature: 0.7,
+        responseFormat: responseFormat([...allowed]),
+      },
+      (text) => validAdvice(JSON.parse(text) as unknown, allowed),
+    );
     return finish(advice, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage, model: result.model });
   } catch (error) {
     return finish({ error: "unavailable" }, modelFailureStatus(error), "unavailable", { errorKind: modelErrorKind(error) });
