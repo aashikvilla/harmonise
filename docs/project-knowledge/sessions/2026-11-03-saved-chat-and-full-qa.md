@@ -23,4 +23,8 @@
 
 ## Release
 
-Feature branch and `main` pushes plus the resulting Vercel preview/production readiness checks are recorded after the release gate completes.
+- Pushed feature branch `journey/end-to-end-2026-11-03` and fast-forwarded `main` to `4dfa2c330226d8c7f3414bdb4655b9cfe4be942a`.
+- Vercel preview deployment `dpl_EtNS2dH3XmCZ7JsueN5nS6R2JFSu` and production deployment `dpl_DKCf3pLGyq4zQxCPWsqA9j8opYsz` both reached `READY`.
+- Production `/api/ready` returned HTTP 200 with database reachable and model configured; production homepage returned HTTP 200.
+- Preview `/api/ready` returned HTTP 200 but reports database/model unconfigured. Do not use that preview for live integration validation until its environment is configured.
+- The deployed `vercel.json` retains the Hobby-compatible daily schedules: moderation process at 05:00 UTC and facilitate at 09:00 UTC. Configuration and production deployment are verified; an actual scheduled invocation has not yet been observed.
