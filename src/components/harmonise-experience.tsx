@@ -189,6 +189,7 @@ function CircleRecommendation({ themes }: { themes: string[] }) {
   }, []);
   if (communities === null || communities.length === 0) return null;
   const ranked = communities
+    .filter((community) => community.memberCount > 0)
     .map((community) => ({
       community,
       overlap: (COMMUNITY_THEMES[community.id] ?? []).filter((theme) => themes.includes(theme)),
@@ -794,6 +795,8 @@ export default function HarmoniseExperience({ initialPath }: { initialPath?: Exc
     const contextualCommunity = fixtures.communities.find((item) => item.id === "community.family-expectations");
     return <>
       <p className="lede">Read a conversation, explore a story, or leave without joining.</p>
+      <CircleRecommendation themes={[...new Set([...state.confirmedThemes, ...state.proposedThemes, ...suggestedThemes])]} />
+      <p className="small-note">Below: sample illustrations for exploring. Live circles with real members appear above when they match.</p>
       {state.chapter === "belonging" && <section className="new-chapter-banner"><span className="context-eyebrow">A FEW WEEKS LATER · FICTIONAL STORY</span><h2>New City, Feeling Lonely After Work</h2><p>{state.opening}</p><p>{state.carryPreviousContext && state.carriedTakeaway ? `You chose to bring this note: “${state.carriedTakeaway}”` : "You chose to start this chapter separately. Nothing from the earlier relationship conversation is used to shape these results."}</p><p className="small-note">This topic is about social connection, not an assumed cause or diagnosis.</p></section>}
       {state.quietReader && <Notice tone="private">Quiet reading · no alias, question or membership is needed to continue.</Notice>}
       {state.mockTextNotice && <Notice>Your new words weren&apos;t interpreted. These suggestions use only what you selected.</Notice>}
