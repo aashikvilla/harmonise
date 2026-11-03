@@ -84,22 +84,40 @@ function safeList(value: unknown, maxItems: number, maxText: number, minItems = 
   return items;
 }
 
+function capText(value: unknown, max: number) {
+  const text = cleanText(value, Number.MAX_SAFE_INTEGER);
+  return text ? text.slice(0, max) : null;
+}
+
+function safeListCapped(value: unknown, maxItems: number, maxText: number, minItems = 0) {
+  if (!Array.isArray(value) || value.length < minItems || value.length > maxItems) return null;
+  const items: string[] = [];
+  for (const item of value) {
+    const cleaned = cleanText(item, Number.MAX_SAFE_INTEGER);
+    if (!cleaned) return null;
+    let text = cleaned.slice(0, maxText);
+    if (cleaned.length > maxText && text.includes(" ")) text = text.slice(0, text.lastIndexOf(" "));
+    if (!items.some((existing) => existing.toLocaleLowerCase() === text.toLocaleLowerCase())) items.push(text);
+  }
+  return items;
+}
+
 function validateDraft(value: unknown, candidates: CommunityCandidate[]): SetupDraft | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
-  const description = cleanText(record.description, 500);
-  const includedTopics = safeList(record.includedTopics, 8, 36, 1);
-  const adjacentTopics = safeList(record.adjacentTopics, 6, 60);
-  const outOfScope = safeList(record.outOfScope, 6, 100);
-  const norms = safeList(record.norms, 6, 160, 3);
-  const welcomeMessage = cleanText(record.welcomeMessage, 400);
-  const starterPrompts = safeList(record.starterPrompts, 4, 160, 2);
+  const description = capText(record.description, 500);
+  const includedTopics = safeListCapped(record.includedTopics, 8, 36, 1);
+  const adjacentTopics = safeListCapped(record.adjacentTopics, 6, 60);
+  const outOfScope = safeListCapped(record.outOfScope, 6, 100);
+  const norms = safeListCapped(record.norms, 6, 160, 3);
+  const welcomeMessage = capText(record.welcomeMessage, 400);
+  const starterPrompts = safeListCapped(record.starterPrompts, 4, 160, 2);
   if (!description || description.length < 20 || !includedTopics || !adjacentTopics || !outOfScope || !norms || !welcomeMessage || !starterPrompts) return null;
   if (!record.communityFit || typeof record.communityFit !== "object" || Array.isArray(record.communityFit)) return null;
   const fit = record.communityFit as Record<string, unknown>;
   if (fit.kind !== "fits-existing" && fit.kind !== "distinct-community" && fit.kind !== "human-review") return null;
   const candidateIds = safeList(fit.candidateIds, 3, 48);
-  const explanation = cleanText(fit.explanation, 240);
+  const explanation = capText(fit.explanation, 240);
   if (!candidateIds || !explanation) return null;
   const allowedIds = new Set(candidates.map((candidate) => candidate.id));
   if (candidateIds.some((id) => !allowedIds.has(id))) return null;
