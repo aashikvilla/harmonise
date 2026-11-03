@@ -59,3 +59,10 @@
 - **Implementation:** The setup copilot uses Muse Spark by default; `META_SETUP_MODEL` is server-only and restricted to Spark/Wonder for non-production evaluation. The member guide receives only approved scope/public metadata and the current question. Scope recommendations use a moderator-selected excerpt, disclosed before submission; raw excerpt text is not stored. Split creation is transactional and idempotent, and launch still requires the allowlisted reviewer and coverage attestation.
 - **Not enabled:** Timeout-based approval, background post scanning, automatic scope expansion, automated moderation enforcement, member invites, or agent-authored public posts/replies.
 - **Revisit when:** A staffed pilot has member-governance rules, representative scope-quality evaluations, clear ownership, notices/appeals, and explicit approval for any delegated low-risk changes.
+
+## 2026-11-03 — Keep engagement tables server-only
+
+- **Decision:** Reactions and promotion requests are accessed through authenticated server routes using `service_role`. Revoke `anon` and `authenticated` table privileges and keep RLS enabled with no direct-API policies.
+- **Reason:** The app already performs member, post-visibility and moderator checks at the route boundary. The initial table policies did not fully bind a reaction to the author's community and allowed reads of hidden-post reactions in public circles.
+- **Implementation:** Production migration `20261103164619_lock_engagement_tables_to_server.sql` revokes the direct grants and removes the unused policies. SQL privilege checks confirm API roles are denied and `service_role` retains route access.
+- **Revisit when:** A product feature requires direct PostgREST access; first design and verify an owner/member/moderator JWT policy matrix for cross-community, hidden, blocked and lifecycle states.

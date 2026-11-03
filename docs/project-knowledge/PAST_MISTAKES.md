@@ -105,3 +105,14 @@ Next server stopped answering readiness requests. The affected homepage and
 product flows passed when rerun serially after the server recovered. Capture
 `/api/ready` and server logs, then rerun affected journeys before changing app
 behavior based on a timeout.
+
+## 2026-11-03 — Review table grants and cross-table bindings alongside RLS
+
+The engagement tables inherited broad `anon`/`authenticated` grants. Their
+RLS policies limited rows but did not bind a reaction's membership to its
+post's community, and the public-circle read policy did not exclude hidden
+posts. Check actual ACLs and `has_table_privilege` for each API role after every
+public-schema migration; test policies against the full foreign-key relationship
+and row lifecycle. If the application only uses server routes, revoke direct
+API grants rather than keeping unused policies that could be accidentally
+re-granted later.
