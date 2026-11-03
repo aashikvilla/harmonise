@@ -1,6 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/communities", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        communities: [{ id: "steady-ground", name: "Finding steady ground", description: "A synthetic live community.", memberCount: 4, postCount: 7 }],
+      }),
+    });
+  });
   await page.route("**/api/chat", async (route) => {
     const body = route.request().postDataJSON() as { message?: unknown };
     const message = typeof body.message === "string" ? body.message : "";
