@@ -173,6 +173,7 @@
     },
     {
       "id": "experience.nisha",
+      "attributionLabel": "fictional experience · Nisha",
       "contributorId": "contributor.nisha",
       "communityId": "community.family-expectations",
       "isFictional": true,
@@ -201,6 +202,7 @@
     },
     {
       "id": "experience.mira",
+      "attributionLabel": "fictional experience · Mira",
       "contributorId": "contributor.mira",
       "communityId": "community.family-expectations",
       "isFictional": true,
@@ -393,7 +395,7 @@
     {
       "id": "discussion.new-city",
       "isFictional": true,
-      "authorAlias": "WeekendWalks",
+      "authorAlias": "WeekendWalks · fictional",
       "prompt": "What helped you make friends after relocating?",
       "preview": "A recurring activity was easier for me than a one-off meetup."
     },

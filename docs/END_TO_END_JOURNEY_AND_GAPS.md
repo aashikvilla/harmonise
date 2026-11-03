@@ -627,3 +627,34 @@ sample permanence, verified-identity operator, retention rules.
 **Live schema:** engagement and reviewer-note migrations are applied. The
 feature branch is not yet deployed; live write-flow verification still needs a
 deployed build and dedicated consenting test accounts/community.
+
+
+## 12. Implementation log - mock-removal + parallel QA cycle (2026-11-03, later)
+
+Parallel workflow (4 slices, shared checkout, per-stage commits) + central
+regression. Suite: **100 passed / 18 credential-gated skipped, desktop +
+mobile**. typecheck + lint clean.
+
+**Connect (3.7) - demo fully retired:** gate uses real email-code OTP auth
+with session restore and real sign-out; circles tab reads live memberships
+and posts via /api/communities (join/post/reactions real, reactions degrade
+honestly); journey/coaches show real contribution counts, history, and
+promotion state (invented points and coach roster removed); adviser matches
+now resolve against live communities because /api/advice builds its match
+enum from approved DB circles instead of hardcoded fictional themes.
+
+**Mock sweep:** silent fiction in the main journey now labeled at every
+surface (fictional community/people/discussions), takeaways use the signed-in
+user's own words (no more Arjun attribution or hardcoded alias);
+src/lib/community-progress-demo.ts deleted (unused).
+
+**Designer pass:** glassy bg-white/70 + dark-mode remnants removed from
+ops/profile/moderation pages; shared .state-card, .section-head,
+.loading-skeleton patterns; product header + DM webfonts adopted.
+
+**Still open:** migrations 0005/0006 need the Supabase DB password (apply,
+then live-verify reactions/featuring/promotions end-to-end); milestone
+confirmations have no persistence endpoint (labeled this-session
+reflections); no verified-supporter roster endpoint exists (coaches tab
+shows real application state instead); profile/ops/moderation are on
+develop but not yet deployed.

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { detectCrisis } from "@/lib/connect/catalog";
 import { MAX_MESSAGE_LENGTH, type AdviceResult, type HistoryTurn } from "@/lib/connect/advice";
 import { useSession } from "@/lib/connect/session";
-import { CommunityCard } from "@/components/connect/community-cards";
+import { CommunityCard, type RealCommunity } from "@/components/connect/community-cards";
 
 const AI_DISCLAIMER = "AI can be wrong. Use your judgment and consult a qualified professional for legal, medical, or financial decisions.";
 
@@ -35,6 +35,8 @@ export default function Adviser() {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [liveCommunities, setLiveCommunities] = useState<RealCommunity[] | null>(null);
+  const [joinedIds, setJoinedIds] = useState<string[]>([]);
   const timers = useRef<number[]>([]);
 
   useEffect(() => () => {
@@ -108,7 +110,45 @@ export default function Adviser() {
     void requestAdvice(exchange.id, exchange.userText, historyFor(exchange.id)).finally(() => setSending(false));
   }
 
+  async function loadLiveCommunities() {
+    try {
+      const response = await fetch("/api/communities", { credentials: "include" });
+      const payload: unknown = await response.json().catch(() => null);
+      if (response.ok && payload && typeof payload === "object" && Array.isArray((payload as { communities?: unknown }).communities)) {
+        setLiveCommunities((payload as { communities: RealCommunity[] }).communities);
+      } else {
+        setLiveCommunities([]);
+      }
+    } catch {
+      setLiveCommunities([]);
+    }
+  }
+
+  async function joinLiveCommunity(id: string): Promise<boolean> {
+    const alias = state.displayName.trim();
+    if (alias.length < 2) return false;
+    try {
+      const response = await fetch(`/api/communities/${id}/join`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alias }),
+      });
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok || !payload || typeof payload !== "object" || !("membership" in payload)) return false;
+      setJoinedIds((current) => (current.includes(id) ? current : [...current, id]));
+      setLiveCommunities((current) =>
+        current ? current.map((community) => (community.id === id ? { ...community, joined: true } : community)) : current,
+      );
+      dispatch({ type: "join", id });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function reveal(exchange: Exchange) {
+    void loadLiveCommunities();
     updateExchange(exchange.id, { matching: true });
     const timer = window.setTimeout(() => updateExchange(exchange.id, { matching: false, revealed: true }), 1600);
     timers.current.push(timer);
@@ -167,19 +207,21 @@ export default function Adviser() {
                     <div className="cx-match-bar" aria-hidden="true" />
                   </div>
                 ) : null}
-                {exchange.revealed ? (
+                {exchange.revealed && liveCommunities === null ? (
+                  <p className="cx-note" role="status">Loading live communities…</p>
+                ) : exchange.revealed ? (
                   <div>
                     <h3 className="cx-reveal-head">Communities that may understand</h3>
                     <div className="cx-cards">
                       {exchange.advice.matches.map((match) => (
                         <CommunityCard
                           key={match.id}
-                          id={match.id}
+                          community={liveCommunities?.find((community) => community.id === match.id) ?? null}
                           reason={match.reason}
-                          joined={state.joined.includes(match.id)}
+                          joined={joinedIds.includes(match.id) || (liveCommunities?.find((community) => community.id === match.id)?.joined ?? false)}
                           nameMode={state.nameMode}
                           displayName={state.displayName}
-                          onJoin={(id) => dispatch({ type: "join", id })}
+                          onJoin={joinLiveCommunity}
                           onOpen={() => dispatch({ type: "set-tab", tab: "circles" })}
                         />
                       ))}

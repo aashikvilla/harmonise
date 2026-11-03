@@ -87,10 +87,10 @@ test("Arjun can choose a concrete private takeaway immediately after confirming 
   await page.getByRole("button", { name: "Send" }).click();
   await page.getByRole("textbox", { name: "WHAT YOU CONFIRMED · EDITABLE" }).fill("I can ask for time before deciding.");
   await page.getByRole("button", { name: "Yes, that’s closer" }).click();
-  const choice = page.getByRole("region", { name: "Arjun's optional private takeaway" });
+  const choice = page.getByRole("region", { name: "Your optional private takeaway" });
   await expect(choice).toContainText("I can ask for time before deciding.");
   await choice.getByRole("button", { name: "Keep this takeaway privately" }).click();
-  await expect(choice.getByRole("status")).toHaveText("Arjun chose to keep this in the browser session only. Nothing is sent.");
+  await expect(choice.getByRole("status")).toHaveText("You chose to keep this in the browser session only. Nothing is sent.");
 });
 
 test("scenario and example query params both open an editable unsent Arjun opener", async ({ page }) => {

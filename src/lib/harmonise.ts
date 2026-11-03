@@ -490,7 +490,7 @@ export function harmoniseReducer(state: HarmoniseState, action: HarmoniseAction)
     case "OPEN_JOURNEY": return go(state, "journey");
     case "START_FUTURE_CHAPTER": {
       const priorChapter: PriorChapterSnapshot = state.priorChapter ?? {
-        opening: state.opening || fixtures.leadPersona.private.opening,
+        opening: state.opening,
         confirmedNeed: state.confirmedNeed,
         confirmedThemes: [...state.confirmedThemes],
         rejectedThemes: [...state.rejectedThemes],

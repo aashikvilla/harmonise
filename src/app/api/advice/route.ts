@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { COMMUNITY_IDS, detectCrisis, leaksCommunityReference } from "@/lib/connect/catalog";
+import { detectCrisis, leaksCommunityReference } from "@/lib/connect/catalog";
+import { listCommunities } from "@/lib/db/community";
 import {
   MAX_HISTORY_TURNS,
   MAX_MESSAGE_LENGTH,
@@ -19,7 +20,21 @@ const MAX_PERSPECTIVE = 450;
 const MAX_REASON = 300;
 const MAX_MATCHES = 2;
 
-function validAdvice(value: unknown): AdviceResult | null {
+type Matchable = { id: string; line: string };
+
+async function loadMatchable(): Promise<Matchable[]> {
+  try {
+    const rows = await listCommunities(undefined);
+    return rows.slice(0, 8).map((c) => ({
+      id: c.id,
+      line: `${c.id}: ${c.name} — ${(c.topics ?? []).join(", ") || c.description}`.slice(0, 300),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function validAdvice(value: unknown, allowed: Set<string>): AdviceResult | null {
   if (typeof value !== "object" || value === null) return null;
   const record = value as Record<string, unknown>;
   if (typeof record.reflection !== "string" || record.reflection.trim().length === 0) return null;
@@ -40,7 +55,7 @@ function validAdvice(value: unknown): AdviceResult | null {
     if (typeof item !== "object" || item === null) return null;
     const entry = item as Record<string, unknown>;
     if (typeof entry.id !== "string" || typeof entry.reason !== "string") return null;
-    if (!COMMUNITY_IDS.includes(entry.id as (typeof COMMUNITY_IDS)[number])) return null;
+    if (!allowed.has(entry.id)) continue;
     if (seen.has(entry.id)) continue;
     seen.add(entry.id);
     matches.push({ id: entry.id, reason: entry.reason.trim().slice(0, MAX_REASON) });
@@ -57,42 +72,42 @@ const SYSTEM_PROMPT = [
   "In reflection, steps, and perspective, do not mention communities, matching, groups, circles, or other people the user could meet.",
   "Never promise outcomes or claim certainty. Prefer questions and small user-chosen actions.",
   "Choose 0 to 2 matches only when the user's words clearly fit; prefer no match over a weak match.",
-  "rebuilding: separation, divorce, breakup, co-parenting, identity change, starting over.",
-  "legal-clarity: preparing questions before speaking with a qualified legal professional. Do not give legal advice.",
-  "steady-ground: uncertainty, grief, loneliness, family pressure, anxiety, disrupted routines.",
+  "Suggest only circles from the available list appended at the end; never invent a circle id. If no circles are listed, return no matches.",
   "Keep reflection and perspective to 1-2 sentences, and each step to one sentence.",
 ].join(" ");
 
-const RESPONSE_FORMAT = {
-  type: "json_schema",
-  json_schema: {
-    name: "harmonise_advice",
-    strict: true,
-    schema: {
-      type: "object",
-      properties: {
-        reflection: { type: "string" },
-        steps: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
-        perspective: { type: "string" },
-        matches: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string", enum: [...COMMUNITY_IDS] },
-              reason: { type: "string" },
+function responseFormat(ids: string[]) {
+  return {
+    type: "json_schema",
+    json_schema: {
+      name: "harmonise_advice",
+      strict: true,
+      schema: {
+        type: "object",
+        properties: {
+          reflection: { type: "string" },
+          steps: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
+          perspective: { type: "string" },
+          matches: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+              id: { type: "string", enum: ids.length > 0 ? ids : ["__none__"] },
+                reason: { type: "string" },
+              },
+              required: ["id", "reason"],
+              additionalProperties: false,
             },
-            required: ["id", "reason"],
-            additionalProperties: false,
+            maxItems: MAX_MATCHES,
           },
-          maxItems: MAX_MATCHES,
         },
+        required: ["reflection", "steps", "perspective", "matches"],
+        additionalProperties: false,
       },
-      required: ["reflection", "steps", "perspective", "matches"],
-      additionalProperties: false,
     },
-  },
-};
+  };
+}
 
 export async function POST(request: Request) {
   const requestId = newRequestId();
@@ -136,19 +151,24 @@ export async function POST(request: Request) {
 
   const history = cleanHistory(record.history).slice(-MAX_HISTORY_TURNS);
   try {
+    const matchable = await loadMatchable();
+    const allowed = new Set(matchable.map((m) => m.id));
+    const matchBlock = matchable.length > 0
+      ? ` Available circles (id: name — themes): ${matchable.map((m) => m.line).join(" | ")}`
+      : " No circles are available right now.";
     const result = await requestMetaChatDetailed({
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: SYSTEM_PROMPT + matchBlock },
         ...history.map((turn) => ({ role: turn.role === "user" ? "user" as const : "assistant" as const, content: turn.text })),
         { role: "user", content: message },
       ],
       maxTokens: 700,
       temperature: 0.7,
-      responseFormat: RESPONSE_FORMAT,
+      responseFormat: responseFormat([...allowed]),
     });
     let advice: AdviceResult | null = null;
     try {
-      advice = validAdvice(JSON.parse(result.text) as unknown);
+      advice = validAdvice(JSON.parse(result.text) as unknown, allowed);
     } catch {
       advice = null;
     }

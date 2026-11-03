@@ -18,7 +18,6 @@ type Community = {
   memberCount: number;
   postCount: number;
   recentPostCount: number;
-  moderatorCount: number;
 };
 
 type Membership = { id: string; alias: string; role: "member" | "moderator"; status: string };
@@ -469,7 +468,7 @@ function PostCard({
       {expanded && (
         <div className="mt-4 border-t border-[var(--line)] pt-3">
           {replies === null ? (
-            <p role="status" className="text-sm text-[var(--muted)]">Loading replies…</p>
+            <p role="status" className="loading-skeleton text-sm text-[var(--muted)]">Loading replies…</p>
           ) : replies.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">No replies yet.</p>
           ) : (
@@ -699,11 +698,11 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
     return false;
   }
 
-  if (status === "loading") return <p role="status" className="text-[var(--muted)]">Loading community…</p>;
+  if (status === "loading") return <p role="status" className="loading-skeleton text-[var(--muted)]">Loading community…</p>;
   if (status === "unavailable") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">Real communities aren&apos;t connected yet</h2>
+        <h2 className="section-head">Real communities aren&apos;t connected yet</h2>
         <p className="mt-2 text-[var(--muted)]">This page shows live community content once the database is connected.</p>
       </div>
     );
@@ -711,7 +710,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
   if (status === "missing") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]" role="alert">
-        <h2 className="text-xl font-semibold">No community here</h2>
+        <h2 className="section-head">No community here</h2>
         <p className="mt-2 text-[var(--muted)]">This community does not exist or is no longer available.</p>
       </div>
     );
@@ -719,7 +718,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
   if (status === "error" || !community) {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]" role="alert">
-        <h2 className="text-xl font-semibold">This community couldn&apos;t be loaded</h2>
+        <h2 className="section-head">This community couldn&apos;t be loaded</h2>
         <button type="button" onClick={() => void loadAll()} className="mt-4 rounded-full bg-[var(--ink)] px-5 py-2.5 text-white">
           Try again
         </button>
@@ -741,9 +740,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
           {community.memberCount} {community.memberCount === 1 ? "member" : "members"} · {community.postCount}{" "}
           {community.postCount === 1 ? "post" : "posts"} · {community.recentPostCount > 0 ? `${community.recentPostCount} new this week` : "quiet right now"}
         </p>
-        {community.moderatorCount > 0 && (
-          <p className="mt-1 text-sm text-[var(--muted)]">Looked after by human moderators.</p>
-        )}
+        <p className="mt-1 text-sm text-[var(--muted)]">Reports enter a review queue. This community is not monitored continuously.</p>
       </div>
 
       {community.launch_status === "pending_review" && (
@@ -889,7 +886,7 @@ export default function RealCommunityDetail({ communityId }: { communityId: stri
       )}
 
       {postsState === "loading" && (
-        <p role="status" className="text-[var(--muted)]">Loading posts…</p>
+        <p role="status" className="loading-skeleton text-[var(--muted)]">Loading posts…</p>
       )}
       {postsState === "error" && (
         <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6" role="alert">

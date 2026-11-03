@@ -61,7 +61,7 @@ function AuditBody() {
       {!community ? (
         <div className="flex flex-col gap-3">
           {options === null ? (
-            <p className="text-sm">Loading the communities you moderate…</p>
+            <p className="loading-skeleton text-sm" role="status">Loading the communities you moderate…</p>
           ) : options.length === 0 ? (
             <p className="text-sm">You do not moderate any community yet, so there is no audit trail to show.</p>
           ) : (
@@ -79,9 +79,9 @@ function AuditBody() {
           )}
         </div>
       ) : decisions === null ? (
-        <p className="text-sm">Loading decisions…</p>
+        <p className="loading-skeleton text-sm" role="status">Loading decisions…</p>
       ) : decisions.length === 0 ? (
-        <p className="text-sm">No moderation decisions recorded yet.</p>
+        <p className="state-card text-sm">No moderation decisions recorded yet.</p>
       ) : (
         <>
           <div>
@@ -118,7 +118,7 @@ function AuditBody() {
             {decisions.map((row) => (
             <li
               key={row.id}
-              className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 text-sm dark:bg-black/40"
+              className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 text-sm shadow-[var(--shadow-soft)]"
             >
               <p className="font-semibold">
                 {row.decision}
@@ -140,7 +140,7 @@ function AuditBody() {
 
 export default function DecisionsAuditPage() {
   return (
-    <Suspense fallback={<main className="mx-auto w-full max-w-3xl px-5 py-10 text-sm">Loading…</main>}>
+    <Suspense fallback={<main className="loading-skeleton mx-auto w-full max-w-3xl px-5 py-10 text-sm" role="status">Loading…</main>}>
       <AuditBody />
     </Suspense>
   );

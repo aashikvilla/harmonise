@@ -181,7 +181,7 @@ export function ScopeStewardshipPanel({ communityId }: { communityId: string }) 
       {notice && <p role="status" className="rounded-lg bg-[var(--sage)] p-3 text-sm">{notice}</p>}
 
       {loading ? (
-        <p role="status" aria-busy="true" className="text-sm text-[var(--muted)]">Loading scope suggestions…</p>
+        <p role="status" aria-busy="true" className="loading-skeleton text-sm text-[var(--muted)]">Loading scope suggestions…</p>
       ) : changes.length === 0 ? (
         <p className="rounded-xl border border-dashed border-[var(--line)] p-4 text-sm text-[var(--muted)]">No scope suggestions yet.</p>
       ) : (

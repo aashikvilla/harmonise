@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ProductHeader from "@/components/product-header";
 
 type OpsBody = {
   totals?: { requests?: number; errors?: number; inputTokens?: number; outputTokens?: number };
@@ -56,14 +57,17 @@ export default function OpsPage() {
   const backlogAlert = backlogHours > 1;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-5 py-10">
-      <h1 className="serif-head text-3xl">Pilot ops dashboard</h1>
+    <div className="product-page">
+      <ProductHeader current="ops" />
+      <main className="product-page-content flex max-w-3xl flex-col gap-6">
+      <p className="product-page-kicker">For the people keeping the space safe</p>
+      <h1 className="serif-head">Pilot ops dashboard</h1>
       <p className="text-sm text-[var(--muted)]">
         Queue depth, worker lag, model errors, token spend, and the signup → join → post funnel. Metadata only —
         no private text or identities.
       </p>
       <form
-        className="flex flex-col gap-2 rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40"
+        className="product-page-card flex flex-col gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]"
         onSubmit={(event) => {
           event.preventDefault();
           void load(secret);
@@ -85,7 +89,7 @@ export default function OpsPage() {
             Load metrics
           </button>
         </div>
-        {error && <p className="text-sm text-[var(--coral,#af554f)]">{error}</p>}
+        {error && <p className="text-sm text-[var(--teal-dark)]">{error}</p>}
       </form>
 
       {body && (
@@ -96,8 +100,8 @@ export default function OpsPage() {
               before the pilot review.
             </p>
           )}
-          <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Funnel">
-            <h2 className="font-semibold">Signup → join → post</h2>
+          <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Funnel">
+            <h2 className="section-head">Signup → join → post</h2>
             {body.funnel ? (
               <p className="mt-1 text-sm">
                 {body.funnel.accounts} accounts · {body.funnel.memberships} active memberships · {body.funnel.posts}{" "}
@@ -107,8 +111,8 @@ export default function OpsPage() {
               <p className="mt-1 text-sm">Funnel counts unavailable.</p>
             )}
           </section>
-          <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Moderation queue">
-            <h2 className="font-semibold">Moderation queue</h2>
+          <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Moderation queue">
+            <h2 className="section-head">Moderation queue</h2>
             {body.queue ? (
               <p className="mt-1 text-sm">
                 {body.queue.queued} queued · {body.queue.processing} processing · {body.queue.triaged} triaged ·{" "}
@@ -118,16 +122,16 @@ export default function OpsPage() {
               <p className="mt-1 text-sm">Queue depth unavailable.</p>
             )}
           </section>
-          <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Model usage">
-            <h2 className="font-semibold">Model usage</h2>
+          <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Model usage">
+            <h2 className="section-head">Model usage</h2>
             <p className="mt-1 text-sm">
               {body.totals?.requests ?? 0} requests · {body.totals?.errors ?? 0} errors ·{" "}
               {body.totals?.inputTokens ?? 0} in / {body.totals?.outputTokens ?? 0} out tokens ·{" "}
               {body.quotaDrops ?? 0} quota drops · {body.killSwitchDrops ?? 0} kill-switch drops
             </p>
           </section>
-          <section className="rounded-2xl border border-[var(--line)] bg-white/70 p-4 dark:bg-black/40" aria-label="Routes">
-            <h2 className="font-semibold">Slowest routes</h2>
+          <section className="product-page-card rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-label="Routes">
+            <h2 className="section-head">Slowest routes</h2>
             <ul className="mt-2 flex flex-col gap-1 text-sm">
               {(body.routes ?? [])
                 .slice()
@@ -143,6 +147,7 @@ export default function OpsPage() {
           </section>
         </>
       )}
-    </main>
+      </main>
+    </div>
   );
 }

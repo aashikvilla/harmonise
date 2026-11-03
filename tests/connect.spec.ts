@@ -143,6 +143,7 @@ test.describe('Harmonise connect flow', () => {
     await expect(page.getByText('You haven’t joined any circles yet')).toBeVisible();
     await page.getByRole('button', { name: 'Support Coaches' }).click();
     await expect(page.getByText('Need licensed or clinical care?')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Request introduction' }).first()).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Request introduction' })).toHaveCount(0);
+    await expect(page.getByText(/no coaches are listed here/i)).toBeVisible();
   });
 });

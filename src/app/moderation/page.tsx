@@ -16,7 +16,7 @@ export default function ModerationPage() {
       <Link href="/communities" className="text-sm underline">
         ← Communities
       </Link>
-      <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-[var(--muted)]">harmonize. · reviewers only</p>
+      <p className="product-page-kicker mt-6">harmonize. · reviewers only</p>
       <h1 className="serif-head mt-1 text-4xl">Moderation review</h1>
       <p className="mt-2 max-w-2xl text-[var(--muted)]">
         Reported posts reach authorized humans with full context. AI suggestions advise; only people decide.

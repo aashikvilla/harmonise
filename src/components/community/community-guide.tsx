@@ -89,7 +89,7 @@ export function CommunityGuide({ communityId, communityName }: Props) {
           </button>
         </div>
       </form>
-      {state === "loading" && <p className="mt-4 text-sm text-[var(--muted)]" role="status">Checking this community’s scope…</p>}
+      {state === "loading" && <p className="loading-skeleton mt-4 text-sm text-[var(--muted)]" role="status">Checking this community’s scope…</p>}
       {state === "error" && (
         <p className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3 text-sm" role="alert">{errorMessage}</p>
       )}

@@ -18,9 +18,14 @@ test.beforeEach(async ({ page }) => {
 test("directory and guards behave honestly without sign-in", async ({ page }) => {
   const directory = await page.request.get("/api/communities");
   expect(directory.status()).toBe(200);
+  const body = (await directory.json()) as { communities: Array<Record<string, unknown>> };
+  expect(body.communities.length).toBeGreaterThan(0);
+  expect(body.communities[0]).not.toHaveProperty("moderatorCount");
   expect((await page.request.get("/api/communities/!!!")).status()).toBe(400);
   expect((await page.request.get(`/api/communities/${COMMUNITY}/membership`)).status()).toBe(401);
   expect((await page.request.post(`/api/communities/${COMMUNITY}/join`, { data: { alias: "Ghost" } })).status()).toBe(401);
   await page.goto("/communities");
   await expect(page.getByRole("heading", { name: "Communities", exact: true })).toBeVisible();
+  await page.goto(`/communities/${COMMUNITY}`);
+  await expect(page.getByText("Reports enter a review queue. This community is not monitored continuously.", { exact: true })).toBeVisible();
 });

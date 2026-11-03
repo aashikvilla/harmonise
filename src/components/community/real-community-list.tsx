@@ -58,13 +58,13 @@ export default function RealCommunityList() {
   }, []);
 
   if (state === "loading") {
-    return <p role="status" className="text-[var(--muted)]">Loading communities…</p>;
+    return <p role="status" className="loading-skeleton text-[var(--muted)]">Loading communities…</p>;
   }
 
   if (state === "unavailable") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">Real communities aren&apos;t connected yet</h2>
+        <h2 className="section-head">Real communities aren&apos;t connected yet</h2>
         <p className="mt-2 text-[var(--muted)]">
           This space shows live communities once the database is connected. Nothing here is simulated: no sample
           members, no invented posts.
@@ -76,7 +76,7 @@ export default function RealCommunityList() {
   if (state === "error") {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]" role="alert">
-        <h2 className="text-xl font-semibold">Communities couldn&apos;t be loaded</h2>
+        <h2 className="section-head">Communities couldn&apos;t be loaded</h2>
         <p className="mt-2 text-[var(--muted)]">Check your connection and try again.</p>
         <button
           type="button"
@@ -92,7 +92,7 @@ export default function RealCommunityList() {
   if (communities.length === 0) {
     return (
       <div className="rounded-xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-xl font-semibold">No communities yet</h2>
+        <h2 className="section-head">No communities yet</h2>
         <p className="mt-2 text-[var(--muted)]">
           No one has opened a community here yet. You can suggest one for human review.
         </p>
