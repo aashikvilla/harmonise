@@ -8,7 +8,7 @@ import {
   type AdviceResult,
 } from "@/lib/connect/advice";
 import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeaders } from "@/lib/api-guard";
-import { checkRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatDetailed } from "@/lib/meta-model";
+import { checkRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatRouted } from "@/lib/meta-model";
 import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
     body: unknown,
     status: number,
     outcome: "ok" | "invalid" | "rate-limited" | "crisis-screened" | "unavailable" | "error",
-    meta?: { providerLatencyMs?: number; usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number }; errorKind?: string },
+    meta?: { providerLatencyMs?: number; usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number }; errorKind?: string; model?: string },
   ) => {
     logRouteCall({ route: "/api/advice", status, latencyMs: Date.now() - started, requestId, outcome, ...meta });
     return withMetaHeaders(NextResponse.json(body, { status }), { requestId, ...meta });
@@ -156,7 +156,7 @@ export async function POST(request: Request) {
     const matchBlock = matchable.length > 0
       ? ` Available circles (id: name — themes): ${matchable.map((m) => m.line).join(" | ")}`
       : " No circles are available right now.";
-    const result = await requestMetaChatDetailed({
+    const result = await requestMetaChatRouted("advice", {
       messages: [
         { role: "system", content: SYSTEM_PROMPT + matchBlock },
         ...history.map((turn) => ({ role: turn.role === "user" ? "user" as const : "assistant" as const, content: turn.text })),
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
     if (!advice) {
       return finish({ error: "unavailable" }, 502, "unavailable", { providerLatencyMs: result.latencyMs, usage: result.usage, errorKind: "bad-response" });
     }
-    return finish(advice, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage });
+    return finish(advice, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage, model: result.model });
   } catch (error) {
     return finish({ error: "unavailable" }, modelFailureStatus(error), "unavailable", { errorKind: modelErrorKind(error) });
   }

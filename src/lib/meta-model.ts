@@ -1,7 +1,5 @@
 const META_API_BASE = "https://api.meta.ai/v1";
 const DEFAULT_TEXT_MODEL = "muse-spark-1.3";
-const DEFAULT_SETUP_MODEL = "muse-spark-1.3";
-const SETUP_MODELS = new Set(["muse-spark-1.3", "muse-wonder-1.0"]);
 const MODEL_ID_PATTERN = /^[a-z0-9][a-z0-9._/-]{0,63}$/i;
 const CHAT_TIMEOUT_MS = 30_000;
 
@@ -56,16 +54,47 @@ export function configuredTextModel() {
   return process.env.META_TEXT_MODEL?.trim() || DEFAULT_TEXT_MODEL;
 }
 
+export const WONDER_MODEL = "muse-wonder-1.0";
+
+/** Advisory product surface a model call serves. Safety-adjacent routes stay on the proven text model. */
+export type ModelRoute = "setup" | "advice" | "facilitate" | "chat";
+
 /**
- * Setup copilot model switch for controlled synthetic evaluation only.
- * The client cannot select this value, and failures do not fall back to another model.
+ * Routes served by Wonder first, with automatic Spark fallback on any model failure.
+ * Advisory paths only; moderation triage always uses the proven text model.
+ * Override with META_WONDER_ROUTES (comma list); empty disables Wonder.
  */
-export function configuredSetupModel() {
-  const model = process.env.META_SETUP_MODEL?.trim() || DEFAULT_SETUP_MODEL;
-  if (!SETUP_MODELS.has(model) || (model === "muse-wonder-1.0" && process.env.NODE_ENV === "production")) {
-    throw new MetaModelError(503, "invalid-model");
+export function wonderRoutes(): string[] {
+  return (process.env.META_WONDER_ROUTES ?? "setup,advice")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function modelFor(route: ModelRoute): string {
+  if (route === "setup") {
+    const override = (process.env.META_SETUP_MODEL ?? "").trim();
+    if (override && MODEL_ID_PATTERN.test(override)) return override;
   }
-  return model;
+  if (wonderRoutes().includes(route)) return WONDER_MODEL;
+  return configuredTextModel();
+}
+
+export function configuredSetupModel() {
+  return modelFor("setup");
+}
+
+/** Routed call: primary model for the surface, one automatic retry on the proven text model. */
+export async function requestMetaChatRouted(route: ModelRoute, options: Omit<ChatOptions, "model">): Promise<MetaResult> {
+  const primary = modelFor(route);
+  try {
+    return await requestMetaChatDetailed({ ...options, model: primary });
+  } catch (error) {
+    const fallback = configuredTextModel();
+    if (primary === fallback) throw error;
+    if (error instanceof MetaModelError && error.kind === "rate-limited") throw error;
+    return await requestMetaChatDetailed({ ...options, model: fallback });
+  }
 }
 
 function validModelId(value: string) {
