@@ -40,6 +40,9 @@ test.describe('new product surfaces', () => {
   });
 
   test('profile distinguishes signed-out state from an empty account', async ({ page }) => {
+    await page.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 401, contentType: 'application/json', body: '{"error":"signed-out"}' }),
+    );
     await page.goto('/profile');
     await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible();
     await expect(page.getByText(/Sign in to see your circles and private notifications/)).toBeVisible();

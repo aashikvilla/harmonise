@@ -135,6 +135,9 @@ test.describe('Harmonise connect flow', () => {
   });
 
   test('member tabs render journey, circles, and coaches', async ({ page }) => {
+    await page.route('**/api/communities', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: '{"communities":[]}' }),
+    );
     await enterWithCode(page);
     await page.getByRole('button', { name: 'My journey' }).click();
     await expect(page.getByText('Point Z', { exact: true })).toBeVisible();
