@@ -183,3 +183,11 @@ to the viewer just because it is present in the MP4.
 `/api/advice` returns a live reflection without creating a saved session;
 `/api/chat` persists through `/api/sessions`. Trace the route used by the
 visible screen before claiming a demo writes data or adding cleanup logic.
+
+## 2026-11-05 — A hidden-state wait can pass when the locator matches nothing
+
+Playwright's `waitFor({ state: "hidden" })` succeeds for a missing element. That
+let a community loading screen pass a weak check. Assert the loaded result
+positively (for example, a named rendered community card), then hold the screen
+long enough to read it. After a new capture, rerun the finalizer; an older MP4
+can otherwise be mistaken for the latest take.

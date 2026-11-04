@@ -1,81 +1,100 @@
 1
-00:00:00,040 --> 00:00:10,498
-You don't need the right words to begin. A
-hard decision can be difficult to explain, and
-harder to share before you are ready.
+00:00:00,040 --> 00:00:03,208
+You don't need the right words to begin.
 
 2
-00:00:10,998 --> 00:00:16,385
-Harmonise starts privately and leaves peer
-connection up to you.
+00:00:04,488 --> 00:00:11,591
+A family decision or major life change can be hard to
+name, harder to share before you feel ready.
 
 3
-00:00:16,885 --> 00:00:27,768
-It is for people facing personal decisions,
-family pressure, or life changes. This is peer
-support, not therapy.
+00:00:12,871 --> 00:00:20,563
+Harmonise offers adults facing pressure a private place to
+reflect and find one practical next step.
 
 4
-00:00:28,268 --> 00:00:38,090
-We sign in with the shared demo account.
-Community names and counts are real; member
-stories stay private.
+00:00:21,843 --> 00:00:29,190
+Peer connection is optional; the product is not therapy,
+diagnosis, or emergency care.
 
 5
-00:00:38,590 --> 00:00:43,242
-The member describes pressure to decide for
-their family.
+00:00:30,470 --> 00:00:36,773
+The shared demo account enters the same real
+authentication flow and running product.
 
 6
-00:00:43,742 --> 00:00:51,180
-Muse Wonder offers a live reflection and
-practical options, with Muse Spark as
-fallback.
+00:00:38,053 --> 00:00:45,920
+Here, a live Meta Muse response reflects the member's
+question and offers language for asking family for time.
 
 7
-00:00:51,680 --> 00:00:58,968
-The app names the model that answered. Matches
-appear only when the member asks.
+00:00:47,200 --> 00:00:54,127
+A second live prompt adds the realities of coordinating
+care between siblings in different cities.
 
 8
-00:00:59,468 --> 00:01:08,243
-Private advice is not copied into a peer
-space. The public directory comes from
-Supabase.
+00:00:55,407 --> 00:01:04,499
+Muse Wonder is the first choice for reflection and setup,
+with Spark as fallback; the label identifies which model
+replied.
 
 9
-00:01:08,743 --> 00:01:15,349
-When no circle fits, Meta drafts a possible
-scope from the member's idea.
+00:01:05,779 --> 00:01:14,991
+If Wonder's output fails checks, the server retries with
+Spark. Private reflection never posts automatically.
 
 10
-00:01:15,849 --> 00:01:23,797
-The member can edit or discard the draft. A
-human reviews any proposal before launch.
+00:01:16,271 --> 00:01:23,778
+Only when the member chooses do matches appear; the
+directory's real names and counts come from Supabase.
 
 11
-00:01:24,297 --> 00:01:30,667
-Muse Voice Transcribe turns speech into text
-the member can review and edit.
+00:01:25,058 --> 00:01:31,775
+When no space fits, Meta can draft a proposed community
+scope from the member's idea.
 
 12
-00:01:31,167 --> 00:01:36,750
-That transcript stays unsent until the member
-chooses what to do.
+00:01:33,055 --> 00:01:42,087
+Purpose, topics, boundaries, norms, and starter prompts
+stay editable; a human reviews before launch.
 
 13
-00:01:37,250 --> 00:01:49,228
-Muse Spark also supports chat, community
-guidance, and advisory moderation triage.
-People make consequential decisions.
+00:01:43,367 --> 00:01:50,960
+In saved private chat, Meta Muse Spark gives a live reply
+and suggests tentative support themes.
 
 14
-00:01:49,728 --> 00:01:57,984
-Next.js, Supabase Auth and Postgres, and
-server-side Meta models connect the journey.
+00:01:52,240 --> 00:01:57,552
+The member can review or correct those themes before
+exploring communities.
 
 15
-00:01:58,484 --> 00:02:07,717
-We aim to make a first step easier to see and
-connection easier to choose. We have not
-measured outcomes.
+00:01:58,832 --> 00:02:05,120
+Muse Voice Transcribe turns a spoken thought into text the
+member can review and edit.
+
+16
+00:02:06,400 --> 00:02:14,817
+Here the transcript stays in the composer, unsent. No
+speech is shared without the member's next choice.
+
+17
+00:02:16,097 --> 00:02:25,739
+Spark also powers scoped community guidance and advisory
+moderation triage. People make consequential decisions.
+
+18
+00:02:27,019 --> 00:02:35,290
+Volunteer and verified-supporter roles require human
+review; they are peer support, not a therapist directory.
+
+19
+00:02:36,570 --> 00:02:47,587
+Next.js connects the interface and server routes; Supabase
+handles identity and product data; Meta models power
+member-chosen features.
+
+20
+00:02:48,867 --> 00:02:56,974
+Our intended impact is a gentler first step and clearer
+choices. We have not measured outcomes.

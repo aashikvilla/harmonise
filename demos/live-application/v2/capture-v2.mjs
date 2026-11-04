@@ -23,6 +23,8 @@ const errors = [];
 const expectedResponses = [];
 const modelAttributions = [];
 let savedPrivateConversation = false;
+let reusedPrivateConversation = false;
+let createdPrivateConversation = false;
 let captureFailure = null;
 let signedIn = false;
 const started = Date.now();
@@ -47,6 +49,9 @@ page.on("response", (response) => {
     return;
   }
   errors.push(`HTTP ${response.status()} ${path}`);
+});
+page.on("request", (request) => {
+  if (pathOf(request) === "/api/sessions" && request.method() === "POST") createdPrivateConversation = true;
 });
 
 async function mark(label) {
@@ -109,14 +114,23 @@ try {
     await reveal.click({ timeout: 4_000 });
     await page.getByText("Communities that may understand", { exact: true }).waitFor({ state: "visible", timeout: 5_000 });
   }
+  const latestAdvice = page.locator(".cx-msg-adviser").last();
+  await latestAdvice.scrollIntoViewIfNeeded();
+  await latestAdvice.waitFor({ state: "visible", timeout: 3_000 });
+  await page.getByText(/My siblings and I share caregiving from different cities/).waitFor({ state: "visible", timeout: 3_000 });
   await holdUntil(74, "Two live Meta Adviser turns and member-chosen community matches");
 
   await page.goto(new URL("/communities", baseURL).toString(), { waitUntil: "domcontentloaded", timeout: 12_000 });
   await page.getByRole("heading", { name: "Communities", exact: true }).waitFor({ state: "visible", timeout: 5_000 });
-  await page.getByRole("status").filter({ hasText: "Loading communities" }).waitFor({ state: "hidden", timeout: 8_000 });
-  const communityCard = page.locator("ul li").first();
+  await page.waitForFunction(() => {
+    const status = document.querySelector('[role="status"]');
+    const cards = document.querySelectorAll("ul.grid > li h2");
+    return cards.length > 0 && !status?.textContent?.includes("Loading communities");
+  }, null, { timeout: 8_000 });
+  const communityCard = page.locator("ul.grid > li").first();
   await communityCard.waitFor({ state: "visible", timeout: 5_000 });
-  await communityCard.locator("h2").waitFor({ state: "visible", timeout: 3_000 });
+  const communityName = (await communityCard.locator("h2").innerText()).trim();
+  if (!communityName) throw new Error("The first live Supabase community has no visible name.");
   await holdUntil(83, "Fully loaded Supabase directory with real community names and aggregate activity");
 
   await page.goto(new URL("/communities/propose", baseURL).toString(), { waitUntil: "domcontentloaded", timeout: 10_000 });
@@ -138,22 +152,43 @@ try {
 
   await page.goto(new URL("/app", baseURL).toString(), { waitUntil: "domcontentloaded", timeout: 10_000 });
   await page.getByLabel("Your message").waitFor({ state: "visible", timeout: 7_000 });
-  const message = "I keep changing my mind about what my family needs. Can you help me find a way to ask for one more day?";
+  const savedPanel = page.getByRole("region", { name: "Saved conversations" });
+  await savedPanel.getByRole("heading", { name: "Your saved conversations" }).waitFor({ state: "visible", timeout: 5_000 });
+  const resumeButton = savedPanel.getByRole("button", { name: /^(Resume|Open)$/ }).first();
+  const hasSavedSession = (await resumeButton.count()) > 0;
+  let message = "I keep changing my mind about what my family needs. Can you help me find a way to ask for one more day?";
+  if (hasSavedSession) {
+    await resumeButton.click();
+    await page.getByText(message, { exact: true }).waitFor({ state: "visible", timeout: 5_000 });
+    await page.locator("article").filter({ hasText: "Harmonise · Meta AI" }).last().waitFor({ state: "visible", timeout: 5_000 });
+    reusedPrivateConversation = true;
+    message = "What is one gentle way to start that conversation without making anyone feel blamed?";
+  }
   await page.locator("#private-message").fill(message);
-  const createSessionPromise = page.waitForResponse((response) => pathOf(response) === "/api/sessions" && response.request().method() === "POST", { timeout: 5_000 });
+  const createSessionPromise = hasSavedSession
+    ? null
+    : page.waitForResponse((response) => pathOf(response) === "/api/sessions" && response.request().method() === "POST", { timeout: 5_000 });
   const chatPromise = page.waitForResponse((response) => pathOf(response) === "/api/chat" && response.request().method() === "POST", { timeout: 12_000 });
   await page.getByRole("button", { name: "Send to adviser" }).click();
-  const createdSession = await createSessionPromise;
-  if (!createdSession.ok()) throw new Error(`The live private conversation was not saved (HTTP ${createdSession.status()}).`);
+  if (createSessionPromise) {
+    const createdSession = await createSessionPromise;
+    if (!createdSession.ok()) throw new Error(`The live private conversation was not saved (HTTP ${createdSession.status()}).`);
+  }
   const chatResponse = await chatPromise;
   if (!chatResponse.ok()) throw new Error(`The live Muse Spark chat returned HTTP ${chatResponse.status()}.`);
+  await page.getByRole("status").filter({ hasText: "Waiting for the live adviser" }).waitFor({ state: "hidden", timeout: 8_000 });
   const assistantTurns = page.locator("article").filter({ hasText: "Harmonise · Meta AI" });
-  await assistantTurns.first().waitFor({ state: "visible", timeout: 5_000 });
+  const latestAssistantTurn = assistantTurns.last();
+  await latestAssistantTurn.waitFor({ state: "visible", timeout: 5_000 });
+  const latestReply = (await latestAssistantTurn.locator("p").last().innerText()).trim();
+  if (latestReply.length < 30 || /json malformed|previous pattern|instruction only says|<\/?s>/i.test(latestReply)) {
+    throw new Error("The saved private chat did not render a complete clean live reply.");
+  }
   await page.getByText("Meta Muse Spark", { exact: true }).waitFor({ state: "visible", timeout: 3_000 });
   savedPrivateConversation = true;
   modelAttributions.push({ feature: "saved-private-chat", label: "Meta Muse Spark" });
   await page.getByText("AI reflection · your review", { exact: true }).waitFor({ state: "visible", timeout: 3_000 });
-  await holdUntil(117, "Live Muse Spark saved chat and member-reviewable themes");
+  await holdUntil(121, "Live Muse Spark saved chat and member-reviewable themes");
 
   const voiceButton = page.getByRole("button", { name: "Record a voice message" });
   await voiceButton.click();
@@ -167,7 +202,7 @@ try {
   if (!/decide for my family/i.test(transcript) || !/need more time/i.test(transcript) || repeatedStart) {
     throw new Error(`Meta Voice Transcribe returned an incomplete or repeated transcript: ${transcript}`);
   }
-  await holdUntil(134, "Complete editable Meta Voice Transcribe draft, intentionally unsent");
+  await holdUntil(138, "Complete editable Meta Voice Transcribe draft, intentionally unsent");
 
   await page.goto(baseURL, { waitUntil: "domcontentloaded", timeout: 10_000 });
   await page.getByRole("heading", { name: /You don't need the right words to begin/i }).waitFor({ state: "visible", timeout: 5_000 });
@@ -197,6 +232,8 @@ try {
       errors,
       modelAttributions,
       savedPrivateConversation,
+      reusedPrivateConversation,
+      createdPrivateConversation,
       communityDataChanged: false,
       captureElapsedSeconds: elapsedSeconds(),
       failure: captureFailure instanceof Error ? captureFailure.message : captureFailure ? String(captureFailure) : null,
