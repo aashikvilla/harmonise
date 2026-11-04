@@ -1,5 +1,6 @@
 # Historical material and demos are not part of the running application.
 /archive/
+/demos/
 /demo-videos/
 /public/demo-videos/
 
