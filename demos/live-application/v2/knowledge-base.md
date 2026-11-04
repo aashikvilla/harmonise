@@ -4,6 +4,8 @@
 
 Harmonise helps a person pause, think through a difficult moment privately, find a manageable next step, and explore real peer support only if they choose.
 
+The public homepage opens with “You don't need the right words to begin,” the Harmonise loop mark, and the animated window illustration. Its scenes explain the real product without presenting sample conversations or fabricated community activity.
+
 ## The problem
 
 People navigating difficult decisions or life changes may not be ready to post publicly or ask a group for help. Explaining the situation, deciding what to do, and choosing whom to tell can feel like one overwhelming task. Harmonise separates those decisions so a person can begin privately.
@@ -39,7 +41,7 @@ Provider calls are server-side. Do not promise zero retention, clinical effectiv
 - **Meta model routes:** server-side adviser, setup, chat, scoped guidance, moderation triage, and speech transcription.
 - **Vercel:** production hosting.
 
-Production has three approved community records: one active community with current aggregate activity and two approved but empty communities. The active community contains personal member stories visible only to members. Demo V2 shows real public names/counts and does not reveal those posts or write synthetic activity. These counts are a snapshot, not a product impact metric.
+Production has three approved community records: one active community with current aggregate activity and two approved but empty communities. The active community contains personal member stories visible only to members. Demo V2 shows real public names/counts and does not reveal those posts or write synthetic activity. The adviser endpoint is stateless and does not save a conversation. These counts are a snapshot, not a product impact metric.
 
 ## Intended impact versus measured impact
 
