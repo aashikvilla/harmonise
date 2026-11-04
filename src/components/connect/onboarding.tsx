@@ -36,8 +36,8 @@ function MemberForm() {
   const [checking, setChecking] = useState(true);
   const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [busy, setBusy] = useState(false);
   const [adult, setAdult] = useState(false);
   const [providerConsent, setProviderConsent] = useState(false);
@@ -65,57 +65,59 @@ function MemberForm() {
       return false;
     }
     if (!providerConsent) {
-      setError("Please confirm that your message will be sent to Meta Muse Spark.");
+      setError("Please confirm the AI processing notice before creating an account.");
       return false;
     }
     return true;
   }
 
-  async function sendCode() {
+  async function submitPassword(event: FormEvent) {
+    event.preventDefault();
     if (busy) return;
-    if (!disclosuresOk()) return;
+    if (mode === "sign-up" && !disclosuresOk()) return;
+    if (password.length < 12) {
+      setError("Use a password with at least 12 characters.");
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
-      const response = await fetch("/api/auth/otp", {
+      const response = await fetch("/api/auth/password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), password, action: mode }),
       });
       if (response.ok) {
-        setCodeSent(true);
+        const me = await fetchMe();
+        enterSpace(me?.email ?? email.trim());
       } else if (response.status === 429) {
-        setError("Too many code requests. Wait a minute and try again.");
+        setError("Too many attempts. Wait a minute and try again.");
+      } else if (response.status === 409) {
+        setError("Email confirmation is still enabled for this project. Try again after confirmation is turned off in Supabase Auth settings.");
       } else {
-        setError("The sign-in code could not be sent. Check the email and try again.");
+        setError(mode === "sign-up" ? "We could not create this account. Check the email and password, or try signing in." : "Email or password was not recognized.");
       }
     } catch {
-      setError("The sign-in code could not be sent. Check your connection and try again.");
+      setError("Sign-in is temporarily unavailable. Try again shortly.");
     } finally {
       setBusy(false);
     }
   }
 
-  async function verifyCode() {
+  async function continueWithDemo() {
     if (busy) return;
     setBusy(true);
     setError(null);
     try {
-      const response = await fetch("/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email: email.trim(), code: code.trim() }),
-      });
-      if (!response.ok) {
-        setError("That code did not match or has expired. Resend a fresh code and use the latest email.");
-        return;
+      const response = await fetch("/api/auth/demo", { method: "POST", credentials: "include" });
+      if (response.ok) {
+        enterSpace("demo@harmonise.example");
+      } else {
+        setError("The demo account is not available right now. Please try again later.");
       }
-      const me = await fetchMe();
-      enterSpace(me?.email ?? email.trim());
     } catch {
-      setError("Sign-in could not be confirmed. Check your connection and try again.");
+      setError("The demo account is not available right now. Please try again later.");
     } finally {
       setBusy(false);
     }
@@ -130,16 +132,6 @@ function MemberForm() {
     }
     setSignedInEmail(null);
     setBusy(false);
-  }
-
-  function submitSend(event: FormEvent) {
-    event.preventDefault();
-    void sendCode();
-  }
-
-  function submitVerify(event: FormEvent) {
-    event.preventDefault();
-    void verifyCode();
   }
 
   if (checking) {
@@ -164,11 +156,14 @@ function MemberForm() {
     );
   }
 
-  if (!codeSent) {
-    return (
-      <form onSubmit={submitSend} noValidate aria-label="Member email sign in">
+  return (
+      <form onSubmit={(event) => void submitPassword(event)} noValidate aria-label="Member email and password sign in">
+        <div className="cx-path-tabs" role="group" aria-label="Account action">
+          <button type="button" className="cx-path-tab" aria-pressed={mode === "sign-in"} onClick={() => { setMode("sign-in"); setError(null); }}>Sign in</button>
+          <button type="button" className="cx-path-tab" aria-pressed={mode === "sign-up"} onClick={() => { setMode("sign-up"); setError(null); }}>Create account</button>
+        </div>
         <div className="cx-field">
-          <label className="cx-label" htmlFor="cx-member-email">Email for a sign-in code</label>
+          <label className="cx-label" htmlFor="cx-member-email">Email</label>
           <input
             id="cx-member-email"
             className="cx-input"
@@ -180,14 +175,14 @@ function MemberForm() {
             placeholder="you@example.com"
           />
         </div>
-        <label className="cx-check-row">
-          <input type="checkbox" checked={adult} onChange={(event) => setAdult(event.target.checked)} />
-          <span>I confirm I am 18 or older.</span>
-        </label>
-        <label className="cx-check-row">
-          <input type="checkbox" checked={providerConsent} onChange={(event) => setProviderConsent(event.target.checked)} />
-          <span>I understand my message will be sent to Meta Muse Spark for a response.</span>
-        </label>
+        <div className="cx-field">
+          <label className="cx-label" htmlFor="cx-member-password">Password</label>
+          <input id="cx-member-password" className="cx-input" type="password" autoComplete={mode === "sign-up" ? "new-password" : "current-password"} minLength={12} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 12 characters" />
+        </div>
+        {mode === "sign-up" ? <>
+          <label className="cx-check-row"><input type="checkbox" checked={adult} onChange={(event) => setAdult(event.target.checked)} /><span>I confirm I am 18 or older.</span></label>
+          <label className="cx-check-row"><input type="checkbox" checked={providerConsent} onChange={(event) => setProviderConsent(event.target.checked)} /><span>I understand that when I ask for AI guidance, my message is sent to Meta for a response.</span></label>
+        </> : null}
         {error ? <p className="cx-error" role="alert">{error}</p> : null}
         <div className="cx-disclaimer">
           A private account: your conversations are stored for you alone and expire after 90 days without use.
@@ -195,57 +190,18 @@ function MemberForm() {
           Harmonise is not therapy, diagnosis, legal advice, financial advice, or emergency response.
         </div>
         <div className="cx-cta-row">
-          <button type="submit" disabled={busy || email.trim().length === 0} className="cx-btn cx-btn-primary cx-btn-block">
-            {busy ? "Sending…" : "Email me a code"}
+          <button type="submit" disabled={busy || email.trim().length === 0 || password.length < 12 || (mode === "sign-up" && (!adult || !providerConsent))} className="cx-btn cx-btn-primary cx-btn-block">
+            {busy ? "Working…" : mode === "sign-up" ? "Create account" : "Sign in"}
           </button>
         </div>
+        <div className="cx-cta-row">
+          <button type="button" disabled={busy} className="cx-btn cx-btn-soft cx-btn-block" onClick={() => void continueWithDemo()}>
+            {busy ? "Opening demo…" : "Continue with demo account"}
+          </button>
+        </div>
+        <p className="cx-note">This is a shared demo account. Use fictional details only; activity may be visible to other demo visitors.</p>
       </form>
     );
-  }
-
-  return (
-    <form onSubmit={submitVerify} noValidate aria-label="Member code verification">
-      <p className="cx-note">A code is on its way to {email.trim()}. Codes expire quickly — always use the most recent email.</p>
-      <div className="cx-field">
-        <label className="cx-label" htmlFor="cx-member-code">6-digit code from your email</label>
-        <input
-          id="cx-member-code"
-          className="cx-input"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={8}
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          placeholder="123456"
-        />
-      </div>
-      {error ? <p className="cx-error" role="alert">{error}</p> : null}
-      <div className="cx-cta-row">
-        <button type="submit" disabled={busy || code.trim().length === 0} className="cx-btn cx-btn-primary cx-btn-block">
-          {busy ? "Checking…" : "Sign in and continue to chat"}
-        </button>
-      </div>
-      <div className="cx-cta-row">
-        <button type="button" className="cx-btn cx-btn-soft cx-btn-block" disabled={busy} onClick={() => void sendCode()}>
-          Resend code
-        </button>
-      </div>
-      <div className="cx-cta-row">
-        <button
-          type="button"
-          className="cx-btn cx-btn-soft cx-btn-block"
-          disabled={busy}
-          onClick={() => {
-            setCodeSent(false);
-            setCode("");
-            setError(null);
-          }}
-        >
-          Use a different email
-        </button>
-      </div>
-    </form>
-  );
 }
 
 function CoachPath() {
@@ -313,11 +269,11 @@ export default function Onboarding() {
             <ol className="cx-flow">
               <li>
                 <span className="cx-flow-num" aria-hidden="true">1</span>
-                <div><strong>Sign in with email</strong><span>A one-time code — no password and no shared account.</span></div>
+                <div><strong>Email and password</strong><span>Create your private account or sign in securely.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">2</span>
-                <div><strong>Chat privately</strong><span>Meta Muse Spark reflects what it heard and offers next steps.</span></div>
+                <div><strong>Chat privately</strong><span>Meta Muse offers reflections and next steps when you ask.</span></div>
               </li>
               <li>
                 <span className="cx-flow-num" aria-hidden="true">3</span>
@@ -327,7 +283,7 @@ export default function Onboarding() {
             <div className="cx-privacy-list">
               <p>Private by design</p>
               <ul>
-                <li>Meta Muse Spark generates general guidance from the message you send.</li>
+                <li>Meta Muse generates general guidance from the message you choose to send.</li>
                 <li>Your conversation is not posted to a community.</li>
                 <li>Your account is private: conversations stay with you and expire after 90 days without use.</li>
                 <li>Circles appear after you ask, and joining is always your choice.</li>
