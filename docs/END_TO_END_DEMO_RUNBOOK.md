@@ -1,6 +1,6 @@
 # Harmonise end-to-end demo runbook
 
-> **Current-state correction (2026-11-04):** Older instructions in this file were incorrect. `/connect` is the real email OTP and Supabase-backed member journey. `/app` is the separate fictional, local-session prototype. Do not use the old shared demo credentials or claim that `/connect` circle joins are local-only. The current cinematic script is [`END_TO_END_DEMO_SCRIPT.md`](END_TO_END_DEMO_SCRIPT.md).
+> **Current-state correction (2026-11-04):** Older instructions in this file were incorrect. `/connect` uses real email/password Supabase authentication and has a one-tap shared demo account. `/app` is the separate fictional, local-session prototype. The shared demo account persists activity; use fictional details only. The current cinematic script is [`END_TO_END_DEMO_SCRIPT.md`](END_TO_END_DEMO_SCRIPT.md).
 
 ## Release status
 
@@ -20,7 +20,7 @@ The current production Supabase migration ledger includes the community engageme
 
 ## Scope boundaries to say aloud
 
-- Real: email-code authentication, private adviser request, consent-gated community matching, joins, member-only feeds and community actions, proposal submission, moderation review flows, contribution summaries, and supporter applications, backed by Supabase routes.
+- Real: email/password authentication, a one-tap shared demo account, private adviser requests, consent-gated community matching, joins, member-only feeds and community actions, proposal submission, moderation review flows, contribution summaries, and supporter applications, backed by Supabase routes.
 - AI is assistive: adviser, optional proposal copilot, scoped community guide, and moderation triage/scope recommendations. Human actions remain required for moderation, launch, scope changes, and supporter-role decisions.
 - `Muse Spark` is the default text model. `Muse Wonder` is enabled first for `advice` and `setup`; failures and invalid structured output can fall back to Spark. Chat, triage, guide, and stewardship remain Spark-based unless their route is explicitly changed. Voice transcription is a separate Muse Voice Transcribe endpoint inside the fictional `/app` experience, not the real `/connect` adviser.
 - The fictional `/app` journey has richer scripted story beats and local-only interactions. Label it as a prototype; do not present its fixtures as real accounts, community activity, or persisted outcomes.
@@ -31,7 +31,7 @@ The current production Supabase migration ledger includes the community engageme
 | Surface | Technology and behavior | What the audience should see |
 | --- | --- | --- |
 | Public homepage | Next.js App Router; responsive Harmonise visual system | Need, value proposition, entry point |
-| `/connect` | Email OTP through Supabase Auth; consent-gated | Age confirmation, AI transfer disclosure, inbox OTP, authenticated alias |
+| `/connect` | Email/password through Supabase Auth; one-tap shared demo account | Age and AI processing disclosures at signup, authenticated alias |
 | Adviser | `/api/advice`; Wonder first in production, Spark fallback; structured validation and rate limits | Reflection, one practical step, optional match shown only after an explicit reveal |
 | Communities | Supabase-backed directory, membership, posts, replies, reactions, reports, blocks, delete-own, feature-own-journey | Real persisted actions using staged synthetic data |
 | Proposal copilot | `/api/communities/propose/assist`; Wonder first, Spark fallback; user can edit before submission | Editable draft; submit remains private and pending human review |
