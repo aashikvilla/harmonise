@@ -1,34 +1,31 @@
 #!/usr/bin/env node
 /**
- * One-off local test-data seeder (NOT committed for CI use).
- * Reads .env.local, creates two users + one moderator via the Auth Admin API,
+ * One-off test-data seeder for a throwaway Supabase project (NOT for production).
+ * Requires dedicated HARMONISE_TEST_SUPABASE_* variables and an explicit
+ * HARMONISE_CONFIRM_TEST_DB value before it creates users or memberships.
+ * Creates two users + one moderator via the Auth Admin API,
  * joins them to steady-ground, and writes JWTs to a temp file for Playwright.
  * Never prints secrets: stdout shows user ids and membership ids only.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { writeFileSync } from "node:fs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outPath = process.argv[2] ?? "C:\\tmp\\test_jwts.json";
 
-function loadEnv() {
-  const env = {};
-  const file = join(root, ".env.local");
-  if (!existsSync(file)) throw new Error(".env.local missing");
-  for (const raw of readFileSync(file, "utf8").split("\n")) {
-    const line = raw.trim();
-    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-    if (match) env[match[1]] = match[2].trim().replace(/^["']|["']$/g, "");
-  }
-  return env;
+const base = (process.env.HARMONISE_TEST_SUPABASE_URL ?? "").replace(/\/$/, "");
+const anon = process.env.HARMONISE_TEST_SUPABASE_ANON_KEY ?? "";
+const svc = process.env.HARMONISE_TEST_SUPABASE_SERVICE_ROLE_KEY ?? "";
+const projectRef = process.env.HARMONISE_TEST_SUPABASE_PROJECT_REF ?? "";
+const confirmation = process.env.HARMONISE_CONFIRM_TEST_DB ?? "";
+if (!base || !anon || !svc || !projectRef) {
+  throw new Error("Dedicated HARMONISE_TEST_SUPABASE_* variables are required; app environment files are not used.");
 }
-
-const env = loadEnv();
-const base = (env.SUPABASE_URL ?? "").replace(/\/$/, "");
-const anon = env.SUPABASE_ANON_KEY ?? "";
-const svc = env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-if (!base || !anon || !svc) throw new Error("Supabase env vars missing");
+const targetUrl = new URL(base);
+if (!targetUrl.hostname.startsWith(`${projectRef}.`) && targetUrl.hostname !== projectRef) {
+  throw new Error("HARMONISE_TEST_SUPABASE_PROJECT_REF must match the configured test database host.");
+}
+if (confirmation !== `seed-test-users:${projectRef}`) {
+  throw new Error(`Refusing to seed ${projectRef}; set HARMONISE_CONFIRM_TEST_DB=seed-test-users:${projectRef} only for a throwaway test database.`);
+}
 
 async function adminCreateUser(email, password) {
   const response = await fetch(`${base}/auth/v1/admin/users`, {
