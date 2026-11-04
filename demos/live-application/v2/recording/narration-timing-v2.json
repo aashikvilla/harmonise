@@ -1,0 +1,125 @@
+{
+  "durationSeconds": 177.01,
+  "cues": [
+    {
+      "index": 1,
+      "start": 0.04,
+      "end": 3.2086621315192745,
+      "text": "You don't need the right words to begin."
+    },
+    {
+      "index": 2,
+      "start": 4.488662131519274,
+      "end": 11.591111111111111,
+      "text": "A family decision or major life change can be hard to name, harder to share before you feel ready."
+    },
+    {
+      "index": 3,
+      "start": 12.871111111111109,
+      "end": 20.563219954648524,
+      "text": "Harmonise offers adults facing pressure a private place to reflect and find one practical next step."
+    },
+    {
+      "index": 4,
+      "start": 21.84321995464852,
+      "end": 29.190566893424034,
+      "text": "Peer connection is optional; the product is not therapy, diagnosis, or emergency care."
+    },
+    {
+      "index": 5,
+      "start": 30.47056689342403,
+      "end": 36.773061224489794,
+      "text": "The shared demo account enters the same real authentication flow and running product."
+    },
+    {
+      "index": 6,
+      "start": 38.053061224489795,
+      "end": 45.920090702947846,
+      "text": "Here, a live Meta Muse response reflects the member's question and offers language for asking family for time."
+    },
+    {
+      "index": 7,
+      "start": 47.20009070294785,
+      "end": 54.12730158730159,
+      "text": "A second live prompt adds the realities of coordinating care between siblings in different cities."
+    },
+    {
+      "index": 8,
+      "start": 55.40730158730159,
+      "end": 64.49900226757369,
+      "text": "Muse Wonder is the first choice for reflection and setup, with Spark as fallback; the label identifies which model replied."
+    },
+    {
+      "index": 9,
+      "start": 65.7790022675737,
+      "end": 74.99115646258502,
+      "text": "If Wonder's output fails checks, the server retries with Spark. Private reflection never posts automatically."
+    },
+    {
+      "index": 10,
+      "start": 76.27115646258504,
+      "end": 83.77814058956916,
+      "text": "Only when the member chooses do matches appear; the directory's real names and counts come from Supabase."
+    },
+    {
+      "index": 11,
+      "start": 85.05814058956918,
+      "end": 91.77569160997733,
+      "text": "When no space fits, Meta can draft a proposed community scope from the member's idea."
+    },
+    {
+      "index": 12,
+      "start": 93.05569160997734,
+      "end": 102.08766439909297,
+      "text": "Purpose, topics, boundaries, norms, and starter prompts stay editable; a human reviews before launch."
+    },
+    {
+      "index": 13,
+      "start": 103.36766439909299,
+      "end": 110.96000000000001,
+      "text": "In saved private chat, Meta Muse Spark gives a live reply and suggests tentative support themes."
+    },
+    {
+      "index": 14,
+      "start": 112.24000000000002,
+      "end": 117.55278911564626,
+      "text": "The member can review or correct those themes before exploring communities."
+    },
+    {
+      "index": 15,
+      "start": 118.83278911564628,
+      "end": 125.1203628117914,
+      "text": "Muse Voice Transcribe turns a spoken thought into text the member can review and edit."
+    },
+    {
+      "index": 16,
+      "start": 126.40036281179141,
+      "end": 134.81741496598642,
+      "text": "Here the transcript stays in the composer, unsent. No speech is shared without the member's next choice."
+    },
+    {
+      "index": 17,
+      "start": 136.0974149659864,
+      "end": 145.73909297052154,
+      "text": "Spark also powers scoped community guidance and advisory moderation triage. People make consequential decisions."
+    },
+    {
+      "index": 18,
+      "start": 147.0190929705215,
+      "end": 155.29079365079363,
+      "text": "Volunteer and verified-supporter roles require human review; they are peer support, not a therapist directory."
+    },
+    {
+      "index": 19,
+      "start": 156.5707936507936,
+      "end": 167.58707482993194,
+      "text": "Next.js connects the interface and server routes; Supabase handles identity and product data; Meta models power member-chosen features."
+    },
+    {
+      "index": 20,
+      "start": 168.8670748299319,
+      "end": 176.97446712018134,
+      "text": "Our intended impact is a gentler first step and clearer choices. We have not measured outcomes."
+    }
+  ]
+}
