@@ -161,3 +161,11 @@ longer than the clip. That produced a plausible but duplicated transcript.
 Append silence after the spoken phrase, keep the capture window within the
 WAV's duration, and assert the expected transcript content and absence of a
 repeated phrase before accepting a voice demo take.
+
+## 2026-11-05 — A video audio track may still fail the reviewer's playback path
+
+V1's MP4 had a valid AAC narration track and decoded successfully, but the
+user's playback experience had no audible audio. Inspect the container and
+decode the track, then provide a standalone audio file and visible captions as
+independent ways to follow the narration. Do not infer that audio is available
+to the viewer just because it is present in the MP4.
