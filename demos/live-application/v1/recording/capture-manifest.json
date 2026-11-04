@@ -1,0 +1,76 @@
+{
+  "video": "demos/live-application/v1/recording/harmonise-live-v1.mp4",
+  "baseURL": "https://harmonise-weld.vercel.app",
+  "marks": [
+    {
+      "atSeconds": 0.5,
+      "label": "Problem, product promise, and choice principles",
+      "url": "https://harmonise-weld.vercel.app/"
+    },
+    {
+      "atSeconds": 16,
+      "label": "Email/password entry and shared demo option",
+      "url": "https://harmonise-weld.vercel.app/connect"
+    },
+    {
+      "atSeconds": 30.6,
+      "label": "Authenticated live member workspace",
+      "url": "https://harmonise-weld.vercel.app/connect/member"
+    },
+    {
+      "atSeconds": 45.8,
+      "label": "Live Meta advice and actual serving-model attribution",
+      "url": "https://harmonise-weld.vercel.app/connect/member"
+    },
+    {
+      "atSeconds": 79.8,
+      "label": "Member-controlled reveal of live community matches",
+      "url": "https://harmonise-weld.vercel.app/connect/member"
+    },
+    {
+      "atSeconds": 106.9,
+      "label": "Supabase community directory and live activity counts",
+      "url": "https://harmonise-weld.vercel.app/communities"
+    },
+    {
+      "atSeconds": 143,
+      "label": "Live Meta community setup copilot and editable private draft",
+      "url": "https://harmonise-weld.vercel.app/communities/propose"
+    },
+    {
+      "atSeconds": 189.2,
+      "label": "Private Meta chat with visible Meta voice transcription",
+      "url": "https://harmonise-weld.vercel.app/app"
+    },
+    {
+      "atSeconds": 214.2,
+      "label": "Meta Voice Transcribe result shown as editable text; intentionally unsent",
+      "url": "https://harmonise-weld.vercel.app/app"
+    },
+    {
+      "atSeconds": 239.7,
+      "label": "Human review boundary and actual reviewer authorization state",
+      "url": "https://harmonise-weld.vercel.app/moderation"
+    },
+    {
+      "atSeconds": 257.8,
+      "label": "Impact close: private reflection, choice, and peer connection",
+      "url": "https://harmonise-weld.vercel.app/"
+    }
+  ],
+  "errors": [
+    "Failed to load resource: the server responded with a status of 401 ()",
+    "Failed to load resource: the server responded with a status of 403 ()"
+  ],
+  "durationSeconds": 297.16,
+  "captureElapsedSeconds": 286.9,
+  "narrationSeconds": 265.38,
+  "rawCaptureRetained": false,
+  "reviewed": true,
+  "expectedAccessBoundaryStatuses": [
+    401,
+    403
+  ],
+  "voiceover": "recording/voiceover.wav",
+  "voiceoverSynthesizer": "Microsoft Hazel Desktop (Windows SAPI)"
+}

@@ -153,3 +153,11 @@ Production had enough actual activity for a populated directory, but its member-
 ## 2026-11-05 — Do not publish hidden staffing aggregates by accident
 
 The community directory returned a `moderatorCount` that the UI did not use and the public contract did not intend to expose. API output shape is part of the privacy boundary: remove unused aggregates at the query/type boundary, then rerun the isolated community flow and the full desktop/mobile suite.
+
+## 2026-11-05 — Browser fake microphone WAVs loop by default
+
+Chromium's file-backed fake microphone repeats the WAV when recording lasts
+longer than the clip. That produced a plausible but duplicated transcript.
+Append silence after the spoken phrase, keep the capture window within the
+WAV's duration, and assert the expected transcript content and absence of a
+repeated phrase before accepting a voice demo take.
