@@ -41,7 +41,7 @@ Provider calls are server-side. Do not promise zero retention, clinical effectiv
 - **Meta model routes:** server-side adviser, setup, chat, scoped guidance, moderation triage, and speech transcription.
 - **Vercel:** production hosting.
 
-Production has three approved community records: one active community with current aggregate activity and two approved but empty communities. The active community contains personal member stories visible only to members. Demo V2 shows real public names/counts and does not reveal those posts or write synthetic activity. The adviser endpoint is stateless and does not save a conversation. These counts are a snapshot, not a product impact metric.
+Production has three approved community records: one active community with current aggregate activity and two approved but empty communities. The active community contains personal member stories visible only to members. Demo V2 shows real public names/counts and does not reveal those posts or write synthetic community activity. The two Adviser prompts use stateless `/api/advice`. One neutral, fictional prompt is sent through the live private-chat route and saved to the shared demo account to demonstrate real session persistence; it is not published to a community. These counts are a snapshot, not a product impact metric.
 
 ## Intended impact versus measured impact
 

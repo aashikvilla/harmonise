@@ -48,3 +48,15 @@ Push and merge homepage/story assets; verify Vercel production READY; record a
 full live pass, then mux video + narration + captions and review the final
 runtime, audio, caption legibility, and capture manifest before publishing the
 demo assets.
+
+## Extended three-minute cut update (2026-11-05)
+
+The first production capture was reviewed and rejected before publication. The footage showed provider scratch text in a Wonder response, a community directory still loading, and large narration captions that obscured the application. It was an old 161-second capture, not proof of the planned full three-minute story.
+
+Changed the capture so advice, setup, saved chat, directory load, and voice transcription must return real completed outcomes before the scene is accepted. The advice/setup validators now reject known provider scratch artifacts and use their existing Spark fallback; private chat rejects invalid model text rather than displaying it. The script checks response status, actual model labels, real community card rendering, and the full non-repeating voice transcript. It records unexpected HTTP/JS errors, while marking only the signed-out pre-login `/api/auth/me` check as expected.
+
+Expanded the live story to two Adviser prompts, member-selected matches, the populated live directory, a private unsent Meta setup draft, one saved private Spark exchange, and a complete editable Voice Transcribe draft. It now includes the exact 20-cue voiceover and cue schedule in the storyboard. Audio is 177 seconds with 1.2 seconds between narration cues; final encode pads to exactly 180 seconds with a short quiet close. The late AI/technology scene now holds on the homepage model cards through 2:48 before moving to the impact close.
+
+The intended production data effect is one neutral private conversation in the shared demo account. Adviser turns remain stateless. No post, reaction, join, report, or community proposal is submitted; the member-only feed is not captured. Existing aggregate directory activity is production data, not synthetic seed data. No therapist directory is implemented; the narration describes volunteer and verified-supporter roles as human-reviewed peer support, not clinical care.
+
+At this checkpoint, the refreshed voice track and SRT are regenerated, timing reports 177.01 seconds, the capture script parses, and the working diff passes `git diff --check`. The new live capture, caption rendering review, final media validation, PR/CI, deployment check, and closing journal evidence are still pending.
