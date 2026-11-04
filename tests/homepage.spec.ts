@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("homepage presents the connected product and routes to real entry points", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: /You don't need the right words to begin/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /harmonize\. home/i })).toBeVisible();
+  await expect(page.locator("header").getByRole("link", { name: /harmonize\. home/i })).toBeVisible();
   await expect(page.getByRole("link", { name: "See how it feels" })).toHaveAttribute("href", "/connect");
   await expect(page.getByRole("link", { name: /Explore real communities/i })).toHaveAttribute("href", "/communities");
   await expect(page.getByRole("heading", { name: /AI can help with the words/i })).toBeVisible();
