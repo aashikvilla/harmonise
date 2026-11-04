@@ -1,5 +1,16 @@
 # Past Mistakes and Preventive Rules
 
+## 2026-11-04 — Verify current code and remote state before repeating the runbook
+
+The demo runbook and architecture note still described `/connect` as a fictional
+local-only flow, even though the checked-in code used Supabase email OTP and
+persisted community APIs. The current production deployment also had the
+relevant engagement migrations recorded remotely despite an earlier claim that
+they were pending. Treat old docs and prior summaries as hypotheses: verify the
+current route implementation, deployed commit, readiness result, and remote
+migration ledger before describing product behavior. Refresh contradictory
+operator docs as part of the same task.
+
 ## 2026-11-03 — Remote migration tools can assign versions different from local filenames
 
 Applying checked-in SQL through the Supabase MCP created timestamped entries in
