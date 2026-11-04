@@ -21,7 +21,7 @@ import { SupabaseError, isUuid, selectSingle, supabaseCount, supabaseRest } from
 import { ensureProfile } from "@/lib/db/sessions";
 import { enqueueModerationEvent } from "@/lib/db/moderation";
 
-export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number; recentPostCount: number; joined: boolean; moderatorCount: number };
+export type CommunityWithCounts = CommunityRow & { memberCount: number; postCount: number; recentPostCount: number; joined: boolean };
 export type PublicCommunity = Omit<CommunityWithCounts, "created_by" | "reviewed_by" | "reviewed_at" | "coverage_confirmed_at">;
 export type PostWithAuthor = PostRow & { author_alias: string; replyCount: number; lastReplyAt: string | null };
 
@@ -76,13 +76,12 @@ export async function listCommunities(userId?: string): Promise<CommunityWithCou
   }
   return Promise.all(
     rows.map(async (community) => {
-      const [memberCount, postCount, recentPostCount, moderatorCount] = await Promise.all([
+      const [memberCount, postCount, recentPostCount] = await Promise.all([
         supabaseCount("memberships", `?community_id=eq.${community.id}&status=eq.active`),
         supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible`),
         supabaseCount("posts", `?community_id=eq.${community.id}&status=eq.visible&created_at=gte.${weekAgo}`),
-        supabaseCount("memberships", `?community_id=eq.${community.id}&status=eq.active&role=eq.moderator`),
       ]);
-      return { ...community, memberCount, postCount, recentPostCount, joined: joinedIds.has(community.id), moderatorCount };
+      return { ...community, memberCount, postCount, recentPostCount, joined: joinedIds.has(community.id) };
     }),
   );
 }
@@ -92,13 +91,12 @@ export async function getCommunityWithCounts(id: string): Promise<CommunityWithC
   const community = selectSingle(rows);
   if (!community) return null;
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const [memberCount, postCount, recentPostCount, moderatorCount] = await Promise.all([
+  const [memberCount, postCount, recentPostCount] = await Promise.all([
     supabaseCount("memberships", `?community_id=eq.${id}&status=eq.active`),
     supabaseCount("posts", `?community_id=eq.${id}&status=eq.visible`),
     supabaseCount("posts", `?community_id=eq.${id}&status=eq.visible&created_at=gte.${weekAgo}`),
-    supabaseCount("memberships", `?community_id=eq.${id}&status=eq.active&role=eq.moderator`),
   ]);
-  return { ...community, memberCount, postCount, recentPostCount, joined: false, moderatorCount };
+  return { ...community, memberCount, postCount, recentPostCount, joined: false };
 }
 
 export async function createPendingCommunity(input: {

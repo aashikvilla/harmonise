@@ -188,8 +188,8 @@ export default function ReviewerQueue() {
   return (
     <div className="grid gap-6">
       <div className="rounded-xl bg-[var(--peach)] p-4 text-sm">
-        <strong>Reviewer duty:</strong> decide every case yourself — AI suggestions never act. Reviews happen during
-        staffed hours. If someone may be in immediate danger, contact local emergency services; Harmonise cannot
+        <strong>Reviewer duty:</strong> decide every case yourself — AI suggestions never act. Review timing depends
+        on assigned moderators; there is no guaranteed response time. If someone may be in immediate danger, contact local emergency services; Harmonise cannot
         monitor or dispatch help. Resources:{" "}
         <a className="underline" href="https://findahelpline.com/" target="_blank" rel="noreferrer">
           findahelpline.com

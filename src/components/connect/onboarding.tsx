@@ -3,7 +3,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/connect/session";
-import { CoachDashboardPreview } from "@/components/connect/coaches";
 import SharedBrand from "@/components/connect/brand";
 
 function Brand() {
@@ -55,7 +54,7 @@ function MemberForm() {
   }, []);
 
   function enterSpace(address: string) {
-    dispatch({ type: "enter", displayName: displayNameFor(address), nameMode: "alias", email: address, demo: false });
+    dispatch({ type: "enter", displayName: displayNameFor(address), nameMode: "alias", email: address });
     router.push("/connect/member");
   }
 
@@ -86,7 +85,12 @@ function MemberForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim(), password, action: mode }),
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          action: mode,
+          ...(mode === "sign-up" ? { adultConfirmed: adult, aiNoticeAccepted: providerConsent } : {}),
+        }),
       });
       if (response.ok) {
         const me = await fetchMe();
@@ -185,8 +189,8 @@ function MemberForm() {
         </> : null}
         {error ? <p className="cx-error" role="alert">{error}</p> : null}
         <div className="cx-disclaimer">
-          A private account: your conversations are stored for you alone and expire after 90 days without use.
-          Nothing is shared with any community without your explicit review.
+          Adviser conversations remain in this browser session and are not saved to your account. Nothing is shared
+          with a community unless you review and choose to post it.
           Harmonise is not therapy, diagnosis, legal advice, financial advice, or emergency response.
         </div>
         <div className="cx-cta-row">
@@ -194,7 +198,7 @@ function MemberForm() {
             {busy ? "Working…" : mode === "sign-up" ? "Create account" : "Sign in"}
           </button>
         </div>
-        <div className="cx-cta-row">
+      <div className="cx-cta-row">
           <button type="button" disabled={busy} className="cx-btn cx-btn-soft cx-btn-block" onClick={() => void continueWithDemo()}>
             {busy ? "Opening demo…" : "Continue with demo account"}
           </button>
@@ -204,54 +208,7 @@ function MemberForm() {
     );
 }
 
-function CoachPath() {
-  const [email, setEmail] = useState("");
-  const [preview, setPreview] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError("Enter a valid coach email to preview the portal.");
-      return;
-    }
-    setError(null);
-    setPreview(true);
-  }
-
-  return (
-    <div>
-      <form onSubmit={submit} noValidate aria-label="Support Coach entry">
-        <div className="cx-field">
-          <label className="cx-label" htmlFor="cx-coach-email">Coach email</label>
-          <input
-            id="cx-coach-email"
-            className="cx-input"
-            type="email"
-            autoComplete="email"
-            maxLength={120}
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="coach@example.com"
-          />
-        </div>
-        {error ? <p className="cx-error" role="alert">{error}</p> : null}
-        <div className="cx-cta-row">
-          <button type="submit" className="cx-btn cx-btn-dark cx-btn-block">Give support</button>
-        </div>
-      </form>
-      {preview ? (
-        <div className="cx-coach-preview">
-          <CoachDashboardPreview />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 export default function Onboarding() {
-  const [path, setPath] = useState<"member" | "coach">("member");
-
   return (
     <main className="cx-gate">
       <div className="cx-gate-inner">
@@ -285,7 +242,7 @@ export default function Onboarding() {
               <ul>
                 <li>Meta Muse generates general guidance from the message you choose to send.</li>
                 <li>Your conversation is not posted to a community.</li>
-                <li>Your account is private: conversations stay with you and expire after 90 days without use.</li>
+                <li>Adviser messages are not saved to your account or posted to a community.</li>
                 <li>Circles appear after you ask, and joining is always your choice.</li>
                 <li>Raw conversation should never automatically become a public profile or community post.</li>
               </ul>
@@ -294,27 +251,7 @@ export default function Onboarding() {
           <section className="cx-gate-card cx-card-white" aria-label="Enter Harmonise">
             <p className="cx-kicker">Member sign-in</p>
             <h2>Continue with your private account</h2>
-            <div className="cx-path-tabs" role="tablist" aria-label="Entry path">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={path === "member"}
-                className="cx-path-tab"
-                onClick={() => setPath("member")}
-              >
-                Member sign-in
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={path === "coach"}
-                className="cx-path-tab"
-                onClick={() => setPath("coach")}
-              >
-                Coach preview
-              </button>
-            </div>
-            {path === "member" ? <MemberForm /> : <CoachPath />}
+            <MemberForm />
           </section>
         </div>
       </div>

@@ -34,6 +34,9 @@ export async function POST(request: Request) {
   if (!email || password.length < 12 || password.length > 128 || !["sign-in", "sign-up"].includes(String(action))) {
     return finish(400, "invalid", { error: "invalid" });
   }
+  if (action === "sign-up" && (record.adultConfirmed !== true || record.aiNoticeAccepted !== true)) {
+    return finish(400, "invalid", { error: "disclosures-required" });
+  }
 
   try {
     const result = action === "sign-up"

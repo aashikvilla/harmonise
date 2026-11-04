@@ -8,11 +8,27 @@ export const RATE_LIMIT_MAX_REQUESTS = 10;
 
 export type AdviceMatch = { id: string; reason: string };
 
+export const THEME_IDS = [
+  "family-expectations",
+  "relationship-uncertainty",
+  "work-pressure",
+  "relocation",
+  "belonging",
+  "personal-autonomy",
+  "communication",
+  "hobbies",
+] as const;
+
+export type ThemeId = (typeof THEME_IDS)[number];
+export const SUPPORT_NEEDS = ["human-perspective", "quiet-reading", "shared-activity", "not-sure"] as const;
+export type SupportNeed = (typeof SUPPORT_NEEDS)[number];
+
 export type AdviceResult = {
   reflection: string;
   steps: string[];
   perspective: string;
   matches: AdviceMatch[];
+  model?: string;
 };
 
 export type AdviceRequestBody = {

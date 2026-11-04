@@ -133,3 +133,23 @@ A committed local seeder read `.env.local`, created fresh Supabase users and
 moderator memberships on every run, and had no cleanup path. Use dedicated
 test-project credentials plus an explicit project confirmation; never inherit
 the app's default Supabase target for destructive or persistent test setup.
+
+## 2026-11-04 — A prepared prototype clip is not evidence of a live product journey
+
+Review the capture manifest and on-screen labels before treating an older demo as proof of current functionality. A polished local walkthrough may accurately communicate the concept while proving nothing about current authentication, model calls, persisted data, or community activity. Plan the live flow against the deployed route and use an isolated, explicitly synthetic dataset; never make production look populated by inventing member activity.
+
+## 2026-11-04 — Confirm the target artifact before reviewing demo history
+
+Numbered archive iterations can look newer than the product demo versions a user means. Check the runnable/current paths and their README or manifest before selecting review targets; keep archived MP4 capture history separate from active demos.
+
+## 2026-11-05 — A working branch is not the deployed application
+
+The branch contained the live chat and voice controls, while production still served the older fictional story. Source review alone therefore gave the wrong answer to “where is voice?” Always compare the production commit and deployed route with the checked-out branch, then verify the rendered authenticated state in the browser. A feature hidden behind auth is not demonstrable until the user can reach the signed-in UI and the configured backend succeeds.
+
+## 2026-11-05 — Demo content must respect real community privacy
+
+Production had enough actual activity for a populated directory, but its member-only posts were personal. Do not seed or record synthetic content in production to make a demo feel active, and do not capture real members' stories without consent. Prefer a dedicated staging database; when unavailable, show aggregate real activity counts and the access boundary, and state what can't be demonstrated.
+
+## 2026-11-05 — Do not publish hidden staffing aggregates by accident
+
+The community directory returned a `moderatorCount` that the UI did not use and the public contract did not intend to expose. API output shape is part of the privacy boundary: remove unused aggregates at the query/type boundary, then rerun the isolated community flow and the full desktop/mobile suite.

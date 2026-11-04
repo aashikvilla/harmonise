@@ -204,6 +204,7 @@ export async function POST(request: Request) {
     const candidateById = new Map(candidates.map((candidate) => [candidate.id, candidate]));
     return finish({
       draft,
+      model: result.model,
       matchingCommunities: draft.communityFit.candidateIds.map((id) => {
         const candidate = candidateById.get(id)!;
         return { id: candidate.id, name: candidate.name, description: candidate.description };
