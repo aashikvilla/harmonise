@@ -1,7 +1,8 @@
 # Session Journal — Live app cleanup and demo
 
 **Date:** 2026-11-05
-**Branch:** `codex/live-product-demo`
+**Source branch:** `codex/live-product-demo` (merged to `main`)
+**Demo artifact branch:** `codex/live-application-demo-v1`
 **Goal:** Replace fictional demo surfaces with real backend/Meta flows, make the voice feature visible, verify the app, and record a real product demo.
 
 ## Findings
@@ -35,4 +36,8 @@ The capture plan is deliberately read-only after login. It does not join, post, 
 
 ## Next
 
-Merge/deploy through the authorized main path, verify production AI + Voice Transcribe with the shared demo account, record and cold-review the real video, then preserve the final film and narration in `demos/live-application/v1/recording/`.
+Source changes were merged and deployed through main. The real browser take is captured from `https://harmonise-weld.vercel.app`, read-only, and cold-reviewed. It shows live Meta Muse Wonder advice, member-controlled community matches, three Supabase directory cards with activity aggregates, a private Meta community setup draft, and Meta voice transcription in the editable unsent field. A first follow-up take caught the fake-microphone WAV looping; the fixture now appends ten seconds of silence and the capture fails if the expected phrase is incomplete or repeated.
+
+The narration uses local Windows `Microsoft Hazel Desktop` text-to-speech, about 4:25. The browser capture is about 4:57 at 1920×1080/25 fps, with a closing pause. The only logged HTTP errors are the expected unauthenticated `401` and reviewer-role `403`; no client page errors remain. The final MP4, narration/input WAVs, raw capture, manifest, storyboard, and capture scripts are kept in `demos/live-application/v1/`, excluded from Vercel deployment by `/demos/`.
+
+The shared demo account has no reviewer access, so the recording honestly shows the authorization boundary rather than a staged moderation queue. Production posts remain hidden and production community rows were not changed. No isolated staging database/branch is available; do not seed production to make the demo look fuller.
