@@ -1,152 +1,103 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from "@playwright/test";
 
-async function enterWithCode(page: import('@playwright/test').Page) {
-  let signedIn = false;
-  await page.route('**/api/auth/me', (route) =>
-    route.fulfill({
-      status: signedIn ? 200 : 401,
-      contentType: 'application/json',
-      body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
-    }),
-  );
-  await page.route('**/api/auth/otp', (route) =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
-  );
-  await page.route('**/api/auth/verify', (route) => {
-    signedIn = true;
-    return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+async function authApi(page: Page, initial = false) {
+  let signedIn = initial;
+  await page.route("**/api/auth/me", (route) => route.fulfill({
+    status: signedIn ? 200 : 401,
+    contentType: "application/json",
+    body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
+  }));
+  await page.route("**/api/auth/password", (route) => {
+    if (route.request().method() === "POST") signedIn = true;
+    return route.fulfill({ status: 200, json: { ok: true } });
   });
-  await page.goto('/connect');
-  await page.getByLabel('Email for a sign-in code').fill('fern@example.com');
-  await page.getByLabel('I confirm I am 18 or older.').check();
-  await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
-  await page.getByRole('button', { name: 'Email me a code' }).click();
-  await page.getByLabel('6-digit code from your email').fill('123456');
-  await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
-  await expect(page).toHaveURL(/\/connect\/member$/);
-  await expect(page.getByRole('heading', { name: 'Find connection' })).toBeVisible();
 }
 
-test.describe('Harmonise connect flow', () => {
-  test('landing offers entry paths and member sign-in reaches the member shell', async ({ page }) => {
-    let signedIn = false;
-    await page.route('**/api/auth/me', (route) =>
-      route.fulfill({
-        status: signedIn ? 200 : 401,
-        contentType: 'application/json',
-        body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
-      }),
-    );
-    await page.route('**/api/auth/otp', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
-    );
-    await page.route('**/api/auth/verify', (route) => {
-      signedIn = true;
-      return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
-    });
-    await page.goto('/connect');
-    await expect(page.getByRole('heading', { name: /Share something difficult.*Choose connection/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Member sign-in' })).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Coach preview' })).toBeVisible();
-    await page.getByRole('tab', { name: 'Coach preview' }).click();
-    await expect(page.getByRole('button', { name: 'Give support' })).toBeVisible();
-    await page.getByRole('tab', { name: 'Member sign-in' }).click();
-    await page.getByLabel('Email for a sign-in code').fill('fern@example.com');
-    await page.getByLabel('I confirm I am 18 or older.').check();
-    await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await page.getByLabel('6-digit code from your email').fill('123456');
-    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+async function signIn(page: Page) {
+  await authApi(page);
+  await page.goto("/connect");
+  await page.getByLabel("Email", { exact: true }).fill("fern@example.com");
+  await page.getByLabel("Password", { exact: true }).fill("safe-test-password-123");
+  await page.locator('form[aria-label="Member email and password sign in"] button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/connect\/member$/);
+}
+
+test.describe("Harmonise connected member flow", () => {
+  test("email and password sign-in opens the live member workspace", async ({ page }) => {
+    await signIn(page);
+    await expect(page.getByRole("heading", { name: "Find connection" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "My contributions" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "My circles" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Support Coaches" })).toBeVisible();
+  });
+
+  test("account creation requires its disclosures", async ({ page }) => {
+    await authApi(page);
+    await page.goto("/connect");
+    await page.getByRole("button", { name: "Create account" }).first().click();
+    const submit = page.locator('form[aria-label="Member email and password sign in"] button[type="submit"]');
+    await page.getByLabel("Email", { exact: true }).fill("new-member@example.test");
+    await page.getByLabel("Password", { exact: true }).fill("safe-test-password-123");
+    await expect(submit).toBeDisabled();
+    await page.getByLabel("I confirm I am 18 or older.").check();
+    await expect(submit).toBeDisabled();
+    await page.getByLabel(/when I ask for AI guidance, my message is sent to Meta/i).check();
+    await expect(submit).toBeEnabled();
+  });
+
+  test("already authenticated visitors can continue to their space", async ({ page }) => {
+    await authApi(page, true);
+    await page.goto("/connect");
+    await expect(page.getByText("You are signed in as fern@example.com.")).toBeVisible();
+    await page.getByRole("button", { name: "Continue to your space" }).click();
     await expect(page).toHaveURL(/\/connect\/member$/);
-    await expect(page.getByRole('button', { name: 'Find connection' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'My journey' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'My circles' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Support Coaches' })).toBeVisible();
-    await expect(page.getByText('Listens · reasons · offers a way forward')).toBeVisible();
-    await expect(page.getByText('Communities only appear after you choose to see them.')).toBeVisible();
-    await expect(page.getByText('Fern', { exact: true })).toBeVisible();
   });
 
-  test('member sign-in requires both disclosures and rejects a wrong code', async ({ page }) => {
-    await page.route('**/api/auth/me', (route) =>
-      route.fulfill({ status: 401, contentType: 'application/json', body: '{"error":"signed-out"}' }),
-    );
-    await page.route('**/api/auth/otp', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
-    );
-    await page.route('**/api/auth/verify', (route) =>
-      route.fulfill({ status: 401, contentType: 'application/json', body: '{"error":"invalid-code"}' }),
-    );
-    await page.goto('/connect');
-    await page.getByLabel('Email for a sign-in code').fill('fern@example.com');
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await expect(page.locator('.cx-error')).toContainText('confirm you are 18 or older');
-
-    await page.getByLabel('I confirm I am 18 or older.').check();
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await expect(page.locator('.cx-error')).toContainText('message will be sent to Meta Muse Spark');
-
-    await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await page.getByLabel('6-digit code from your email').fill('000000');
-    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
-    await expect(page.locator('.cx-error')).toContainText('did not match or has expired');
+  test("crisis language opens deterministic urgent support without calling the adviser", async ({ page }) => {
+    await signIn(page);
+    await page.getByPlaceholder("Share what is happening, in your own words…").fill("I want to die");
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    await expect(page.getByRole("alertdialog")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Find a verified helpline" })).toHaveAttribute("href", "https://findahelpline.com/");
+    await expect(page.getByText("Preparing a useful next step")).toHaveCount(0);
   });
 
-  test('a signed-in member continues straight to their space', async ({ page }) => {
-    await page.route('**/api/auth/me', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"id":"member-1","email":"fern@example.com"}' }),
-    );
-    await page.goto('/connect');
-    await expect(page.getByText('You are signed in as fern@example.com.')).toBeVisible();
-    await page.getByRole('button', { name: 'Continue to your space' }).click();
-    await expect(page).toHaveURL(/\/connect\/member$/);
-    await expect(page.getByText('Fern', { exact: true })).toBeVisible();
+  test("a failed live adviser request shows an honest retry state", async ({ page }) => {
+    await authApi(page);
+    await page.route("**/api/auth/password", (route) => route.fulfill({ status: 200, json: { ok: true } }));
+    await page.route("**/api/advice", (route) => route.fulfill({ status: 503, json: { error: "unavailable" } }));
+    await signIn(page);
+    await page.getByPlaceholder("Share what is happening, in your own words…").fill("Work has felt overwhelming lately.");
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    await expect(page.getByText("The live adviser could not respond just now. Please try again.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Try again" })).toBeVisible();
   });
 
-  test('crisis words open urgent support without advice or matching', async ({ page }) => {
-    await enterWithCode(page);
-    await page.getByPlaceholder('Share what is happening, in your own words…').fill('I want to die');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
-    await expect(page.getByRole('alertdialog')).toBeVisible();
-    await expect(page.getByText('Harmonise cannot monitor you or contact emergency services.')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Find a verified helpline' })).toHaveAttribute(
-      'href',
-      'https://findahelpline.com/',
-    );
-    await expect(page.getByText('Preparing a useful next step')).toHaveCount(0);
-    await expect(page.getByText('Communities that may understand')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Close so I can contact someone' }).click();
-    await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  test("adviser identifies the Meta model that generated its live response", async ({ page }) => {
+    await authApi(page);
+    await page.route("**/api/advice", (route) => route.fulfill({ status: 200, json: {
+      reflection: "You want room to think before answering.",
+      steps: ["Write down what you need."],
+      perspective: "You can ask for time without deciding today.",
+      matches: [],
+      model: "muse-wonder-1.0",
+    } }));
+    await signIn(page);
+    await page.getByPlaceholder("Share what is happening, in your own words…").fill("I want time to think before I answer.");
+    await page.getByRole("button", { name: "Send", exact: true }).click();
+    await expect(page.getByText("Generated by Meta Muse Wonder")).toBeVisible();
   });
 
-  test('shows an honest retry state when the live adviser is unavailable', async ({ page }) => {
-    await page.route('**/api/advice', (route) =>
-      route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"unavailable"}' }),
-    );
-    await enterWithCode(page);
-    await page.getByPlaceholder('Share what is happening, in your own words…').fill('Work has felt overwhelming lately.');
-    await page.getByRole('button', { name: 'Send', exact: true }).click();
-    await expect(page.getByText('The live adviser could not respond just now. Please try again.')).toBeVisible({
-      timeout: 30000,
-    });
-    await expect(page.getByText('Communities that may understand')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
-  });
-
-  test('member tabs render journey, circles, and coaches', async ({ page }) => {
-    await page.route('**/api/communities', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"communities":[]}' }),
-    );
-    await enterWithCode(page);
-    await page.getByRole('button', { name: 'My journey' }).click();
-    await expect(page.getByText('Point Z', { exact: true })).toBeVisible();
-    await expect(page.getByText('AI cannot score wellbeing or define progress automatically.')).toBeVisible();
-    await page.getByRole('button', { name: 'My circles' }).click();
-    await expect(page.getByText('You haven’t joined any circles yet')).toBeVisible();
-    await page.getByRole('button', { name: 'Support Coaches' }).click();
-    await expect(page.getByText('Need licensed or clinical care?')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Request introduction' })).toHaveCount(0);
+  test("empty circles remain explicit and member tabs open", async ({ page }) => {
+    await authApi(page);
+    await page.route("**/api/account/contributions", (route) => route.fulfill({ status: 200, json: { contributions: [] } }));
+    await page.route("**/api/communities", (route) => route.fulfill({ status: 200, json: { communities: [] } }));
+    await signIn(page);
+    await page.getByRole("button", { name: "My contributions" }).click();
+    await expect(page.getByText(/You have not joined a circle yet/)).toBeVisible();
+    await page.getByRole("button", { name: "My circles" }).click();
+    await expect(page.getByText(/You haven’t joined any circles yet/)).toBeVisible();
+    await page.getByRole("button", { name: "Support Coaches" }).click();
     await expect(page.getByText(/no coaches are listed here/i)).toBeVisible();
   });
 });

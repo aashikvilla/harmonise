@@ -19,9 +19,10 @@ test("session APIs deny signed-out callers and reject malformed ids", async ({ p
   expect((await page.request.get("/api/account/export")).status()).toBe(401);
 });
 
-test("signed-out visitors are offered an optional private account", async ({ page }) => {
-  await page.goto("/app?path=talk");
-  await expect(page.getByRole("heading", { name: "Save and resume across devices" })).toBeVisible();
-  await expect(page.getByText(/stored for you alone and expire after 90 days/i)).toBeVisible();
-  await expect(page.getByText(/Nothing is shared with any community/i)).toBeVisible();
+test("signed-out visitors are told a saved account is required before chatting", async ({ page }) => {
+  await page.goto("/app");
+  await expect(page.getByRole("heading", { name: "Talk it through, at your pace." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to start a saved conversation" })).toBeVisible();
+  await expect(page.getByText(/Your conversation is saved to your account/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create an account or use the shared demo account" })).toHaveAttribute("href", "/connect");
 });

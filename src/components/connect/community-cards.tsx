@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { NameMode } from "@/lib/connect/session";
 
 /** Shape returned by GET /api/communities (publicCommunity). */
 export type RealCommunity = {
@@ -21,22 +20,19 @@ export function CommunityCard({
   community,
   reason,
   joined,
-  nameMode,
-  displayName,
   onJoin,
   onOpen,
 }: {
   community: RealCommunity | null;
   reason: string | null;
   joined: boolean;
-  nameMode: NameMode;
-  displayName: string;
-  onJoin: (id: string) => Promise<boolean>;
+  onJoin: (id: string, alias: string) => Promise<boolean>;
   onOpen: () => void;
 }) {
   const [preview, setPreview] = useState(false);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState("");
+  const [alias, setAlias] = useState("");
 
   if (!community) {
     return (
@@ -62,7 +58,7 @@ export function CommunityCard({
   async function join() {
     setJoining(true);
     setJoinError("");
-    const ok = await onJoin(community!.id);
+    const ok = await onJoin(community!.id, alias.trim());
     setJoining(false);
     if (!ok) setJoinError("Joining did not work. This circle may not be available yet — please try again.");
   }
@@ -97,9 +93,13 @@ export function CommunityCard({
             Open in My circles
           </button>
         ) : (
-          <button type="button" className="cx-btn cx-btn-primary" disabled={joining} onClick={() => void join()}>
-            {joining ? "Joining…" : nameMode === "alias" ? `Join as alias “${displayName}”` : `Join as ${displayName}`}
-          </button>
+          <div className="cx-join-choice">
+            <label className="cx-label" htmlFor={`community-alias-${community.id}`}>Choose the alias members will see</label>
+            <input id={`community-alias-${community.id}`} className="cx-input" value={alias} maxLength={40} onChange={(event) => setAlias(event.target.value)} placeholder="Your community alias" />
+            <button type="button" className="cx-btn cx-btn-primary" disabled={joining || alias.trim().length < 2} onClick={() => void join()}>
+              {joining ? "Joining…" : "Join this circle"}
+            </button>
+          </div>
         )}
       </div>
       {preview ? (

@@ -135,7 +135,7 @@ function ConsentComposer({
         </div>
         {intent === "ask" && (
           <p className="mt-2 text-xs text-[var(--muted)]">
-            Members usually reply within a day; a facilitator checks unanswered questions daily.
+            Replies depend on community members being active; response times vary. There is no guaranteed facilitator response.
           </p>
         )}
       </>)}

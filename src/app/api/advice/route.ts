@@ -170,7 +170,7 @@ export async function POST(request: Request) {
       },
       (text) => validAdvice(JSON.parse(text) as unknown, allowed),
     );
-    return finish(advice, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage, model: result.model });
+    return finish({ ...advice, model: result.model }, 200, "ok", { providerLatencyMs: result.latencyMs, usage: result.usage, model: result.model });
   } catch (error) {
     return finish({ error: "unavailable" }, modelFailureStatus(error), "unavailable", { errorKind: modelErrorKind(error) });
   }

@@ -11,11 +11,10 @@ export default function ProductHeader({ current }: { current?: "space" | "commun
         <span>harmonize<em>.</em></span>
       </Link>
       <nav className="product-page-nav" aria-label="Main navigation">
-        <Link href="/app" aria-current={current === "space" ? "page" : undefined}>Your space</Link>
+        <Link href="/app" aria-current={current === "space" ? "page" : undefined}>Private chat</Link>
         <Link href="/communities" aria-current={current === "communities" ? "page" : undefined}>Communities</Link>
-        <Link href="/app">Life chapters</Link>
         <Link href="/profile" aria-current={current === "profile" ? "page" : undefined}>Profile</Link>
-        <Link href="/connect" className="product-page-cta">Sign in <span aria-hidden="true">↗</span></Link>
+        <Link href="/connect" className="product-page-cta">Your account <span aria-hidden="true">↗</span></Link>
       </nav>
     </header>
   );

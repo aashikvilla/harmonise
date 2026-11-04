@@ -1,6 +1,11 @@
-import { Suspense } from "react";
-import ProductRoute from "@/components/product-route";
+import type { Metadata } from "next";
+import LiveConversation from "@/components/live-conversation";
+
+export const metadata: Metadata = {
+  title: "harmonize. — Private conversation",
+  description: "A private AI guided conversation, saved to your account and shared only when you choose.",
+};
 
 export default function ProductPage() {
-  return <Suspense fallback={<main className="app-shell"><p className="page-kicker">HARMONISE · YOUR SPACE</p><h1>Opening your space…</h1></main>}><ProductRoute /></Suspense>;
+  return <LiveConversation />;
 }

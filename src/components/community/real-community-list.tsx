@@ -109,7 +109,7 @@ export default function RealCommunityList() {
     </div>
     <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 sm:px-5">
       <p className="text-sm">Not sure which circle fits? Talk for 2 minutes and come back with a recommendation.</p>
-      <Link href="/app?path=talk" className="button button-secondary">Talk to match</Link>
+      <Link href="/connect" className="button button-secondary">Talk to match</Link>
     </div>
     <ul className="grid gap-4 sm:grid-cols-2">
       {communities.map((community) => (

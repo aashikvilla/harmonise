@@ -26,6 +26,7 @@ type SetupDraft = {
 
 type SetupAssistResponse = {
   draft?: SetupDraft;
+  model?: string;
   matchingCommunities?: Array<{ id: string; name: string; description: string }>;
   error?: string;
 };
@@ -253,7 +254,7 @@ export default function CommunityProposalForm() {
             {assistState === "ready" && assistDraft?.draft && <section className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-soft)]" aria-labelledby="community-draft-title">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">AI-generated · editable draft</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{assistDraft.model?.startsWith("muse-wonder") ? "Meta Muse Wonder" : assistDraft.model?.startsWith("muse-spark") ? "Meta Muse Spark" : "Meta AI"} · editable draft</p>
                   <h2 id="community-draft-title" className="section-head mt-1">Community scope suggestions</h2>
                 </div>
               </div>

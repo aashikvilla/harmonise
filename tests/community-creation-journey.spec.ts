@@ -10,8 +10,7 @@ test("propose, review, and enter a community with its scoped helper and activity
 
   await page.route("**/api/auth/config", (route) => route.fulfill({ json: { databaseEnabled: true, authEnabled: true } }));
   await page.route("**/api/auth/me", (route) => route.fulfill({ status: signedIn ? 200 : 401, json: signedIn ? { id: "fixture-user" } : { error: "signed-out" } }));
-  await page.route("**/api/auth/otp", (route) => route.fulfill({ json: { ok: true } }));
-  await page.route("**/api/auth/verify", async (route) => {
+  await page.route("**/api/auth/password", async (route) => {
     signedIn = true;
     await route.fulfill({ json: { ok: true } });
   });
@@ -66,10 +65,9 @@ test("propose, review, and enter a community with its scoped helper and activity
   await expect(page.getByRole("heading", { name: "Make room for a new circle" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Sign in to suggest a community" })).toBeVisible();
 
-  await page.getByLabel("Email for a sign-in code").fill("demo@example.test");
-  await page.getByRole("button", { name: "Email me a code" }).click();
-  await page.getByLabel("6-digit code from your email").fill("123456");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel("Email", { exact: true }).fill("demo@example.test");
+  await page.getByLabel("Password", { exact: true }).fill("safe-test-password-123");
+  await page.locator('form button[type="submit"]').click();
 
   await expect(page.getByLabel("Community name")).toBeVisible();
   await page.getByLabel("Community name").fill("New parent circle");

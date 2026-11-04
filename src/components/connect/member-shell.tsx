@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useSession, type ConnectTab } from "@/lib/connect/session";
 import Adviser from "@/components/connect/adviser";
 import Circles from "@/components/connect/circles";
-import Journey from "@/components/connect/journey";
+import Contributions from "@/components/connect/journey";
 import Coaches, { CoachDashboardPreview, useSupporterData, type SupporterData } from "@/components/connect/coaches";
 import UrgentModal from "@/components/connect/urgent-modal";
 import SharedBrand from "@/components/connect/brand";
@@ -19,10 +19,10 @@ const TABS: { id: ConnectTab; label: string; heading: string; lede: string }[] =
     lede: "Talk privately with the harmonize adviser. Guidance first — communities only if you ask.",
   },
   {
-    id: "journey",
-    label: "My journey",
-    heading: "My journey",
-    lede: "Your private Point A → Point Z. You confirm every milestone; the AI never scores you.",
+    id: "contributions",
+    label: "My contributions",
+    heading: "My contributions",
+    lede: "A record of your real posts, replies, and thanks in communities you joined.",
   },
   {
     id: "circles",
@@ -49,8 +49,8 @@ export default function MemberShell() {
   const active = TABS.find((tab) => tab.id === state.tab) ?? TABS[0];
   const [restoreAttempted, setRestoreAttempted] = useState(false);
   const restoring = !state.entered && !restoreAttempted;
-  const supporter = useSupporterData(state.entered && !state.demo);
-  const supporterData: SupporterData = state.demo ? { status: "demo", contributions: [], promotions: {} } : { status: supporter.status, contributions: supporter.contributions, promotions: supporter.promotions };
+  const supporter = useSupporterData(state.entered);
+  const supporterData: SupporterData = { status: supporter.status, contributions: supporter.contributions, promotions: supporter.promotions };
   const totalPosts = supporterData.contributions.reduce((sum, entry) => sum + entry.posts.length, 0);
   useEffect(() => {
     if (state.entered) return;
@@ -64,7 +64,7 @@ export default function MemberShell() {
           const address = typeof body.email === "string" ? body.email : "";
           const local = address.split("@")[0].replace(/[._-]+/g, " ").trim();
           const displayName = local ? local.charAt(0).toUpperCase() + local.slice(1) : "Member";
-          dispatch({ type: "enter", displayName, nameMode: "alias", email: address, demo: false });
+          dispatch({ type: "enter", displayName, nameMode: "alias", email: address });
         }
       } catch {
         /* Signed-out visitors keep the entrance card. */
@@ -131,17 +131,15 @@ export default function MemberShell() {
                 <strong>{state.displayName}</strong>
                 <small>
                   {state.nameMode === "alias" ? "Alias mode" : "Real-name mode"}
-                  {state.demo ? " · Demo" : ""}
                 </small>
               </div>
             </div>
             <div className="cx-card-meta">
-              <span className="cx-tag cx-tag-dark">Prototype</span>
-              {state.demo ? <span className="cx-tag"> exploring demo</span> : null}
+              <span className="cx-tag cx-tag-dark">Member</span>
             </div>
             <div className="cx-points" aria-label={supporterData.status === "ready" ? `Your contributions: ${totalPosts} posts in ${supporterData.contributions.length} circles` : "Your contributions"}>
               <span>Your contributions</span>
-              <b>{supporterData.status === "loading" ? "…" : supporterData.status === "ready" ? `${totalPosts} posts · ${supporterData.contributions.length} circles` : supporterData.status === "demo" ? "Demo" : "Unavailable"}</b>
+              <b>{supporterData.status === "loading" ? "…" : supporterData.status === "ready" ? `${totalPosts} posts · ${supporterData.contributions.length} circles` : supporterData.status === "signed-out" ? "Sign in required" : "Unavailable"}</b>
             </div>
           </section>
           <nav className="cx-nav cx-card-white" aria-label="Member tabs">
@@ -171,7 +169,7 @@ export default function MemberShell() {
             <p className="cx-lede">{active.lede}</p>
           </div>
           {state.tab === "find" ? <Adviser /> : null}
-          {state.tab === "journey" ? <Journey data={supporterData} /> : null}
+          {state.tab === "contributions" ? <Contributions data={supporterData} /> : null}
           {state.tab === "circles" ? <Circles /> : null}
           {state.tab === "coaches" ? <Coaches data={supporterData} onChanged={supporter.reload} /> : null}
         </main>

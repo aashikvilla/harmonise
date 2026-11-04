@@ -23,10 +23,7 @@ test.describe('Harmonise connect circles (real community data)', () => {
         body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
       }),
     );
-    await page.route('**/api/auth/otp', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
-    );
-    await page.route('**/api/auth/verify', (route) => {
+    await page.route('**/api/auth/password', (route) => {
       signedIn = true;
       return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
     });
@@ -77,12 +74,12 @@ test.describe('Harmonise connect circles (real community data)', () => {
     );
     await page.route('**/api/communities/rebuilding/join', async (route) => {
       const payload = route.request().postDataJSON() as { alias?: unknown };
-      expect(payload.alias).toBe('Fern');
+      expect(payload.alias).toBe('QuietFern');
       joined = true;
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: '{"membership":{"id":"membership-1","alias":"Fern","role":"member","status":"active"}}',
+        body: '{"membership":{"id":"membership-1","alias":"QuietFern","role":"member","status":"active"}}',
       });
     });
     await page.route('**/api/communities/rebuilding/posts', async (route) => {
@@ -108,12 +105,9 @@ test.describe('Harmonise connect circles (real community data)', () => {
     });
 
     await page.goto('/connect');
-    await page.getByLabel('Email for a sign-in code').fill('fern@example.com');
-    await page.getByLabel('I confirm I am 18 or older.').check();
-    await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await page.getByLabel('6-digit code from your email').fill('123456');
-    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await page.getByLabel('Email', { exact: true }).fill('fern@example.com');
+    await page.getByLabel('Password', { exact: true }).fill('safe-test-password-123');
+    await page.locator('form button[type="submit"]').click();
     await expect(page).toHaveURL(/\/connect\/member$/);
     await expect(page.getByRole('heading', { name: 'Find connection' })).toBeVisible();
 
@@ -124,7 +118,8 @@ test.describe('Harmonise connect circles (real community data)', () => {
 
     await expect(page.getByRole('heading', { name: 'Communities that may understand' })).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('heading', { name: 'Rebuilding after separation' })).toBeVisible();
-    await page.getByRole('button', { name: /Join as alias/i }).click();
+    await page.getByLabel('Choose the alias members will see').fill('QuietFern');
+    await page.getByRole('button', { name: 'Join this circle' }).click();
     await expect(page.getByRole('button', { name: 'Open in My circles' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Open in My circles' }).click();
@@ -146,10 +141,7 @@ test.describe('Harmonise connect circles (real community data)', () => {
         body: signedIn ? '{"id":"member-1","email":"fern@example.com"}' : '{"error":"signed-out"}',
       }),
     );
-    await page.route('**/api/auth/otp', (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }),
-    );
-    await page.route('**/api/auth/verify', (route) => {
+    await page.route('**/api/auth/password', (route) => {
       signedIn = true;
       return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
     });
@@ -162,12 +154,9 @@ test.describe('Harmonise connect circles (real community data)', () => {
     );
 
     await page.goto('/connect');
-    await page.getByLabel('Email for a sign-in code').fill('fern@example.com');
-    await page.getByLabel('I confirm I am 18 or older.').check();
-    await page.getByLabel('I understand my message will be sent to Meta Muse Spark for a response.').check();
-    await page.getByRole('button', { name: 'Email me a code' }).click();
-    await page.getByLabel('6-digit code from your email').fill('123456');
-    await page.getByRole('button', { name: 'Sign in and continue to chat' }).click();
+    await page.getByLabel('Email', { exact: true }).fill('fern@example.com');
+    await page.getByLabel('Password', { exact: true }).fill('safe-test-password-123');
+    await page.locator('form button[type="submit"]').click();
     await expect(page).toHaveURL(/\/connect\/member$/);
 
     await page.getByRole('button', { name: 'My circles' }).click();

@@ -29,17 +29,16 @@ test.beforeEach(async () => {
   test.skip(test.info().project.name !== "desktop", "One project only: each test spends a provider call.");
 });
 
-test("talk sends a message to Muse Spark and shows the live reply", async ({ page }) => {
-  await page.goto("/app?path=talk");
-  await page.getByLabel("Your message").fill("Work has felt overwhelming lately and I cannot switch off in the evening.");
-  await page.getByRole("button", { name: "Send" }).click();
-
-  // Live model turns are labelled "Harmonise · Meta AI"; fictional fallback
-  // turns say "fictional transcript" instead.
-  const liveTurn = page.locator("article.turn-guide", { hasText: "Harmonise · Meta AI" });
-  await expect(liveTurn.first()).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByRole("heading", { name: "Have I got this right?" })).toBeVisible();
-  await expect(page.getByText("What you said:")).toBeVisible();
+test("private chat returns a live Muse Spark response without a scripted fallback", async ({ page }) => {
+  const response = await page.request.post("/api/chat", {
+    data: { message: "Work has felt overwhelming lately and I cannot switch off in the evening.", history: [] },
+    timeout: 60_000,
+  });
+  expect(response.status()).toBe(200);
+  const body = (await response.json()) as { reply: string; suggestedThemes: string[]; supportNeed: string; needSummary: string };
+  expect(body.reply.trim().length).toBeGreaterThan(0);
+  expect(body.suggestedThemes.every((theme) => ["family-expectations", "relationship-uncertainty", "work-pressure", "relocation", "belonging", "personal-autonomy", "communication", "hobbies"].includes(theme))).toBe(true);
+  expect(body.needSummary.trim().length).toBeGreaterThan(0);
 });
 
 test("advice returns reflection, steps, perspective, and community matches", async ({ page }) => {

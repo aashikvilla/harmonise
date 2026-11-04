@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "@/lib/connect/session";
 
 export type ContributionPost = {
   id: string;
@@ -33,7 +32,7 @@ export type PromotionRequest = {
   created_at: string;
 };
 
-export type SupporterStatus = "loading" | "ready" | "signed-out" | "unavailable" | "demo";
+export type SupporterStatus = "loading" | "ready" | "signed-out" | "unavailable";
 
 export type SupporterData = {
   status: SupporterStatus;
@@ -210,9 +209,6 @@ function ApplyControls({
 
 function SupporterApplications({ data, onChanged }: { data: SupporterData; onChanged: () => void }) {
   if (data.status === "loading") return <p className="cx-note" role="status">Loading your supporter status…</p>;
-  if (data.status === "demo") {
-    return <p className="cx-note">You are exploring the demo, so there is no real application record. Sign in with email to see your actual status.</p>;
-  }
   if (data.status === "signed-out") {
     return <p className="cx-note">Sign in as a member first. Supporter applications are linked to your real circle memberships, so nothing can be shown before sign-in.</p>;
   }
@@ -264,35 +260,9 @@ export function CoachDashboardPreview({ data: supplied, onChanged }: { data?: Su
   );
 }
 
-function ProfessionalPathway() {
-  const [open, setOpen] = useState(false);
-  return (
-    <section className="cx-pro cx-card-white" aria-label="Licensed or clinical care">
-      <p className="cx-kicker">Beyond peer support</p>
-      <h2>Need licensed or clinical care?</h2>
-      <p className="cx-lede">
-        Professional support is separate from peer Support Coaching. Some struggles need a licensed clinician, and
-        that is a different doorway — with independently verified credentials.
-      </p>
-      <button type="button" className="cx-btn cx-btn-dark" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-        {open ? "Hide professional pathway preview" : "Preview professional pathway"}
-      </button>
-      {open ? (
-        <div className="cx-request-preview">
-          <p style={{ margin: 0 }}>
-            Preview only. A real directory would list licensed providers whose credentials require independent
-            verification. No booking or provider integration exists in this prototype.
-          </p>
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
 export default function Coaches({ data: supplied, onChanged }: { data?: SupporterData; onChanged?: () => void }) {
-  const { state } = useSession();
-  const own = useSupporterData(!supplied && !state.demo);
-  const data: SupporterData = state.demo ? { status: "demo", contributions: [], promotions: {} } : (supplied ?? own);
+  const own = useSupporterData(!supplied);
+  const data: SupporterData = supplied ?? own;
   const reload = onChanged ?? own.reload;
 
   return (
@@ -312,7 +282,6 @@ export default function Coaches({ data: supplied, onChanged }: { data?: Supporte
         </p>
         <SupporterApplications data={data} onChanged={reload} />
       </section>
-      <ProfessionalPathway />
     </div>
   );
 }

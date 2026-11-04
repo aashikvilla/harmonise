@@ -1,24 +1,26 @@
 import { expect, test } from "@playwright/test";
 
-test("product screens carry the Motion Revival identity into the Harmonize experience", async ({ page }) => {
-  await page.goto("/app?path=talk");
-
-  await expect(page.getByRole("link", { name: "Harmonize home" })).toBeVisible();
-  await expect(page.locator(".brand-symbol path")).toHaveAttribute("d", /M8 23C8 14/);
-  await expect(page.getByRole("heading", { name: "You can start anywhere." })).toBeVisible();
-
-  const theme = await page.evaluate(() => ({
+test("private conversation uses the Harmonise design tokens and presents a signed-out state", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ status: 401, json: { error: "signed-out" } }));
+  await page.goto("/app");
+  await expect(page.getByRole("heading", { name: "Talk it through, at your pace." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to start a saved conversation" })).toBeVisible();
+  const styles = await page.evaluate(() => ({
     paper: getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
     coral: getComputedStyle(document.documentElement).getPropertyValue("--teal").trim(),
     serif: getComputedStyle(document.documentElement).getPropertyValue("--serif").trim(),
   }));
-  expect(theme.paper).toEqual("#fffaf5");
-  expect(theme.coral).toEqual("#af554f");
-  expect(theme.serif).toContain('"DM Serif Display"');
-  expect(theme.serif).toContain("Georgia");
+  expect(styles.paper).toBe("#fffaf5");
+  expect(styles.coral).toBe("#af554f");
+  expect(styles.serif).toContain("Georgia");
+  await expect(page.getByRole("link", { name: "Communities" })).toBeVisible();
+});
 
-  await page.getByRole("button", { name: "Communities", exact: true }).click();
-  await expect(page.locator(".community-card").first()).toBeVisible();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect.poll(() => page.locator(".screen-content").evaluate((element) => getComputedStyle(element).animationName)).toBe("none");
+test("voice transcription is discoverable in the signed-in private conversation", async ({ page }) => {
+  await page.route("**/api/auth/me", (route) => route.fulfill({ status: 200, json: { id: "member-1", email: "fern@example.com" } }));
+  await page.route("**/api/sessions", (route) => route.fulfill({ json: { sessions: [] } }));
+  await page.goto("/app");
+  await expect(page.getByRole("region", { name: "Private AI conversation" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Record a voice message" })).toBeVisible();
+  await expect(page.getByText("Voice is transcribed by Meta. Review and edit the transcript before sending it to the adviser.")).toBeVisible();
 });
