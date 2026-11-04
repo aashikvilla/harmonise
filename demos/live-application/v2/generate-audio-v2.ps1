@@ -10,12 +10,13 @@ New-Item -ItemType Directory -Path $scratch -Force | Out-Null
 $voiceInput = Join-Path $OutDir "voice-input.wav"
 $voiceover = Join-Path $OutDir "voiceover-v2.wav"
 $captions = Join-Path $OutDir "captions-v2.srt"
+$timingFile = Join-Path $OutDir "narration-timing-v2.json"
 $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $sampleRate = 22050
 $channels = 1
 $bitsPerSample = 16
 $bytesPerSecond = $sampleRate * $channels * ($bitsPerSample / 8)
-$gapSeconds = 0.42
+$gapSeconds = 1.2
 
 function Format-Timecode([double]$Seconds) {
   $totalMs = [int][math]::Floor($Seconds * 1000)
@@ -26,7 +27,7 @@ function Format-Timecode([double]$Seconds) {
   return "{0:00}:{1:00}:{2:00},{3:000}" -f $hours, $minutes, $seconds, $milliseconds
 }
 
-function Wrap-Caption([string]$Text, [int]$Width = 46) {
+function Wrap-Caption([string]$Text, [int]$Width = 58) {
   $lines = [System.Collections.Generic.List[string]]::new()
   $line = ""
   foreach ($word in $Text.Split(' ')) {
@@ -77,29 +78,35 @@ try {
   $available = @($synth.GetInstalledVoices() | ForEach-Object { $_.VoiceInfo.Name })
   $voiceName = if ($available -contains "Microsoft Hazel Desktop") { "Microsoft Hazel Desktop" } else { $available[0] }
   $synth.SelectVoice($voiceName)
-  $synth.Rate = -1
+  $synth.Rate = 0
   $synth.Volume = 100
 
   $sentences = @(
-    "You don't need the right words to begin. A hard decision can be difficult to explain, and harder to share before you are ready.",
-    "Harmonise starts privately and leaves peer connection up to you.",
-    "It is for people facing personal decisions, family pressure, or life changes. This is peer support, not therapy.",
-    "We sign in with the shared demo account. Community names and counts are real; member stories stay private.",
-    "The member describes pressure to decide for their family.",
-    "Muse Wonder offers a live reflection and practical options, with Muse Spark as fallback.",
-    "The app names the model that answered. Matches appear only when the member asks.",
-    "Private advice is not copied into a peer space. The public directory comes from Supabase.",
-    "When no circle fits, Meta drafts a possible scope from the member's idea.",
-    "The member can edit or discard the draft. A human reviews any proposal before launch.",
-    "Muse Voice Transcribe turns speech into text the member can review and edit.",
-    "That transcript stays unsent until the member chooses what to do.",
-    "Muse Spark also supports chat, community guidance, and advisory moderation triage. People make consequential decisions.",
-    "Next.js, Supabase Auth and Postgres, and server-side Meta models connect the journey.",
-    "We aim to make a first step easier to see and connection easier to choose. We have not measured outcomes."
+    "You don't need the right words to begin.",
+    "A family decision or major life change can be hard to name, harder to share before you feel ready.",
+    "Harmonise offers adults facing pressure a private place to reflect and find one practical next step.",
+    "Peer connection is optional; the product is not therapy, diagnosis, or emergency care.",
+    "The shared demo account enters the same real authentication flow and running product.",
+    "Here, a live Meta Muse response reflects the member's question and offers language for asking family for time.",
+    "A second live prompt adds the realities of coordinating care between siblings in different cities.",
+    "Muse Wonder is the first choice for reflection and setup, with Spark as fallback; the label identifies which model replied.",
+    "If Wonder's output fails checks, the server retries with Spark. Private reflection never posts automatically.",
+    "Only when the member chooses do matches appear; the directory's real names and counts come from Supabase.",
+    "When no space fits, Meta can draft a proposed community scope from the member's idea.",
+    "Purpose, topics, boundaries, norms, and starter prompts stay editable; a human reviews before launch.",
+    "In saved private chat, Meta Muse Spark gives a live reply and suggests tentative support themes.",
+    "The member can review or correct those themes before exploring communities.",
+    "Muse Voice Transcribe turns a spoken thought into text the member can review and edit.",
+    "Here the transcript stays in the composer, unsent. No speech is shared without the member's next choice.",
+    "Spark also powers scoped community guidance and advisory moderation triage. People make consequential decisions.",
+    "Volunteer and verified-supporter roles require human review; they are peer support, not a therapist directory.",
+    "Next.js connects the interface and server routes; Supabase handles identity and product data; Meta models power member-chosen features.",
+    "Our intended impact is a gentler first step and clearer choices. We have not measured outcomes."
   )
 
   $audio = [System.IO.MemoryStream]::new()
   $captionLines = [System.Collections.Generic.List[string]]::new()
+  $timingCues = [System.Collections.Generic.List[object]]::new()
   $time = 0.0
   for ($index = 0; $index -lt $sentences.Count; $index++) {
     $sentence = $sentences[$index]
@@ -115,6 +122,7 @@ try {
     $captionStart = $time + 0.04
     $captionEnd = [math]::Max($captionStart + 1.2, $time + $duration - 0.04)
     $captionLines.Add(("{0}`n{1} --> {2}`n{3}`n" -f ($index + 1), (Format-Timecode $captionStart), (Format-Timecode $captionEnd), (Wrap-Caption $sentence)))
+    $timingCues.Add([ordered]@{ index = $index + 1; start = $captionStart; end = $captionEnd; text = $sentence })
     $audio.Write($segment, 0, $segment.Length)
     $time += $duration
     if ($index -lt $sentences.Count - 1) {
@@ -131,6 +139,7 @@ try {
   try { $combined.Write($header, 0, $header.Length); $combined.Write($audioBytes, 0, $audioBytes.Length) }
   finally { $combined.Dispose() }
   [System.IO.File]::WriteAllText($captions, ($captionLines -join "`r`n"), [System.Text.UTF8Encoding]::new($false))
+  [System.IO.File]::WriteAllText($timingFile, (([ordered]@{ durationSeconds = [math]::Round($time, 2); cues = $timingCues } | ConvertTo-Json -Depth 5)), [System.Text.UTF8Encoding]::new($false))
 
   $synth.SetOutputToWaveFile($voiceInput)
   $synth.Rate = 0
@@ -139,7 +148,7 @@ try {
   $synth.SpeakSsml($inputSsml)
   $synth.SetOutputToNull()
 
-  Write-Output "Created 3-minute demo voice assets with $voiceName; narration $([math]::Round($time, 1)) seconds and $($sentences.Count) caption cues."
+  Write-Output "Created extended demo voice assets with $voiceName; narration $([math]::Round($time, 1)) seconds and $($sentences.Count) caption cues."
 }
 finally {
   $synth.Dispose()

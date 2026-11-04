@@ -4,6 +4,7 @@ import { checkUserQuota, isKillSwitchOn } from "@/lib/ops-limits";
 import { checkUserRateLimit, modelErrorKind, modelFailureStatus, requestValidatedWithFallback } from "@/lib/meta-model";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
 import { getAuthUser, isDatabaseConfigured, supabaseRest } from "@/lib/db/supabase";
+import { isCleanModelText } from "@/lib/meta-output";
 import type { CommunityRow } from "@/lib/db/types";
 
 export const runtime = "nodejs";
@@ -119,6 +120,8 @@ function validateDraft(value: unknown, candidates: CommunityCandidate[]): SetupD
   const candidateIds = safeList(fit.candidateIds, 3, 48);
   const explanation = capText(fit.explanation, 240);
   if (!candidateIds || !explanation) return null;
+  const modelText = [description, welcomeMessage, explanation, ...includedTopics, ...adjacentTopics, ...outOfScope, ...norms, ...starterPrompts];
+  if (!modelText.every(isCleanModelText)) return null;
   const allowedIds = new Set(candidates.map((candidate) => candidate.id));
   if (candidateIds.some((id) => !allowedIds.has(id))) return null;
   if (fit.kind === "fits-existing" && candidateIds.length === 0) return null;

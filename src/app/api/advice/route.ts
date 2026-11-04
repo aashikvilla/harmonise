@@ -11,6 +11,7 @@ import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeader
 import { checkRateLimit, modelErrorKind, modelFailureStatus, requestValidatedWithFallback } from "@/lib/meta-model";
 import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
+import { isCleanModelText } from "@/lib/meta-output";
 
 export const runtime = "nodejs";
 
@@ -37,15 +38,15 @@ async function loadMatchable(): Promise<Matchable[]> {
 function validAdvice(value: unknown, allowed: Set<string>): AdviceResult | null {
   if (typeof value !== "object" || value === null) return null;
   const record = value as Record<string, unknown>;
-  if (typeof record.reflection !== "string" || record.reflection.trim().length === 0) return null;
-  if (typeof record.perspective !== "string" || record.perspective.trim().length === 0) return null;
+  if (typeof record.reflection !== "string" || !isCleanModelText(record.reflection)) return null;
+  if (typeof record.perspective !== "string" || !isCleanModelText(record.perspective)) return null;
   if (!Array.isArray(record.steps) || record.steps.length < 2 || record.steps.length > 4) return null;
   if (!Array.isArray(record.matches)) return null;
   const reflection = record.reflection.trim().slice(0, MAX_REFLECTION);
   const perspective = record.perspective.trim().slice(0, MAX_PERSPECTIVE);
   const steps: string[] = [];
   for (const step of record.steps) {
-    if (typeof step !== "string" || step.trim().length === 0) return null;
+    if (typeof step !== "string" || !isCleanModelText(step)) return null;
     steps.push(step.trim().slice(0, MAX_STEP));
   }
   const seen = new Set<string>();
@@ -54,7 +55,7 @@ function validAdvice(value: unknown, allowed: Set<string>): AdviceResult | null 
     if (matches.length >= MAX_MATCHES) break;
     if (typeof item !== "object" || item === null) return null;
     const entry = item as Record<string, unknown>;
-    if (typeof entry.id !== "string" || typeof entry.reason !== "string") return null;
+    if (typeof entry.id !== "string" || typeof entry.reason !== "string" || !isCleanModelText(entry.reason)) return null;
     if (!allowed.has(entry.id)) continue;
     if (seen.has(entry.id)) continue;
     seen.add(entry.id);

@@ -5,6 +5,7 @@ import { bodyTooLarge, logRouteCall, newRequestId, parseJsonBody, withMetaHeader
 import { checkRateLimit, modelErrorKind, modelFailureStatus, requestMetaChatDetailed } from "@/lib/meta-model";
 import { checkUserQuota, isKillSwitchOn, userIdForQuota } from "@/lib/ops-limits";
 import { recordKillSwitchDrop, recordQuotaDrop } from "@/lib/ops-metrics";
+import { isCleanModelText } from "@/lib/meta-output";
 
 export const runtime = "nodejs";
 
@@ -41,8 +42,8 @@ const SYSTEM_PROMPT = [
 function validResult(value: unknown) {
   if (typeof value !== "object" || value === null) return null;
   const record = value as Record<string, unknown>;
-  if (typeof record.reply !== "string" || !record.reply.trim()) return null;
-  if (typeof record.needSummary !== "string" || !record.needSummary.trim()) return null;
+  if (typeof record.reply !== "string" || !isCleanModelText(record.reply)) return null;
+  if (typeof record.needSummary !== "string" || !isCleanModelText(record.needSummary)) return null;
   if (!Array.isArray(record.suggestedThemes) || !record.suggestedThemes.every((theme) => typeof theme === "string" && THEME_IDS.includes(theme as ThemeId))) return null;
   if (typeof record.supportNeed !== "string" || !SUPPORT_NEEDS.includes(record.supportNeed as SupportNeed)) return null;
   return {

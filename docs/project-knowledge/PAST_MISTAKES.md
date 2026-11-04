@@ -1,5 +1,13 @@
 # Past Mistakes and Preventive Rules
 
+## 2026-11-05 — Structured output can still contain model scratch text
+
+The provider returned schema-valid advice whose string fields included internal
+formatting analysis. The UI displayed it because validation checked types and
+lengths but not content. Validate user-facing text for provider protocol and
+reasoning artifacts as well as schema shape; retry only through the established
+model fallback, and return an unavailable state if the retry is also invalid.
+
 ## 2026-11-03 — Display aliases cannot establish an automated actor's identity
 
 Facilitator setup searched a human-editable alias and otherwise created a profile with an ID absent from Auth. The first path could attribute AI output to a person, and the second violates the profile foreign key. Provision automated actors through a trusted identity mechanism with a unique immutable binding. Prove provisioning, concurrent calls and attribution before scheduling writes.
