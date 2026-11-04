@@ -81,7 +81,7 @@ try {
   $synth.Volume = 100
 
   $sentences = @(
-    "A hard decision can be difficult to explain, and harder to share before you are ready.",
+    "You don't need the right words to begin. A hard decision can be difficult to explain, and harder to share before you are ready.",
     "Harmonise starts privately and leaves peer connection up to you.",
     "It is for people facing personal decisions, family pressure, or life changes. This is peer support, not therapy.",
     "We sign in with the shared demo account. Community names and counts are real; member stories stay private.",

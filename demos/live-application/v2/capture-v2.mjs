@@ -39,13 +39,13 @@ async function scrollTo(selector, label, dwellMs) {
 
 try {
   await page.goto(baseURL, { waitUntil: "domcontentloaded", timeout: 45_000 });
-  await page.getByRole("heading", { name: /A place to pause before you decide/i }).waitFor({ state: "visible", timeout: 20_000 });
-  await mark("Animated homepage: problem, promise, and member-led path", 5000);
+  await page.getByRole("heading", { name: /You don't need the right words to begin/i }).waitFor({ state: "visible", timeout: 20_000 });
+  await mark("Animated homepage: Harmonise loop mark, window illustration, and the first-step promise", 8000);
   await scrollTo("#why-harmonise", "Homepage: why a private first step", 4000);
   await scrollTo("#how-it-works", "Homepage: separate reflection, discovery, and sharing", 4000);
   await scrollTo("#ai-with-boundaries", "Homepage: actual Meta model roles and boundaries", 4000);
 
-  await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await page.getByRole("link", { name: "See how it feels", exact: true }).click();
   await page.getByRole("button", { name: "Continue with demo account" }).waitFor({ state: "visible", timeout: 20_000 });
   await mark("Sign in with the shared demo account", 3500);
   await page.getByRole("button", { name: "Continue with demo account" }).click();
@@ -103,7 +103,7 @@ try {
   await mark("Meta Voice Transcribe: complete editable draft, intentionally unsent", 5000);
 
   await page.goto(baseURL, { waitUntil: "domcontentloaded", timeout: 45_000 });
-  await page.getByRole("heading", { name: /A place to pause before you decide/i }).waitFor({ state: "visible", timeout: 20_000 });
+  await page.getByRole("heading", { name: /You don't need the right words to begin/i }).waitFor({ state: "visible", timeout: 20_000 });
   await scrollTo("#the-intent", "Close: intended impact and first-step invitation", 9000);
   if (errors.length) console.warn(`Browser reported ${errors.length} console/page errors; review capture-manifest.json.`);
 } catch (error) {

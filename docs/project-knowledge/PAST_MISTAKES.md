@@ -169,3 +169,9 @@ user's playback experience had no audible audio. Inspect the container and
 decode the track, then provide a standalone audio file and visible captions as
 independent ways to follow the narration. Do not infer that audio is available
 to the viewer just because it is present in the MP4.
+
+## 2026-11-05 — Adviser reflection and saved chat use different routes
+
+`/api/advice` returns a live reflection without creating a saved session;
+`/api/chat` persists through `/api/sessions`. Trace the route used by the
+visible screen before claiming a demo writes data or adding cleanup logic.

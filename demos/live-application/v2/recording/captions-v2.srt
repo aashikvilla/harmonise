@@ -1,80 +1,81 @@
 1
-00:00:00,040 --> 00:00:06,875
-A hard decision can be difficult to explain,
-and harder to share before you are ready.
+00:00:00,040 --> 00:00:10,498
+You don't need the right words to begin. A
+hard decision can be difficult to explain, and
+harder to share before you are ready.
 
 2
-00:00:07,375 --> 00:00:12,761
+00:00:10,998 --> 00:00:16,385
 Harmonise starts privately and leaves peer
 connection up to you.
 
 3
-00:00:13,261 --> 00:00:24,145
+00:00:16,885 --> 00:00:27,768
 It is for people facing personal decisions,
 family pressure, or life changes. This is peer
 support, not therapy.
 
 4
-00:00:24,645 --> 00:00:34,466
+00:00:28,268 --> 00:00:38,090
 We sign in with the shared demo account.
 Community names and counts are real; member
 stories stay private.
 
 5
-00:00:34,966 --> 00:00:39,619
+00:00:38,590 --> 00:00:43,242
 The member describes pressure to decide for
 their family.
 
 6
-00:00:40,119 --> 00:00:47,557
+00:00:43,742 --> 00:00:51,180
 Muse Wonder offers a live reflection and
 practical options, with Muse Spark as
 fallback.
 
 7
-00:00:48,057 --> 00:00:55,344
+00:00:51,680 --> 00:00:58,968
 The app names the model that answered. Matches
 appear only when the member asks.
 
 8
-00:00:55,844 --> 00:01:04,620
+00:00:59,468 --> 00:01:08,243
 Private advice is not copied into a peer
 space. The public directory comes from
 Supabase.
 
 9
-00:01:05,120 --> 00:01:11,725
+00:01:08,743 --> 00:01:15,349
 When no circle fits, Meta drafts a possible
 scope from the member's idea.
 
 10
-00:01:12,225 --> 00:01:20,173
+00:01:15,849 --> 00:01:23,797
 The member can edit or discard the draft. A
 human reviews any proposal before launch.
 
 11
-00:01:20,673 --> 00:01:27,043
+00:01:24,297 --> 00:01:30,667
 Muse Voice Transcribe turns speech into text
 the member can review and edit.
 
 12
-00:01:27,543 --> 00:01:33,126
+00:01:31,167 --> 00:01:36,750
 That transcript stays unsent until the member
 chooses what to do.
 
 13
-00:01:33,626 --> 00:01:45,604
+00:01:37,250 --> 00:01:49,228
 Muse Spark also supports chat, community
 guidance, and advisory moderation triage.
 People make consequential decisions.
 
 14
-00:01:46,104 --> 00:01:54,361
+00:01:49,728 --> 00:01:57,984
 Next.js, Supabase Auth and Postgres, and
 server-side Meta models connect the journey.
 
 15
-00:01:54,861 --> 00:02:04,093
+00:01:58,484 --> 00:02:07,717
 We aim to make a first step easier to see and
 connection easier to choose. We have not
 measured outcomes.

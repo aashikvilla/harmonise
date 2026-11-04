@@ -35,64 +35,87 @@ export default function HarmonizeHomepage() {
           <span>harmonize<em>.</em></span>
         </Link>
         <nav aria-label="Main navigation">
-          <Link href="#how-it-works">How it works</Link>
-          <Link href="#ai-with-boundaries">Our AI</Link>
+          <Link href="/connect">Your space</Link>
+          <Link href="#why-harmonise">Beyond the window</Link>
           <Link href="/communities">Communities</Link>
-          <Link href="/connect">Sign in</Link>
+          <Link href="#how-it-works">Life chapters</Link>
+          <Link className={styles.navCta} href="/connect">Explore the experience <span aria-hidden="true">↗</span></Link>
         </nav>
       </header>
 
       <section className={styles.hero} aria-labelledby="home-title">
+        <div className={styles.heroAmbient} aria-hidden="true" />
         <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>PRIVATE REFLECTION · REAL COMMUNITY</p>
-          <h1 id="home-title">A place to pause before you <em>decide.</em></h1>
-          <p className={styles.lede}>
-            When something feels hard to carry, start with a private conversation. Find one
-            practical next step, then choose whether peer support belongs in your journey.
-          </p>
+          <p className={styles.eyebrow}><span className={styles.sparkle} aria-hidden="true">✳</span> A SPACE FOR UNFINISHED THOUGHTS</p>
+          <h1 id="home-title">You don&apos;t need the <em>right words</em> to begin<span className={styles.period}>.</span></h1>
+          <p className={styles.lede}>Talk things through privately. Discover people who understand. Find your own way forward, one conversation at a time.</p>
           <div className={styles.actions}>
-            <Link className={styles.primary} href="/connect">Start privately <span aria-hidden="true">→</span></Link>
-            <Link className={styles.secondary} href="#how-it-works">See how it works</Link>
+            <Link className={styles.primary} href="/connect">See how it feels <span aria-hidden="true">↗</span></Link>
+            <Link className={styles.quietLink} href="#why-harmonise">Explore the idea <span aria-hidden="true">↓</span></Link>
           </div>
-          <p className={styles.heroNote}>Peer support and navigation · Not therapy or emergency care</p>
+          <p className={styles.heroNote}>No perfect explanation needed. You choose what to share.</p>
         </div>
-        <figure className={styles.pathFigure} aria-label="The member-led path from private reflection to optional peer connection">
-          <div className={styles.pathGlow} aria-hidden="true" />
-          <svg className={styles.pathArt} viewBox="0 0 640 520" role="img" aria-labelledby="path-title path-description">
-            <title id="path-title">A path that stays in your hands</title>
-            <desc id="path-description">Three connected points represent private reflection, a practical next step, and optional community connection.</desc>
+        <figure className={styles.heroArt} aria-label="An anonymous person sits by a sunlit window as a path leads toward other people and perspectives">
+          <div className={`${styles.artGlow} ${styles.glowOne}`} aria-hidden="true" />
+          <div className={`${styles.artGlow} ${styles.glowTwo}`} aria-hidden="true" />
+          <svg className={styles.sceneSvg} viewBox="0 0 660 650" aria-hidden="true">
             <defs>
-              <linearGradient id="path-gradient" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#cf8176" />
-                <stop offset="0.55" stopColor="#a99bc8" />
-                <stop offset="1" stopColor="#87a998" />
-              </linearGradient>
-              <filter id="node-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="12" stdDeviation="12" floodColor="#665a70" floodOpacity=".12" />
-              </filter>
+              <linearGradient id="hero-sky" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff8d9" /><stop offset=".55" stopColor="#dcebf4" /><stop offset="1" stopColor="#dcd9f5" /></linearGradient>
+              <linearGradient id="arched-frame" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f9f2e6" /><stop offset=".55" stopColor="#fffdfb" /><stop offset="1" stopColor="#e5c9b7" /></linearGradient>
+              <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#8f9fc2" /><stop offset="1" stopColor="#657caa" /></linearGradient>
+              <radialGradient id="golden-light"><stop stopColor="#ffe7a6" stopOpacity=".92" /><stop offset="1" stopColor="#ffe7a6" stopOpacity="0" /></radialGradient>
+              <linearGradient id="ribbon-grad" x1="0" y1="0" x2="1" y2="0"><stop stopColor="#ce7569" /><stop offset=".53" stopColor="#e9b7a6" /><stop offset="1" stopColor="#aaa5d1" /></linearGradient>
+              <filter id="shadow-soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="12" /></filter>
+              <filter id="shadow-mini" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="8" stdDeviation="11" floodColor="#776a88" floodOpacity=".15" /></filter>
+              <clipPath id="hero-window-clip"><path d="M167 359V191a161 161 0 0 1 322 0v168Z" /></clipPath>
             </defs>
-            <path className={styles.pathHalo} d="M113 360C105 270 198 226 282 265S422 319 510 170" />
-            <path className={styles.pathLine} d="M113 360C105 270 198 226 282 265S422 319 510 170" />
-            <circle className={styles.pathOrbit} cx="113" cy="360" r="71" />
-            <circle className={styles.pathOrbit} cx="282" cy="265" r="88" />
-            <circle className={styles.pathOrbit} cx="510" cy="170" r="66" />
-            <g filter="url(#node-shadow)">
-              <circle className={styles.nodeOne} cx="113" cy="360" r="47" />
-              <circle className={styles.nodeTwo} cx="282" cy="265" r="55" />
-              <circle className={styles.nodeThree} cx="510" cy="170" r="43" />
+            <ellipse className={`${styles.layer} ${styles.layerRear}`} cx="334" cy="475" rx="245" ry="105" fill="url(#golden-light)" opacity=".8" />
+            <g className={`${styles.layer} ${styles.layerBack}`}>
+              <path d="M146 379V190a181 181 0 0 1 362 0v189" fill="none" stroke="#e4c6bc" strokeWidth="34" strokeLinecap="round" opacity=".26" />
+              <path d="M153 364V190a174 174 0 0 1 348 0v174Z" fill="url(#arched-frame)" filter="url(#shadow-mini)" />
+              <path d="M167 359V191a161 161 0 0 1 322 0v168Z" fill="url(#hero-sky)" />
+              <g clipPath="url(#hero-window-clip)">
+                <circle cx="402" cy="147" r="77" fill="url(#golden-light)" />
+                <path d="M167 301Q244 263 323 300T489 280V359H167Z" fill="#ccdce1" />
+                <path d="M167 319Q255 285 351 324T489 311V359H167Z" fill="#b5d3cb" opacity=".77" />
+                <path d="M327 20V359M167 225H489" stroke="#fffaf6" strokeWidth="10" opacity=".95" />
+              </g>
+              <path d="M155 365H504" stroke="#e6bfac" strokeWidth="17" strokeLinecap="round" />
             </g>
-            <path className={styles.innerLoop} d="M95 358c0-13 11-22 24-22 12 0 18 8 12 15-7 9-25 4-25 16 0 10 12 12 23 2" />
-            <path className={styles.stepMark} d="m263 267 13 13 27-31" />
-            <path className={styles.communityMark} d="M490 180c0-11 9-19 20-19s20 8 20 19M483 201c2-9 10-14 18-14M519 187c8 0 16 5 18 14" />
-            <circle className={styles.traveler} r="7" fill="#af554f">
-              <animateMotion dur="8s" repeatCount="indefinite" path="M113 360C105 270 198 226 282 265S422 319 510 170" />
-            </circle>
+            <g className={`${styles.layer} ${styles.layerMid}`}>
+              <ellipse cx="344" cy="509" rx="228" ry="35" fill="#bb9a9c" opacity=".18" filter="url(#shadow-soft)" />
+              <path d="M241 476Q218 430 246 404Q277 387 324 391Q389 400 413 433L405 482Z" fill="#d9b9a7" />
+              <path d="M227 462Q276 448 400 458V482H227Z" fill="#f2d7c6" />
+              <path d="M260 481L257 522M381 480L390 522" stroke="#a87d72" strokeWidth="10" strokeLinecap="round" />
+              <path d="M277 459Q278 420 313 415Q341 413 355 439L369 472Z" fill="url(#shirt)" />
+              <path d="M318 420Q342 439 366 450L376 457" fill="none" stroke="#60779c" strokeWidth="17" strokeLinecap="round" />
+              <path d="M308 398Q296 378 307 360Q328 343 346 362Q358 384 343 402Z" fill="#b87f69" />
+              <path d="M305 374Q301 351 327 344Q351 343 349 374Q334 357 305 374Z" fill="#4b4059" />
+              <path d="M290 470Q317 481 345 470" fill="none" stroke="#8f9fc2" strokeWidth="21" strokeLinecap="round" />
+              <rect x="350" y="429" width="26" height="38" rx="7" fill="#4f526c" transform="rotate(12 364 442)" />
+              <circle cx="359" cy="445" r="2" fill="#e8e0e8" />
+            </g>
+            <g className={`${styles.layer} ${styles.layerFront}`}>
+              <path d="M507 471Q493 430 517 403Q543 371 558 336" fill="none" stroke="#678a80" strokeWidth="5" strokeLinecap="round" />
+              <path d="M511 452Q477 424 467 400M525 420Q553 407 569 391M544 364Q557 339 567 331" fill="none" stroke="#678a80" strokeWidth="5" strokeLinecap="round" />
+              <ellipse cx="480" cy="395" rx="24" ry="11" transform="rotate(25 480 395)" fill="#9cb6a2" />
+              <ellipse cx="562" cy="387" rx="25" ry="11" transform="rotate(-32 562 387)" fill="#8ea88e" />
+              <ellipse cx="554" cy="345" rx="24" ry="11" transform="rotate(33 554 345)" fill="#a7c0a5" />
+              <path d="M492 463H549L540 509H501Z" fill="#d2a88f" />
+            </g>
+            <path className={styles.heroThread} d="M369 439C455 449 523 397 561 316S604 142 556 111" stroke="url(#ribbon-grad)" strokeWidth="5" strokeLinecap="round" fill="none" />
+            <circle cx="552" cy="105" r="12" fill="#fffaf4" stroke="#ba9bbe" strokeWidth="3" />
+            <circle cx="552" cy="105" r="4" fill="#ba9bbe" />
+            <g className={styles.tinyWindow} transform="translate(506 38)">
+              <rect width="90" height="44" rx="22" fill="#fffdf8" opacity=".85" />
+              <path d="M20 32V20a11 11 0 0 1 22 0v12" fill="#e2d8f2" /><circle cx="31" cy="18" r="6" fill="#a48273" />
+              <path d="M51 29Q55 17 64 17Q73 17 77 29Z" fill="#83a995" /><circle cx="64" cy="14" r="5.5" fill="#c49780" />
+            </g>
+            <g className={styles.sunParticle} fill="#dfb4a0"><circle cx="114" cy="111" r="4" /><circle cx="532" cy="253" r="3" /><circle cx="144" cy="457" r="4" /><circle cx="594" cy="434" r="4" /></g>
           </svg>
-          <figcaption className={styles.pathLabels}>
-            <span>Reflect privately</span><span>Find a next step</span><span>Connect by choice</span>
-          </figcaption>
+          <figcaption className={styles.artCaption}>ONE WINDOW <span>·</span> MANY POSSIBILITIES</figcaption>
         </figure>
-        <a className={styles.scrollCue} href="#why-harmonise"><span aria-hidden="true" />Scroll to explore</a>
+        <a className={styles.scrollCue} href="#why-harmonise"><span>SCROLL TO OPEN THE VIEW</span><span className={styles.scrollTrack}><span /></span></a>
       </section>
 
       <section className={`${styles.section} ${styles.problem}`} id="why-harmonise" aria-labelledby="why-title">
