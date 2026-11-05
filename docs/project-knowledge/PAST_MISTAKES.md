@@ -191,3 +191,12 @@ let a community loading screen pass a weak check. Assert the loaded result
 positively (for example, a named rendered community card), then hold the screen
 long enough to read it. After a new capture, rerun the finalizer; an older MP4
 can otherwise be mistaken for the latest take.
+
+## 2026-11-05 — A demo-specific homepage rewrite can erase the approved product story
+
+The full Motion Revival landing page already existed in Git with eight sections,
+scroll and pointer motion, keyboard interactions, and responsive illustrations.
+Recreating a smaller homepage for the live recording cut those scenes and made
+the site look simplified. Before changing a product surface for a demo, compare
+it with the accepted source in Git and preserve its complete journey; adapt the
+capture to the product instead of replacing the approved product experience.

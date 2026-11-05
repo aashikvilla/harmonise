@@ -66,3 +66,10 @@
 - **Reason:** The app already performs member, post-visibility and moderator checks at the route boundary. The initial table policies did not fully bind a reaction to the author's community and allowed reads of hidden-post reactions in public circles.
 - **Implementation:** Production migrations `20261103164619_lock_engagement_tables_to_server.sql` and `20261103165740_lock_moderation_events_to_server.sql` revoke the direct grants and remove the unused engagement policies. SQL privilege checks confirm API roles are denied and `service_role` retains route access.
 - **Revisit when:** A product feature requires direct PostgREST access; first design and verify an owner/member/moderator JWT policy matrix for cross-community, hidden, blocked and lifecycle states.
+
+## 2026-11-05 — Keep Motion Revival as the complete homepage source
+
+- **Decision:** Serve the accepted Motion Revival document as the homepage's canonical visual and interaction source, isolated in a titled iframe; keep live product flows on their existing routes.
+- **Reason:** The complete source contains the approved multi-section story, responsive original artwork, scroll motion, and interactions. A shorter React recreation removed meaningful parts of that experience.
+- **Boundary:** Motion Revival's conversation and community scenes are explicitly illustrative and fictional. The footer discloses that they are not connected to live AI or community data; keep that disclosure unless those scenes are rebuilt with real product flows.
+- **Revisit when:** The full experience is ported into React with visual and interaction parity, not when adapting a video capture.
